@@ -253,8 +253,8 @@ module.exports = {
                 sameSite: "None",
                 maxAge: 7 * 24 * 60 * 60 * 1000,
             });
-            // res.redirect(`${process.env.FRONTEND_URL}/auth/google`);
-            res.redirect(`${process.env.FRONTEND_URL}`);
+            res.redirect(`${process.env.FRONTEND_URL}/auth/google`);
+            // res.redirect(`${process.env.FRONTEND_URL}`);
         } catch (error) {
             console.log(error, "Failed to authorize Google user");
         }
