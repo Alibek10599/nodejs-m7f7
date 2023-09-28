@@ -282,7 +282,10 @@ module.exports = {
     //  ---------------------------------------- //LOgOut //--------------------------- //
     logout: async (req, res) => {
         const cookies = req.cookies;
-        if (!cookies?.token) res.status(402).json("No CONTENT FOUND IN THE COOKIE"); //No content
+        // if (!cookies?.token) {
+        //     res.status(402).json({message: "No CONTENT FOUND IN THE COOKIE"}); //No content
+        //     return;
+        // }
         res.clearCookie("token", {
             httpOnly: true,
             sameSite: "None",
