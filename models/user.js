@@ -1,39 +1,31 @@
-const mongoose = require("mongoose");
-const Schema = mongoose.Schema;
-
-const UserSchema = new Schema(
-    {
-        name: {
-            type: String,
-            required: true,
-        },
-        email: {
-            type: String,
-            required: true,
-            unique: true,
-        },
-        password: {
-            type: String,
-            required: true,
-        },
-        image: {
-            type: String,
-            default:
-                "https://img.freepik.com/free-vector/illustration-user-avatar-icon_2606572.htm?w=740&t=st=1669223568~exp=1669224168~hmac=48e7614aa6ed27e586add6039ac3f3265d868a20c71f6fcfc46b90305e76ffe2",
-        },
-        role: { type: String, default: "USER" },
-        resetPasswordToken: {
-            type: String,
-            default: undefined,
-        },
-        verified: { type: Boolean, default: false },
-        serviceProvider: {
-            type: String,
-            enum: ["email", "google"],
-            default: "email",
-        },
-    },
-    { timestamps: true }
-);
-
-module.exports = mongoose.model("user", UserSchema);
+'use strict';
+const {
+  Model
+} = require('sequelize');
+module.exports = (sequelize, DataTypes) => {
+  class User extends Model {
+    /**
+     * Helper method for defining associations.
+     * This method is not a part of Sequelize lifecycle.
+     * The `models/index` file will call this method automatically.
+     */
+    static associate(models) {
+      // define association here
+    }
+  }
+  User.init({
+    userName: DataTypes.STRING,
+    hash: DataTypes.STRING,
+    email: DataTypes.STRING,
+    isConfirmed: DataTypes.BOOLEAN,
+    isActive: DataTypes.BOOLEAN,
+    isDeleted: DataTypes.BOOLEAN,
+    password: DataTypes.STRING,
+    role: DataTypes.NUMBER,
+    orgId: DataTypes.NUMBER
+  }, {
+    sequelize,
+    modelName: 'User',
+  });
+  return User;
+};

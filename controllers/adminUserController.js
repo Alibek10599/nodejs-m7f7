@@ -1,6 +1,6 @@
 // const ProductValidation = require("../validator/ProductValidation");
 // const IdParamsValidation = require("../validator/IdParamsValidation");
-const User = require("../models/user");
+const User = require("../models/mongoose-user");
 // const Size = require("../models/size");
 // const Category = require("../models/category");
 // const Brand = require("../models/brand");

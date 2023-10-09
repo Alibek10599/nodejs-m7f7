@@ -1,7 +1,6 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-// const fetch = require("node-fetch");
-const User = require("../models/user");
+const { User } = require("../models");
 const SignupValidation = require("../validators/SignupValidation");
 const SigninValidation = require("../validators/SigninValidation");
 const ResetValidation = require("../validators/ResetValidation");
@@ -24,21 +23,25 @@ module.exports = {
 
     //  ---------------------------------------- //signup method to create a new user//--------------------------- //
     signup: async (req, res) => {
-        const { name, email, password } = req.body;
+        const { name: userName, email, password } = req.body;
         const { errors, isValid } = SignupValidation(req.body);
 
         try {
             if (!isValid) {
                 return res.status(400).json(errors);
             }
-            let exisitingUser = await User.findOne({ email });
+            let exisitingUser = await User.findOne({
+                where: {
+                    email
+                }
+            });
             if (exisitingUser) {
                 errors.email = "User with given email already Exist";
                 return res.status(404).json(errors);
             }
             const hashedpassword = await bcrypt.hash(password, 8);
             exisitingUser = await User.create({
-                name,
+                userName,
                 email,
                 password: hashedpassword,
             });
@@ -53,7 +56,7 @@ module.exports = {
             await sendMail(
                 exisitingUser.email,
                 activationUrl,
-                exisitingUser.name,
+                exisitingUser.userName,
                 "Email Verification",
                 "verificationmail"
             );
@@ -75,15 +78,15 @@ module.exports = {
             return res.status(401).json("Invalid token");
         }
         try {
-            const decoded = jwt.verify(
+            const { email } = jwt.verify(
                 activationToken,
                 process.env.ACTIVATION_SECRET
             );
-            const user = await User.findById(decoded.userId);
+            const user = await User.findOne({where: { email }});
             if (!user) {
                 return res.status(404).json("Invalid token");
             }
-            user.verified = true;
+            user.isConfirmed = true;
             await user.save();
             const token = AccessToken(user);
             const refreshToken = RefreshToken(user._id);
@@ -120,7 +123,7 @@ module.exports = {
                 errors.password = "Wrong Password";
                 return res.status(400).json(errors);
             }
-            if (!userExist.verified) {
+            if (!userExist.dataValues.isConfirmed) {
                 return res.status(401).json("Please Verify Your Email and Try again");
             }
             const token = AccessToken(userExist);
@@ -161,7 +164,7 @@ module.exports = {
             await sendMail(
                 user.email,
                 reseturl,
-                user.name,
+                user.userName,
                 "RESET YOUR PASSWORD",
                 "forgotpasswordmail"
             );
@@ -222,7 +225,7 @@ module.exports = {
             // get user with tokens
             const googleUser = await getGoogleUser({ id_token, access_token });
             
-            const { verified_email, email, name, picture } = googleUser;
+            const { verified_email, email, userName, picture } = googleUser;
 
             if (!verified_email) {
                 return res.status(403).send("Google account is not verified");
@@ -231,7 +234,7 @@ module.exports = {
             const password = email + process.env.ACCESS_TOKEN_SECRET;
             const userData = {
                 email,
-                name,
+                userName,
                 image: picture,
                 password,
                 verified: true,
