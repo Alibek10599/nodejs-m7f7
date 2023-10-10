@@ -22,7 +22,8 @@ module.exports = (sequelize, DataTypes) => {
     isDeleted: DataTypes.BOOLEAN,
     password: DataTypes.STRING,
     role: DataTypes.NUMBER,
-    orgId: DataTypes.NUMBER
+    orgId: DataTypes.NUMBER,
+    resetPasswordToken: DataTypes.STRING,
   }, {
     sequelize,
     modelName: 'User',

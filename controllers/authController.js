@@ -78,7 +78,7 @@ module.exports = {
                 activationToken,
                 process.env.ACTIVATION_SECRET
             );
-            const user = await User.findOne({where: { email }});
+            const user = await User.findOne({ where: { email }});
             if (!user) {
                 return res.status(404).json("Invalid token");
             }
@@ -108,7 +108,7 @@ module.exports = {
             if (!isValid) {
                 return res.status(400).json(errors);
             }
-            const userExist = await User.findOne({ email });
+            const userExist = await User.findOne({ where: { email }});
             if (!userExist) {
                 errors.email =
                     "Email does not exist ! please Enter the right Email or You can make account";
@@ -145,13 +145,13 @@ module.exports = {
             if (!email) {
                 return res.status(400).json("email is required");
             }
-            const user = await User.findOne({ email });
+            const user = await User.findOne({ where: { email }});
             if (!user) {
                 return res.status(400).json("Email could not be sent");
             }
 
             const resetPasswordToken = createResetPasswordToken({
-                userId: user._id,
+                userId: user.id,
                 email: user.email,
             });
             user.resetPasswordToken = resetPasswordToken;
@@ -189,8 +189,10 @@ module.exports = {
                 process.env.RESET_PASSWORD_SECRET
             );
             const user = await User.findOne({
-                _id: decoded.userId,
-                resetPasswordToken: resetPasswordToken,
+                where: {
+                    id: decoded.userId,
+                    resetPasswordToken: resetPasswordToken,
+                }
             });
             if (!user) {
                 return res.status(404).json("Wrong Reset Password token");
@@ -200,7 +202,7 @@ module.exports = {
             }
             const hashedpassword = await bcrypt.hash(password, 8);
             user.password = hashedpassword;
-            user.resetPasswordToken = undefined;
+            user.resetPasswordToken = null;
             await user.save();
             const token = AccessToken(user);
             res.status(200).json(token);
@@ -218,7 +220,7 @@ module.exports = {
                 req.cookies["token"],
                 process.env.REFRESH_TOKEN_SECRET
             );
-            const foundUser = await User.findById(decoded.userId).exec();
+            const foundUser = await User.findByPk(decoded.userId);
             if (!foundUser) return res.status(401).json("Unauthorized");
             const token = AccessToken(foundUser);
 
