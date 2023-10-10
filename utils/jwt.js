@@ -4,8 +4,10 @@ const jwt = require("jsonwebtoken");
 exports.AccessToken = (user) => {
     const tokenPayload = {
         userId: user._id,
-        name: user.name,
+        userName: user.userName,
+        isConfirmed: user.isConfirmed,
         email: user.email,
+        orgId: user.orgId,
         role: user.role,
         image: user.image,
     };
