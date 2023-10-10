@@ -5,10 +5,6 @@ const SignupValidation = require("../validators/SignupValidation");
 const SigninValidation = require("../validators/SigninValidation");
 const ResetValidation = require("../validators/ResetValidation");
 const sendMail = require("../utils/sendMail");
-const {
-    getGoogleOAuthTokens,
-    getGoogleUser,
-} = require("../utils/googleOAuthService");
 const { AccessToken, RefreshToken } = require("../utils/jwt");
 
 const createActivationToken = (user) => {
@@ -210,56 +206,6 @@ module.exports = {
             res.status(200).json(token);
         } catch (error) {
             return res.status(500).send("Error: " + error.message);
-        }
-    },
-
-    //  ---------------------------------------- //Google Authentication //--------------------------- //
-    googleOauthHandler: async (req, res) => {
-        // get the code from qs
-        const { query } = req;
-        const code = query.code;
-        try {
-            // get the id and access token with the code
-            const { id_token, access_token } = await getGoogleOAuthTokens({ code });
-
-            // get user with tokens
-            const googleUser = await getGoogleUser({ id_token, access_token });
-            
-            const { verified_email, email, userName, picture } = googleUser;
-
-            if (!verified_email) {
-                return res.status(403).send("Google account is not verified");
-            }
-
-            const password = email + process.env.ACCESS_TOKEN_SECRET;
-            const userData = {
-                email,
-                userName,
-                image: picture,
-                password,
-                verified: true,
-                serviceProvider: "google",
-            };
-            // upsert the user
-            const user = await User.findOneAndUpdate(
-                {
-                email,
-                },
-                { $set: userData },
-                { upsert: true, returnOriginal: false }
-            );
-
-            const refreshToken = RefreshToken(user._id);
-            res.cookie("token", refreshToken, {
-                httpOnly: true,
-                secure: true,
-                sameSite: "None",
-                maxAge: 7 * 24 * 60 * 60 * 1000,
-            });
-            res.redirect(`${process.env.FRONTEND_URL}/auth/google`);
-            // res.redirect(`${process.env.FRONTEND_URL}`);
-        } catch (error) {
-            console.log(error, "Failed to authorize Google user");
         }
     },
 

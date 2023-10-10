@@ -27,7 +27,7 @@ const sendMail = async (to, url, name, subject, template) => {
 
         const mailOptions = {
             from: {
-                name: "ZiwiShop",
+                name: "MidasPool",
                 address: process.env.SMPT_MAIL,
             },
             to: to,

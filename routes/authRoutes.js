@@ -8,8 +8,6 @@ router.post("/emailverification", AuthController.verifyemail);
 
 router.post("/signin", AuthController.signin);
 
-router.get("/googleLogin", AuthController.googleOauthHandler);
-
 router.get("/refresh", AuthController.refresh);
 
 router.post("/forgotpassword", AuthController.forgetPassword);
