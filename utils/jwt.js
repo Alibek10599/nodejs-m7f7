@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken");
 //AccessToken
 exports.AccessToken = (user) => {
     const tokenPayload = {
-        userId: user._id,
+        userId: user.id,
         userName: user.userName,
         isConfirmed: user.isConfirmed,
         email: user.email,

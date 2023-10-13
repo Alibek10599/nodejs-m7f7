@@ -32,7 +32,9 @@
     "dev": "nodemon index.js",
 
     "db:migrate": "sequelize db:migrate",
-    "db:migrate:undo": "sequelize db:migrate:undo "
+    "db:migrate:undo": "sequelize db:migrate:undo",
+    "db:seed": "sequelize db:seed:all",
+    "db:seed:undo": "sequelize db:seed:all:undo"
   },
   "devDependencies": {
     "sequelize-cli": "^6.6.1"

@@ -10,7 +10,7 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // define association here
+      User.belongsTo(models.Role, { foreignKey: 'roleId' });
     }
   }
   User.init({
@@ -21,12 +21,27 @@ module.exports = (sequelize, DataTypes) => {
     isActive: DataTypes.BOOLEAN,
     isDeleted: DataTypes.BOOLEAN,
     password: DataTypes.STRING,
-    role: DataTypes.NUMBER,
+    roleId: {
+      type: DataTypes.INTEGER,
+      references: {
+        model: 'Role',
+        key: 'id',
+      },
+    },
     orgId: DataTypes.NUMBER,
     resetPasswordToken: DataTypes.STRING,
   }, {
     sequelize,
     modelName: 'User',
   });
+
+  User.prototype.toJSON = function toJSON() {
+    const values = Object.assign({}, this.get());
+
+    delete values.password;
+
+    return values;
+  };
+
   return User;
 };

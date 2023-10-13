@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
-const User = require("../models/user");
+const { User, Role } = require("../models");
+const ROLES = require('../utils/constants/userRoles')
 
 const isAuth = async (req, res, next) => {
     try {
@@ -16,7 +17,7 @@ const isAuth = async (req, res, next) => {
     
         try {
             const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-            const user = await User.findById(decoded.userId);
+            const user = await User.findByPk(decoded.userId);
     
             if (!user) {
                 return res.status(401).json("User not found");
@@ -33,11 +34,17 @@ const isAuth = async (req, res, next) => {
     }
 };
 
-const isAdmin = (req, res, next) => {
-    if (req.user && req.user.role === "ADMIN") {
-        next();
-    } else {
-        res.status(401).json("Unauthorized");
+const isAdmin = async (req, res, next) => {
+    try {
+        const role = await Role.findByPk(req?.user?.roleId);
+
+        if (role.roleName === ROLES.ADMIN) {
+            next();
+        } else {
+            res.status(401).json("Unauthorized");
+        }
+    } catch(error) {
+        res.status(500).json(error.message)
     }
 };
 
