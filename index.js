@@ -18,9 +18,11 @@ app.use(cors((corsOptions)));
 
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
+const orgRoutes = require("./routes/orgRoutes");
 
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/user", userRoutes);
+app.use("/api/v1/organization", orgRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}/`);
