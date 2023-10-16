@@ -25,7 +25,7 @@ const walletRoutes = require("./routes/walletRoutes");
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/organization", orgRoutes);
-app.use("api/v1/subaccount", subAccountRoutes);
+app.use("/api/v1/subaccount", subAccountRoutes);
 app.use("/api/v1/wallet",walletRoutes);
 
 app.listen(PORT, () => {
