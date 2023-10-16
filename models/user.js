@@ -11,6 +11,11 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       User.belongsTo(models.Role, { foreignKey: 'roleId' });
+      User.belongsTo(models.Organization, {
+        as: 'organization',
+        foreignKey: 'orgId',
+        targetKey: 'id'
+      })
     }
   }
   User.init({
@@ -28,8 +33,18 @@ module.exports = (sequelize, DataTypes) => {
         key: 'id',
       },
     },
-    orgId: DataTypes.NUMBER,
+    orgId: {
+      type: DataTypes.INTEGER,
+      references: {
+        model: 'Organization',
+        key: 'id'
+      }
+    },
     resetPasswordToken: DataTypes.STRING,
+    twoFAEnabled: DataTypes.BOOLEAN,
+    twoFASecret: DataTypes.STRING,
+    isResident: DataTypes.BOOLEAN,
+    IIN: DataTypes.STRING
   }, {
     sequelize,
     modelName: 'User',

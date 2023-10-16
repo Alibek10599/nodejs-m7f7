@@ -14,6 +14,11 @@ module.exports = {
         roleName: 'ADMIN',
         createdAt: new Date(),
         updatedAt: new Date(),
+      },
+      {
+        roleName: 'POOL_ADMIN',
+        createdAt: new Date(),
+        updatedAt: new Date(),
       }
     ], {});
   },

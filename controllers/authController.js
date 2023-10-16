@@ -1,11 +1,12 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { User } = require("../models");
+const { User, Role } = require("../models");
 const SignupValidation = require("../validators/SignupValidation");
 const SigninValidation = require("../validators/SigninValidation");
 const ResetValidation = require("../validators/ResetValidation");
 const sendMail = require("../utils/sendMail");
 const { AccessToken, RefreshToken } = require("../utils/jwt");
+const ROLES = require('../utils/constants/userRoles')
 
 const createActivationToken = (user) => {
     return jwt.sign(user, process.env.ACTIVATION_SECRET);
@@ -36,10 +37,13 @@ module.exports = {
                 return res.status(404).json(errors);
             }
             const hashedpassword = await bcrypt.hash(password, 8);
+            const { id:userRole } = await Role.findOne({ where: { roleName: ROLES.USER }})
+
             exisitingUser = await User.create({
                 userName,
                 email,
                 password: hashedpassword,
+                roleId: userRole
             });
 
             const user = {

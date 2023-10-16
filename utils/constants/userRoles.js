@@ -1,4 +1,5 @@
 module.exports = {
     USER: 'USER',
-    ADMIN: 'ADMIN'
+    ADMIN: 'ADMIN',
+    POOL_ADMIN: 'POOL_ADMIN'
 }

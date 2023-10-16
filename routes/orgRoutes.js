@@ -4,7 +4,7 @@ const OrganizationController = require("../controllers/organizationController");
 const { isAuth, isAdmin } = require("../middlewares/checkAuth");
 
 router.get("/", isAuth, isAdmin, OrganizationController.GetOrganizations);
-router.post("/", isAuth, isAdmin, OrganizationController.CreateOrganization);
+router.post("/", isAuth, OrganizationController.CreateOrganization);
 router.post("/activate/:id", isAuth, isAdmin, OrganizationController.ActivateOrganization);
 
 module.exports = router;
