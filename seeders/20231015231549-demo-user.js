@@ -1,4 +1,5 @@
 'use strict';
+const bcrypt = require("bcryptjs");
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
@@ -20,7 +21,7 @@ module.exports = {
        roleId: 2,
        isConfirmed: 1,
        email: 'admin@mail.com',
-       password: '$2a$08$YzE2eO4Wc0TRMtyJs2dgG.4iC5oNmtkJ87uP0ZQbvAOV8Cflt3dfi',
+       password: await bcrypt.hash('Asd12345', 8),
       },
       {
         userName: 'testUser',
@@ -29,7 +30,7 @@ module.exports = {
         roleId: 1,
         isConfirmed: 1,
         email: 'test@mail.com',
-        password: '$2a$08$YzE2eO4Wc0TRMtyJs2dgG.4iC5oNmtkJ87uP0ZQbvAOV8Cflt3dfi',
+        password: await bcrypt.hash('Asd12345', 8),
       },
       {
         userName: 'testUser1',
@@ -38,7 +39,7 @@ module.exports = {
         roleId: 1,
         isConfirmed: 1,
         email: 'test1@mail.com',
-        password: '$2a$08$YzE2eO4Wc0TRMtyJs2dgG.4iC5oNmtkJ87uP0ZQbvAOV8Cflt3dfi',
+        password: await bcrypt.hash('Asd12345', 8),
       },
       {
         userName: 'testUser2',
@@ -47,7 +48,7 @@ module.exports = {
         roleId: 1,
         isConfirmed: 1,
         email: 'test2@mail.com',
-        password: '$2a$08$YzE2eO4Wc0TRMtyJs2dgG.4iC5oNmtkJ87uP0ZQbvAOV8Cflt3dfi',
+        password: await bcrypt.hash('Asd12345', 8),
       },
       {
         userName: 'testUser3',
@@ -56,7 +57,7 @@ module.exports = {
         roleId: 1,
         isConfirmed: 1,
         email: 'test3@mail.com',
-        password: '$2a$08$YzE2eO4Wc0TRMtyJs2dgG.4iC5oNmtkJ87uP0ZQbvAOV8Cflt3dfi',
+        password: await bcrypt.hash('Asd12345', 8),
       },
       {
         userName: 'testUser4',
@@ -65,7 +66,7 @@ module.exports = {
         roleId: 1,
         isConfirmed: 1,
         email: 'test4@mail.com',
-        password: '$2a$08$YzE2eO4Wc0TRMtyJs2dgG.4iC5oNmtkJ87uP0ZQbvAOV8Cflt3dfi',
+        password: await bcrypt.hash('Asd12345', 8),
       }
     ], {});
   },

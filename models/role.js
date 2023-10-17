@@ -14,7 +14,13 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   Role.init({
-    roleName: DataTypes.STRING
+    roleName: DataTypes.STRING,
+    isPoolAdmin: DataTypes.BOOLEAN,
+    isPoolAccount: DataTypes.BOOLEAN,
+    isPoolTech: DataTypes.BOOLEAN,
+    isOrgAdmin: DataTypes.BOOLEAN,
+    isOrgAccount: DataTypes.BOOLEAN,
+    isOrgTech: DataTypes.BOOLEAN,
   }, {
     sequelize,
     modelName: 'Role',
