@@ -6,10 +6,11 @@ exports.AccessToken = (user) => {
         userId: user.id,
         userName: user.userName,
         isConfirmed: user.isConfirmed,
+        iin: user.iin,
         email: user.email,
         orgId: user.orgId,
-        role: user.role,
-        image: user.image,
+        roleId: user.roleId,
+        // image: user.image,
     };
 
     const token = jwt.sign(tokenPayload, process.env.ACCESS_TOKEN_SECRET, {

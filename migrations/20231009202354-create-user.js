@@ -10,26 +10,34 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       userName: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING(45),
+        allowNull: false
       },
-      hash: {
-        type: Sequelize.STRING
-      },
+      // hash: {
+      //   type: Sequelize.STRING
+      // },
       email: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING(45),
+        allowNull: false
+      },
+      egovToken: {
+        type: Sequelize.STRING(45),
       },
       isConfirmed: {
-        type: Sequelize.BOOLEAN
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
       },
       isActive: {
-        type: Sequelize.BOOLEAN
+        type: Sequelize.BOOLEAN,
+        defaultValue: true
       },
       isDeleted: {
         type: Sequelize.BOOLEAN,
         defaultValue: false,
       },
       password: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        allowNull: false
       },
       role: {
         type: Sequelize.INTEGER
@@ -45,6 +53,13 @@ module.exports = {
         allowNull: false,
         type: Sequelize.DATE
       }
+    }, {
+      charset: 'utf8mb4',
+      collate: 'utf8mb4_unicode_ci',
+      name: {
+        singular: 'User',
+        plural: 'Users',
+      },
     }, {
       charset: 'utf8mb4',
       collate: 'utf8mb4_unicode_ci',

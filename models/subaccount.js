@@ -24,7 +24,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   SubAccount.init({
-    name: DataTypes.STRING,
+    subAccName: DataTypes.STRING,
     orgId: {
       type:DataTypes.INTEGER,
       references: {
@@ -33,11 +33,6 @@ module.exports = (sequelize, DataTypes) => {
       },
       allowNull: false
     },
-    hashRate: DataTypes.BIGINT,
-    workers: DataTypes.BIGINT,
-    online: DataTypes.INTEGER,
-    offline: DataTypes.INTEGER,
-    isActive: DataTypes.BOOLEAN
   }, {
     sequelize,
     modelName: 'SubAccount',

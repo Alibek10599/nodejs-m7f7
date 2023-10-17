@@ -6,19 +6,16 @@ module.exports = {
 
      await queryInterface.bulkInsert('Roles', [
       {
-       roleName: 'USER',
+       roleName: 'OrgAdmin',
        createdAt: new Date(),
        updatedAt: new Date(),
+       isOrgAdmin: true,
       },
       {
-        roleName: 'ADMIN',
+        roleName: 'PoolAdmin',
         createdAt: new Date(),
         updatedAt: new Date(),
-      },
-      {
-        roleName: 'POOL_ADMIN',
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        isPoolAdmin: true,
       }
     ], {});
   },

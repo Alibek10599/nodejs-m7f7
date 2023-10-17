@@ -37,15 +37,15 @@ module.exports = {
                 return res.status(404).json(errors);
             }
             const hashedpassword = await bcrypt.hash(password, 8);
-            const { id:userRole } = await Role.findOne({ where: { roleName: ROLES.USER }})
+            // const { id:userRole } = await Role.findOne({ where: { roleName: ROLES.USER }})
 
             exisitingUser = await User.create({
                 userName,
                 email,
                 password: hashedpassword,
-                roleId: userRole
+                roleId: 1
             });
-
+            
             const user = {
                 userId: exisitingUser._id,
                 email: exisitingUser.email,

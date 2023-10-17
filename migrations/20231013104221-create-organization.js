@@ -9,23 +9,27 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      name: {
-        type: Sequelize.STRING
+      orgName: {
+        type: Sequelize.STRING(150),
+        allowNull: false
       },
       bin: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING(12)
       },
       feesRate: {
         type: Sequelize.DOUBLE
       },
-      isApproved: {
-        type: Sequelize.BOOLEAN
+      isRequestedApprove: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
       },
       isActive: {
-        type: Sequelize.BOOLEAN
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
       },
       isDeleted: {
-        type: Sequelize.BOOLEAN
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
       },
       createdAt: {
         allowNull: false,
@@ -35,6 +39,13 @@ module.exports = {
         allowNull: false,
         type: Sequelize.DATE
       }
+    }, {
+      charset: 'utf8mb4',
+      collate: 'utf8mb4_unicode_ci',
+      name: {
+        singular: 'Organization',
+        plural: 'Organizations',
+      },
     });
   },
   async down(queryInterface, Sequelize) {

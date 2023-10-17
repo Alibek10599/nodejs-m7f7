@@ -23,10 +23,10 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   Organization.init({
-    name: DataTypes.STRING,
+    orgName: DataTypes.STRING,
     bin: DataTypes.STRING,
     feesRate: DataTypes.DOUBLE,
-    isApproved: DataTypes.BOOLEAN,
+    isRequestedApprove: DataTypes.BOOLEAN,
     isActive: DataTypes.BOOLEAN,
     isDeleted: DataTypes.BOOLEAN
   }, {

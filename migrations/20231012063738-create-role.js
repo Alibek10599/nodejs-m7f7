@@ -10,7 +10,25 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       roleName: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING(45)
+      },
+      isPoolAdmin: {
+        type: Sequelize.BOOLEAN
+      },
+      isPoolAccount: {
+        type: Sequelize.BOOLEAN
+      },
+      isPoolTech: {
+        type: Sequelize.BOOLEAN
+      },
+      isOrgAdmin: {
+        type: Sequelize.BOOLEAN
+      },
+      isOrgAccount: {
+        type: Sequelize.BOOLEAN
+      },
+      isOrgTech: {
+        type: Sequelize.BOOLEAN
       },
       createdAt: {
         allowNull: false,
@@ -20,6 +38,13 @@ module.exports = {
         allowNull: false,
         type: Sequelize.DATE
       }
+    }, {
+      charset: 'utf8mb4',
+      collate: 'utf8mb4_unicode_ci',
+      name: {
+        singular: 'Role',
+        plural: 'Roles',
+      },
     });
   },
   async down(queryInterface, Sequelize) {

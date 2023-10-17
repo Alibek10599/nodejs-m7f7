@@ -9,8 +9,9 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      name: {
-        type: Sequelize.STRING
+      subAccName: {
+        type: Sequelize.STRING(45),
+        allowNull: false
       },
       orgId: {
         type: Sequelize.INTEGER,
@@ -20,26 +21,6 @@ module.exports = {
         },
         allowNull: false
       },
-      hashRate: {
-        type: Sequelize.BIGINT,
-        allowNull: true
-      },
-      workers: {
-        type: Sequelize.BIGINT,
-        allowNull: true
-      },
-      online: {
-        type: Sequelize.INTEGER,
-        allowNull: true
-      },
-      offline: {
-        type: Sequelize.INTEGER,
-        allowNull: true
-      },
-      isActive: {
-        type: Sequelize.BOOLEAN,
-        defaultValue: false
-      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE
@@ -48,6 +29,13 @@ module.exports = {
         allowNull: false,
         type: Sequelize.DATE
       }
+    }, {
+      charset: 'utf8mb4',
+      collate: 'utf8mb4_unicode_ci',
+      name: {
+        singular: 'SubAccount',
+        plural: 'SubAccounts',
+      },
     });
   },
   async down(queryInterface, Sequelize) {

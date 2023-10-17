@@ -20,8 +20,9 @@ module.exports = (sequelize, DataTypes) => {
   }
   User.init({
     userName: DataTypes.STRING,
-    hash: DataTypes.STRING,
     email: DataTypes.STRING,
+    iin: DataTypes.STRING,
+    egovToken: DataTypes.STRING,
     isConfirmed: DataTypes.BOOLEAN,
     isActive: DataTypes.BOOLEAN,
     isDeleted: DataTypes.BOOLEAN,
@@ -41,10 +42,9 @@ module.exports = (sequelize, DataTypes) => {
       }
     },
     resetPasswordToken: DataTypes.STRING,
-    twoFAEnabled: DataTypes.BOOLEAN,
-    twoFASecret: DataTypes.STRING,
-    isResident: DataTypes.BOOLEAN,
-    IIN: DataTypes.STRING
+    isActive2FA: DataTypes.BOOLEAN,
+    secret2FA: DataTypes.STRING,
+    iin: DataTypes.STRING
   }, {
     sequelize,
     modelName: 'User',
