@@ -34,18 +34,24 @@ const isAuth = async (req, res, next) => {
     }
 };
 
-const isAdmin = async (req, res, next) => {
+const checkUserRole = (allowedRoles) => async (req, res, next) => {
     try {
         const role = await Role.findByPk(req?.user?.roleId);
-
-        if (role.roleName === ROLES.ADMIN) {
+        if (allowedRoles.includes(role.roleName)) {
             next();
         } else {
             res.status(401).json("Unauthorized");
         }
-    } catch(error) {
-        res.status(500).json(error.message)
+    } catch (error) {
+        res.status(500).json(error.message);
     }
 };
 
-module.exports = { isAuth, isAdmin };
+const isPoolAdmin = checkUserRole([ROLES.POOLADMIN]);
+const isPoolAccount = checkUserRole([ROLES.POOLACCOUNT]);
+const isPoolTech = checkUserRole([ROLES.POOLTECH]);
+const isOrgAdmin = checkUserRole([ROLES.ORGADMIN]);
+const isOrgAccount = checkUserRole([ROLES.ORGACCOUNT]);
+const isOrgTech = checkUserRole([ROLES.ORGTECH]);
+
+module.exports = { isAuth, isPoolAdmin, isPoolAccount, isPoolTech, isOrgAdmin, isOrgAccount, isOrgTech };

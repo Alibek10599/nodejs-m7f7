@@ -13,9 +13,7 @@
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "express-handlebars": "^6.0.6",
-    "google-auth-library": "^8.7.0",
     "jsonwebtoken": "^8.5.1",
-    "mongoose": "^6.7.2",
     "multer": "^1.4.5-lts.1",
     "mysql2": "^3.6.1",
     "node-fetch": "^2.6.7",
@@ -30,7 +28,6 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-
     "db:migrate": "sequelize db:migrate",
     "db:migrate:undo": "sequelize db:migrate:undo",
     "db:seed": "sequelize db:seed:all",

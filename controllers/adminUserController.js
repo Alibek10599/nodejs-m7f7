@@ -3,11 +3,8 @@ const { User } = require("../models");
 module.exports = {
     GetUsers: async (req, res) => {
         try {
-            const users = await User.findAll([
-        ]);
-
-        return res.status(200).json(users);
-
+            const users = await User.findAll();
+            return res.status(200).json(users);
         } catch (error) {
             return res.status(500).send("Error: " + error.message);
         }

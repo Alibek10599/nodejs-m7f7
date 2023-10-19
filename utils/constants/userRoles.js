@@ -1,5 +1,9 @@
 module.exports = {
     USER: 'USER',
-    ADMIN: 'ADMIN',
-    POOL_ADMIN: 'POOL_ADMIN'
+    POOLADMIN: 'PoolAdmin',
+    POOLACCOUNT: 'PoolAccount',
+    POOLTECH: 'PoolTech',
+    ORGADMIN: 'OrgAdmin',
+    ORGACCOUNT: 'OrgAccount',
+    ORGTECH: 'OrgTech',
 }

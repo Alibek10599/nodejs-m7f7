@@ -4,11 +4,8 @@ const OrganizationValidation = require("../validators/OrganizationValidation");
 module.exports = {
     GetOrganizations: async (req, res) => {
         try {
-            const organizations = await Organization.findAll([
-        ]);
-
-        return res.status(200).json(organizations);
-
+            const organizations = await Organization.findAll();
+            return res.status(200).json(organizations);
         } catch (error) {
             return res.status(500).send("Error: " + error.message);
         }
@@ -76,6 +73,25 @@ module.exports = {
             }
 
             res.status(200).json(info);
+        } catch (error) {
+            return res.status(500).send("Error: " + error.message)
+        }
+    },
+    UpdateOrganization: async (req, res) => {
+        const { orgName, bin } = req.body;
+
+        try {
+            const organization = await Organization.findByPk(req.user.dataValues.orgId);
+
+            if (!organization) {
+                return res.status(400).json("Organization not found");
+            }
+
+            organization.orgName = orgName;
+            organization.bin = bin;
+            organization.save();
+            
+            return res.status(200).json(organization);
         } catch (error) {
             return res.status(500).send("Error: " + error.message)
         }
