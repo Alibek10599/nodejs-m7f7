@@ -1,9 +1,10 @@
-const express = require("express");
-const router = express.Router();
-const AdminUserController = require("../controllers/adminUserController");
-const { isAuth, isPoolAdmin } = require("../middlewares/checkAuth");
+const express = require('express');
 
-router.get("/", isAuth, isPoolAdmin, AdminUserController.GetUsers);
-router.post('/verify/:id', isAuth, isPoolAdmin, AdminUserController.verifyUser)
+const router = express.Router();
+const AdminUserController = require('../controllers/adminUserController');
+const { isAuth, isPoolAdmin } = require('../middlewares/checkAuth');
+
+router.get('/', isAuth, isPoolAdmin, AdminUserController.GetUsers);
+router.post('/verify/:id', isAuth, isPoolAdmin, AdminUserController.verifyUser);
 
 module.exports = router;

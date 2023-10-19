@@ -1,30 +1,30 @@
-const jwt = require("jsonwebtoken");
+const jwt = require('jsonwebtoken');
 
-//AccessToken
+// AccessToken
 exports.AccessToken = (user) => {
-    const tokenPayload = {
-        userId: user.id,
-        userName: user.userName,
-        isConfirmed: user.isConfirmed,
-        iin: user.iin,
-        email: user.email,
-        orgId: user.orgId,
-        roleId: user.roleId,
-        // image: user.image,
-    };
-
-    const token = jwt.sign(tokenPayload, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: "20m",
-    });
-
-    return token;
+  const tokenPayload = {
+    userId: user.id,
+    userName: user.userName,
+    isConfirmed: user.isConfirmed,
+    iin: user.iin,
+    email: user.email,
+    orgId: user.orgId,
+    roleId: user.roleId,
+    // image: user.image,
   };
 
-  //refreshToken
-  exports.RefreshToken = (userId) => {
-    const token = jwt.sign({ userId: userId }, process.env.REFRESH_TOKEN_SECRET, {
-        expiresIn: "7d",
-    });
+  const token = jwt.sign(tokenPayload, process.env.ACCESS_TOKEN_SECRET, {
+    expiresIn: '20m',
+  });
 
-    return token;
+  return token;
+};
+
+// refreshToken
+exports.RefreshToken = (userId) => {
+  const token = jwt.sign({ userId }, process.env.REFRESH_TOKEN_SECRET, {
+    expiresIn: '7d',
+  });
+
+  return token;
 };

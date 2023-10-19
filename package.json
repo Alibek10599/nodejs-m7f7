@@ -6,23 +6,36 @@
   "author": "alphasec",
   "license": "MIT",
   "dependencies": {
+    "@conga/annotations": "^1.0.5",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^1.37.3",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
+    "crypto-js": "^4.1.1",
+    "docblock-parser": "^1.0.0",
     "dotenv": "^16.0.3",
+    "eslint": "^8.51.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.28.1",
     "express": "^4.18.2",
     "express-handlebars": "^6.0.6",
-    "jsonwebtoken": "^8.5.1",
+    "express-validator": "^7.0.1",
+    "fs-extra": "^11.1.1",
+    "http-status-codes": "^2.3.0",
+    "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.5-lts.1",
     "mysql2": "^3.6.1",
     "node-fetch": "^2.6.7",
+    "nodejs-app": "^1.0.0",
     "nodemailer": "^6.9.4",
     "nodemailer-express-handlebars": "^6.1.0",
-    "nodemon": "^2.0.20",
+    "nodemon": "^3.0.1",
     "sequelize": "^6.33.0",
     "sharp": "^0.32.1",
+    "slugify": "^1.6.6",
     "stripe": "^12.16.0",
+    "twig": "^1.16.0",
+    "underscore": "^1.13.6",
     "validator": "^13.7.0"
   },
   "scripts": {
@@ -31,7 +44,8 @@
     "db:migrate": "sequelize db:migrate",
     "db:migrate:undo": "sequelize db:migrate:undo",
     "db:seed": "sequelize db:seed:all",
-    "db:seed:undo": "sequelize db:seed:all:undo"
+    "db:seed:undo": "sequelize db:seed:all:undo",
+    "lint": "eslint src"
   },
   "devDependencies": {
     "sequelize-cli": "^6.6.1"

@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{{ metadata.description }}</title>
+
+    <!-- Bootstrap CDN -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <style>
+        body {
+            padding-top: 70px;
+        }
+
+        tr.secured.user {
+          background-color: rgba(63, 191, 108, 0.2) !important;
+        }
+
+        tr.secured.moderator {
+          background-color: rgba(176, 191, 63, 0.2) !important;
+        }
+
+        tr.secured.admin {
+          background-color: rgba(255, 0, 0, 0.2) !important;
+        }
+
+        .param {
+          border: 1px solid lightgray;
+          border-radius: 2px;
+          padding: 2px;
+        }
+
+        .throttle.missing {
+          color: lightgray;
+          border: none;
+        }
+
+        .param.missing {
+          color: lightgray;
+          border: none;
+        }
+
+        .param.optional {
+          color: gray;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-default navbar-fixed-top">
+        <div class="container">
+            <span class="navbar-brand">{{ metadata.description }}</span>
+            <form class="navbar-form navbar-right">
+            <!-- Add search here -->
+            </form>
+        </div>
+    </nav>
+
+    <div class="container">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>Path</th>
+                <th>Parameters</th>
+                <th>Security</th>
+                <th>Method</th>
+                <th>Throttle</th>
+            </tr>
+            </thead>
+            <tbody>
+                {% for route in routes %}
+                    <tr class="{{ route.isSecured ? 'secured' : '' }} {{ route.allowed }}">
+                        <td class="col-md-6">{{ metadata.baseUrl }}{{ route.path }}</td>
+                        <td class="col-md-6">
+                            {% for param in route.params %}
+                                <span class="param {{ param.isOptional ? 'optional' : '' }}">{{ param.name }}{{ param.isOptional ? '*' : '' }}</span>
+                            {% else %}
+                                <span class="param missing">N/A</span>
+                            {% endfor %}
+                        </td>
+                        <td class="col-md-6 text-uppercase">
+                        {% if route.isSecured %}
+                            {{ route.allowed }}
+                        {% else %}
+                            *
+                        {% endif %}
+                        </td>
+                        <td class="col-md-6 text-uppercase">{{ route.method }}</td>
+                        <td class="col-md-6">
+                        {% if route.throttle %}
+                            <span>{{ route.throttle.burst }}r/{{ route.throttle.period }}</span>
+                        {% else %}
+                            <span class="throttle missing">N/A</span>
+                        {% endif %}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr class="info">
+                        <td colspan="2" class="text-center"><h4>No routes defined...</h4></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h2>Events</h2>
+        <p>
+            {% if events %}
+                <ul>
+                    {% for event in events %}
+                        <li>
+                            <b>{{ event.name }}</b> {{ event.description ? event.description : 'N/A' }}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <small class="info text-center">No events registered.</small>
+            {% endif %}
+        </p>
+    </div>
+</body>
+</html>
