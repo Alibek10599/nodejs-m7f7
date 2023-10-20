@@ -35,11 +35,11 @@ const ServiceFactory = require('./services/factory');
   const container = await Container.create();
 
   process.on('unhandledRejection', (reason) => {
-    container.logger.warn(reason);
+    console.warn(reason);
   });
 
   process.on('uncaughtException', (reason) => {
-    container.logger.error(reason);
+    console.error(reason);
   });
   const components = await ComponentFactory.fromContainer(container);
   const services = await ServiceFactory.fromContainer(container);

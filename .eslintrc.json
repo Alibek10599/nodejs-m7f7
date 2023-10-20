@@ -42,6 +42,7 @@
     "class-methods-use-this": "off",
     "guard-for-in": "off",
     "no-await-in-loop": "off",
-    "prefer-object-spread": "off"
+    "prefer-object-spread": "off",
+    "no-extraneous-dependencies": false
   }
 }

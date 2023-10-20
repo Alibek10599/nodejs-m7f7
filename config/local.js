@@ -1,11 +1,11 @@
 /* eslint-disable global-require */
-// const winston = require('winston');
-// const path = require('path');
+const winston = require('winston');
+const path = require('path');
 // const mailgunTransport = require('nodemailer-mailgun-transport');
 const Docs = require('../docs');
 const Env = require('../env');
 
-// require('winston-daily-rotate-file');
+require('winston-daily-rotate-file');
 
 
 module.exports = {
@@ -17,6 +17,19 @@ module.exports = {
           .setThrottleMatchers(require('./throttle'))
           .register(app, container);
       },
+    },
+  },
+  services: {
+    logger: {
+      level: 'debug',
+      transports: [
+        new (winston.transports.Console)(),
+        new (winston.transports.DailyRotateFile)({
+          filename: path.join(__dirname, '../logs'),
+          datePattern: '/yyyy/MM/dd.log',
+          createTree: true,
+        }),
+      ],
     },
   },
 };
