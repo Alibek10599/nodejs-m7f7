@@ -10,7 +10,7 @@ exports.AccessToken = (user) => {
     email: user.email,
     orgId: user.orgId,
     roleId: user.roleId,
-    // image: user.image,
+    secret2FA: user.secret2FA
   };
 
   const token = jwt.sign(tokenPayload, process.env.ACCESS_TOKEN_SECRET, {

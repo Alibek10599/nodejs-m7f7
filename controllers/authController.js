@@ -6,6 +6,8 @@ const SigninValidation = require('../validators/SigninValidation');
 const ResetValidation = require('../validators/ResetValidation');
 const sendMail = require('../utils/sendMail');
 const { AccessToken, RefreshToken } = require('../utils/jwt');
+const QRCode = require('qrcode');
+const speakeasy = require('speakeasy');
 
 const createActivationToken = (user) => jwt.sign(user, process.env.ACTIVATION_SECRET);
 
@@ -245,4 +247,92 @@ module.exports = {
     });
     res.json({ message: 'Cookie cleared' });
   },
+
+  generate2fa: async (req, res) => {
+    const secret = speakeasy.generateSecret({
+      length: 20, // Adjust the length of the secret as needed
+      name: 'Midas Pool', // app name
+      algorithm: 'sha1', // Use the SHA-1 algorithm
+      digits: 6, // Generate 8-digit OTP codes
+      totp: true, // Use TOTP (Time-Based One-Time Password) mode
+    });
+    
+    QRCode.toDataURL(secret.otpauth_url, (err, data_url) => {
+      res.json({ secret: secret.base32, qrcode: data_url });
+    });
+  },
+
+  verify2fa: async (req, res ) => {
+    const { secret, otp } = req.body;
+    const verified = speakeasy.totp.verify({
+      secret: secret,
+      encoding: 'base32',
+      token: otp,
+    });
+
+    if(!verified) {
+      return res.status(500).send('Wrong OTP');
+    }
+
+    const user = await User.findOne({
+      where: {
+        id: req.user.dataValues.id,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json('user not found');
+    }
+
+    user.secret2FA = secret;
+
+    await user.save();
+
+    const token = AccessToken(user);
+    const refreshToken = RefreshToken(user.id);
+
+    res.cookie('token', refreshToken, {
+      httpOnly: true, // accessible only by web server
+      secure: true, // https
+      sameSite: 'None', // cross-site cookie
+      maxAge: 7 * 24 * 60 * 60 * 1000, // cookie expiry: set to match rT
+    });
+    res.status(200).json(token);
+  },
+
+  delete2fa: async (req, res ) => {
+    const { secret, otp } = req.body;
+    const verified = speakeasy.totp.verify({
+      secret: secret,
+      encoding: 'base32',
+      token: otp,
+    });
+    if(!verified){
+      return res.status(500).send('Wrong OTP');
+    }
+    const user = await User.findOne({
+      where: {
+        id: req.user.dataValues.id,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json('user not found');
+    }
+
+    user.secret2FA = null;
+
+    await user.save();
+
+    const token = AccessToken(user);
+    const refreshToken = RefreshToken(user._id);
+
+    res.cookie('token', refreshToken, {
+      httpOnly: true, // accessible only by web server
+      secure: true, // https
+      sameSite: 'None', // cross-site cookie
+      maxAge: 7 * 24 * 60 * 60 * 1000, // cookie expiry: set to match rT
+    });
+    res.status(200).json(token);
+  }
 };
