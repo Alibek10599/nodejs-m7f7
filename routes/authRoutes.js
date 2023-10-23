@@ -20,7 +20,7 @@ router.post('/logout', AuthController.logout);
 
 router.get('/generate2fa', isAuth, AuthController.generate2fa);
 
-router.post('/verify2fa', isAuth, AuthController.verify2fa);
+router.post('/add2fa', isAuth, AuthController.add2fa);
 
 router.patch('/delete2fa', isAuth, AuthController.delete2fa);
 

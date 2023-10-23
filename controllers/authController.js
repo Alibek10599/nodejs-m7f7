@@ -8,6 +8,7 @@ const sendMail = require('../utils/sendMail');
 const { AccessToken, RefreshToken } = require('../utils/jwt');
 const QRCode = require('qrcode');
 const speakeasy = require('speakeasy');
+const TwoFAValidation = require('../validators/TwoFAValidation');
 
 const createActivationToken = (user) => jwt.sign(user, process.env.ACTIVATION_SECRET);
 
@@ -262,16 +263,13 @@ module.exports = {
     });
   },
 
-  verify2fa: async (req, res ) => {
-    const { secret, otp } = req.body;
-    const verified = speakeasy.totp.verify({
-      secret: secret,
-      encoding: 'base32',
-      token: otp,
-    });
+  add2fa: async (req, res ) => {
+    const { secret } = req.body;
+    
+    const { errors, isValid } = TwoFAValidation(req.body);
 
-    if(!verified) {
-      return res.status(500).send('Wrong OTP');
+    if(!isValid) {
+      return res.status(500).json(errors);
     }
 
     const user = await User.findOne({
@@ -301,15 +299,12 @@ module.exports = {
   },
 
   delete2fa: async (req, res ) => {
-    const { secret, otp } = req.body;
-    const verified = speakeasy.totp.verify({
-      secret: secret,
-      encoding: 'base32',
-      token: otp,
-    });
-    if(!verified){
-      return res.status(500).send('Wrong OTP');
+    const { errors, isValid } = TwoFAValidation(req.body);
+
+    if(!isValid) {
+      return res.status(500).json(errors);
     }
+
     const user = await User.findOne({
       where: {
         id: req.user.dataValues.id,
