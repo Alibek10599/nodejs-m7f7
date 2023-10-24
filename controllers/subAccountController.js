@@ -1,4 +1,4 @@
-const { Organization, SubAccount } = require('../models');
+const { Organization, SubAccount, Log } = require('../models');
 const StratumService = require('../services/stratum/stratum.service');
 const SubAccountValidation = require('../validators/SubAccountValidation');
 
@@ -31,6 +31,14 @@ module.exports = {
           subAccName: name,
           orgId: exisitingOrganization.id,
         });
+
+        await Log.create({
+          userId: req.user.dataValues.id,
+          action: 'create',
+          controller: 'subAccount',
+          description: req.user.dataValues.userName + ' create: ' + exisitingSubAcc.subAccName
+        });
+
         res.status(201).json({
           success: true,
           message: 'Создание СубСчета прошло успешно',
@@ -53,6 +61,13 @@ module.exports = {
       subAccount.isActive = true;
       subAccount.save();
 
+      await Log.create({
+        userId: req.user.dataValues.id,
+        action: 'update',
+        controller: 'subAccount',
+        description: req.user.dataValues.userName + ' activate: ' + subAccount.subAccName
+      });
+
       return res.status(200).json(subAccount);
     } catch (error) {
       res.status(500).send(`Error: ${ error.message }`);
@@ -65,6 +80,13 @@ module.exports = {
 
       subAccount.isActive = false;
       subAccount.save();
+
+      await Log.create({
+        userId: req.user.dataValues.id,
+        action: 'update',
+        controller: 'subAccount',
+        description: req.user.dataValues.userName + ' deactivate: ' + subAccount.subAccName
+      });
 
       return res.status(200).json(subAccount);
     } catch (error) {

@@ -8,6 +8,7 @@ const userRoutes = require('./routes/userRoutes');
 const orgRoutes = require('./routes/orgRoutes');
 const subAccountRoutes = require('./routes/subAccountRoutes');
 const walletRoutes = require('./routes/walletRoutes');
+const logRoutes = require('./routes/logRoutes');
 
 require('dotenv').config();
 
@@ -31,6 +32,7 @@ const ServiceFactory = require('./services/factory');
   app.use('/api/v1/organization', orgRoutes);
   app.use('/api/v1/subaccount', subAccountRoutes);
   app.use('/api/v1/wallet', walletRoutes);
+  app.use('/api/v1/log', logRoutes);
 
   const container = await Container.create();
 

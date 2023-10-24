@@ -21,12 +21,12 @@ module.exports = (sequelize, DataTypes) => {
       },
       allowNull: false
     },
-    type: DataTypes.STRING,
     action: DataTypes.STRING,
     controller: DataTypes.STRING,
     description: DataTypes.TEXT
   }, {
     sequelize,
+    updatedAt: false,
     modelName: 'Log',
   });
   return Log;

@@ -1,11 +1,10 @@
-const { Organization, User } = require('../models');
+const { Organization, User, Log } = require('../models');
 const OrganizationValidation = require('../validators/OrganizationValidation');
 
 module.exports = {
   GetOrganizations: async (req, res) => {
     try {
-      const organizations = await Organization.findAll([
-      ]);
+      const organizations = await Organization.findAll();
 
       return res.status(200).json(organizations);
     } catch (error) {
@@ -45,6 +44,13 @@ module.exports = {
       user.orgId = exisitingOrganization.id;
       await user.save();
 
+      await Log.create({
+        userId: req.user.dataValues.id,
+        action: 'create',
+        controller: 'organization',
+        description: req.user.dataValues.userName + ' create: ' + exisitingOrganization.orgName
+      });
+
       res.status(201).json({
         success: true,
         message: `please wait for activation of your Organization:- ${ name }.`,
@@ -59,6 +65,13 @@ module.exports = {
       const organization = await Organization.findByPk(id);
       organization.isActive = true;
       organization.save();
+
+      await Log.create({
+        userId: req.user.dataValues.id,
+        action: 'update',
+        controller: 'organization',
+        description: req.user.dataValues.userName + ' activate: ' + organization.orgName
+      });
 
       return res.status(200).json(organization);
     } catch (error) {
@@ -91,6 +104,13 @@ module.exports = {
       organization.orgName = orgName;
       organization.bin = bin;
       organization.save();
+
+      await Log.create({
+        userId: req.user.dataValues.id,
+        action: 'update',
+        controller: 'organization',
+        description: req.user.dataValues.userName + ' update: ' + organization.orgName + ', with values: ' + orgName + ' and ' + bin
+      });
 
       return res.status(200).json(organization);
     } catch (error) {

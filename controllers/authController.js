@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { User } = require('../models');
+const { User, Log } = require('../models');
 const SignupValidation = require('../validators/SignupValidation');
 const SigninValidation = require('../validators/SigninValidation');
 const ResetValidation = require('../validators/ResetValidation');
@@ -285,6 +285,13 @@ module.exports = {
     user.secret2FA = secret;
 
     await user.save();
+    
+    await Log.create({
+      userId: req.user.dataValues.id,
+      action: 'update',
+      controller: 'auth',
+      description: req.user.dataValues.userName + ' add 2FA'
+    });
 
     const token = AccessToken(user);
     const refreshToken = RefreshToken(user.id);
@@ -318,6 +325,13 @@ module.exports = {
     user.secret2FA = null;
 
     await user.save();
+
+    await Log.create({
+      userId: req.user.dataValues.id,
+      action: 'delete',
+      controller: 'auth',
+      description: req.user.dataValues.userName + ' delete 2FA'
+    });
 
     const token = AccessToken(user);
     const refreshToken = RefreshToken(user._id);
