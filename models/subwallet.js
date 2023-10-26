@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       SubWallet.belongsTo(models.SubAccount, {
         as: 'subAccount',
-        foreignKey: 'accountId',
+        foreignKey: 'subAccountId',
         targetKey: 'id'
       })
       SubWallet.belongsTo(models.Wallet, {
@@ -23,7 +23,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   SubWallet.init({
-    accountId: {
+    subAccountId: {
       type: DataTypes.INTEGER,
       references: {
         model: 'SubAccount',
