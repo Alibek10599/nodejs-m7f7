@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       SubStratum.belongsTo(models.Stratum, {
-        as: 'stratumId',
+        as: 'stratum',
         foreignKey: 'stratumId',
         targetKey: 'id'
       })
