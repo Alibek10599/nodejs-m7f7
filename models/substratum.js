@@ -15,11 +15,16 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'stratumId',
         targetKey: 'id'
       })
+      SubStratum.belongsTo(models.SubAccount, {
+        as: 'subAccount',
+        foreignKey: 'subAccountId',
+        targetKey: 'id'
+      })
     }
   }
   SubStratum.init({
-    subAccountId: DataTypes.NUMBER,
-    stratumId: DataTypes.NUMBER,
+    subAccountId: DataTypes.INTEGER,
+    stratumId: DataTypes.INTEGER,
     isDeleted: DataTypes.BOOLEAN,
     isActive: DataTypes.BOOLEAN
   }, {

@@ -18,7 +18,7 @@ module.exports = (sequelize, DataTypes) => {
   }
   Stratum.init({
     strCaption: DataTypes.STRING,
-    intPort: DataTypes.NUMBER,
+    intPort: DataTypes.INTEGER,
     isActive: DataTypes.BOOLEAN
   }, {
     sequelize,

@@ -20,6 +20,11 @@ module.exports = (sequelize, DataTypes) => {
         as: 'subWallets',
         foreignKey: 'walletId',
         targetKey: 'id'
+      }),
+      SubAccount.hasOne(models.SubStratum, {
+        foreignKey: 'stratumId',
+        as: 'stratum',
+        sourceKey: 'id'
       })
     }
   }
