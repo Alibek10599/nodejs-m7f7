@@ -1,4 +1,4 @@
-const { Wallet, Log } = require('../models');
+const { Wallet, Log, SubWallet } = require('../models');
 
 module.exports = {
   CreateWallet: async (req, res) => {
@@ -59,14 +59,15 @@ module.exports = {
   },
   GetWallets: async (req, res) => {
     try {
-      // const wallets = await Wallet.findAll({
-      //     where: {
-      //         orgId: req.user.dataValues.orgId
-      //     }
-      // })
+      const wallets = await SubWallet.findAll({
+        where: {
+          subAccountId: req.query.id
+        }
+      });
 
-      // return res.status(200).json(wallets);
+      return res.status(200).json(wallets);
     } catch (error) {
+      console.log(error);
       res.status(500).send(`Error: ${ error.message }`);
     }
   },

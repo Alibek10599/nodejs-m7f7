@@ -106,4 +106,17 @@ module.exports = {
       res.status(500).send(`Error: ${ error.message }`);
     }
   },
+  GetInfo: async (req, res) => {
+    try {
+      const subAccount = await SubAccount.findByPk(req.query.id);
+
+      const info = {
+        subAccount,
+      };
+      
+      res.status(200).json(info);
+    } catch (error) {
+      return res.status(500).send(`Error: ${ error.message }`);
+    }
+  },
 };

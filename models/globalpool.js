@@ -14,7 +14,10 @@ module.exports = (sequelize, DataTypes) => {
     password: DataTypes.STRING,
     token: DataTypes.STRING,
     tokenExpiredDate: DataTypes.DATE,
-    isActive: DataTypes.BOOLEAN
+    isActive: DataTypes.BOOLEAN,
+    globalFees: DataTypes.DECIMAL,
+    apiSecret: DataTypes.STRING,
+    apiKey: DataTypes.STRING
   }, {
     sequelize,
     modelName: 'GlobalPool',
