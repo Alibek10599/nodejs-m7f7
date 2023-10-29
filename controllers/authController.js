@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { User, Log } = require('../models');
+const { User, Log, Role } = require('../models');
 const SignupValidation = require('../validators/SignupValidation');
 const SigninValidation = require('../validators/SigninValidation');
 const ResetValidation = require('../validators/ResetValidation');
@@ -103,14 +103,23 @@ module.exports = {
 
   //  ------------------------ //signin method to add a new user//------------------------- //
   signin: async (req, res) => {
-    const { email, password } = req.body;
+    const { email, password, otp } = req.body;
     const { errors, isValid } = SigninValidation(req.body);
 
     try {
       if (!isValid) {
         return res.status(400).json(errors);
       }
-      const userExist = await User.findOne({ where: { email } });
+      const userExist = await User.findOne({
+        where: { email },
+        include: [
+          {
+            model: Role,
+            attributes: ['roleName'],
+            as: 'role'
+          }
+        ]
+      });
       if (!userExist) {
         errors.email = 'Email does not exist ! please Enter the right Email or You can make account';
         return res.status(404).json(errors);
@@ -123,6 +132,19 @@ module.exports = {
       if (!userExist.dataValues.isConfirmed) {
         return res.status(401).json('Please Verify Your Email and Try again');
       }
+
+      if (userExist.dataValues.secret2FA) {
+        if(!otp){
+          return res.status(400).json('Please Verify 2FA');
+        } else {
+          const { errors: errors2FA, isValid: isValid2FA } = TwoFAValidation({secret: userExist.dataValues.secret2FA, otp: otp});
+
+          if(!isValid2FA) {
+            return res.status(400).json({otp: errors2FA.otp});
+          }
+        }
+      }
+
       const token = AccessToken(userExist);
       const refreshToken = RefreshToken(userExist._id);
       // Create secure cookie with refresh token

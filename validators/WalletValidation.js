@@ -1,7 +1,7 @@
 const validator = require("validator");
 const isEmpty = require("./IsEmpty");
 
-module.exports = function SignupValidation(data) {
+module.exports = function WalletValidation(data) {
     let regex = /^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$/;
     let errors = {};
     // Convert empty fields to an empty string so we can use validator
