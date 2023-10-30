@@ -8,35 +8,36 @@ module.exports = {
       const stratumService = new StratumService();
       const { name } = req.body;
       const { errors, isValid } = SubAccountValidation(req.body);
+
       if (!isValid) {
         return res.status(400).json(errors);
       }
+
       let exisitingSubAcc = await SubAccount.findOne({
         where: {
           subAccName: name,
         },
       });
+
       if (exisitingSubAcc) {
         errors.name = 'SubAccount with given name already Exist';
         return res.status(404).json(errors);
       }
+      
       const exisitingOrganization = await Organization.findOne({
         where: {
           id: req.user.dataValues.orgId,
         },
       });
-      const { isSuccess } = await stratumService.createSubAccount();
-      if (isSuccess) {
-        exisitingSubAcc = await SubAccount.create({
-          subAccName: name,
-          orgId: exisitingOrganization.id,
-        });
 
+      const { subAccount, isSuccess } = await stratumService.createSubAccount(name, exisitingOrganization);
+
+      if (isSuccess) {
         await Log.create({
           userId: req.user.dataValues.id,
           action: 'create',
           controller: 'subAccount',
-          description: req.user.dataValues.userName + ' create: ' + exisitingSubAcc.subAccName
+          description: req.user.dataValues.userName + ' create: ' + subAccount.subAccName
         });
 
         res.status(201).json({
@@ -44,6 +45,12 @@ module.exports = {
           message: 'Создание СубСчета прошло успешно',
         });
       } else {
+        await Log.create({
+          userId: req.user.dataValues.id,
+          action: 'create',
+          controller: 'subAccount',
+          description: req.user.dataValues.userName + ' failed on: ' + 'creating subAccount.'
+        });
         res.status(403).json({
           success: false,
           message: 'Создание СубСчета провалилось',

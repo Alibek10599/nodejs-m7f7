@@ -16,6 +16,8 @@ const Container = require('./container');
 const ComponentFactory = require('./component/factory');
 const ServiceFactory = require('./services/factory');
 
+const cron = require('node-cron');
+
 (async () => {
   const app = express();
   const PORT = process.env.PORT || 3000;
@@ -43,6 +45,11 @@ const ServiceFactory = require('./services/factory');
   process.on('uncaughtException', (reason) => {
     console.error(reason);
   });
+
+  cron.schedule('* * * * *', () => {
+    console.log('########## matching active subAccount every minute');
+  });
+
   const components = await ComponentFactory.fromContainer(container);
   const services = await ServiceFactory.fromContainer(container);
   const { beforeLoad, afterLoad } = container.$config.$express.hook || {};

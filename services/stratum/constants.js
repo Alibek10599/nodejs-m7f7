@@ -1,0 +1,9 @@
+const STRATUM_SERVICE_STATE = {
+    ENABLED: 'ENABLED',
+    DISABLED: 'DISABLED',
+    PENDING: 'PENDING'
+}
+
+module.exports = {
+    STRATUM_SERVICE_STATE
+}
