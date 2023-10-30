@@ -25,7 +25,7 @@ module.exports = (sequelize, DataTypes) => {
   Organization.init({
     orgName: DataTypes.STRING,
     bin: DataTypes.STRING,
-    feesRate: DataTypes.DOUBLE,
+    feesRate: DataTypes.DECIMAL(5,2),
     isRequestedApprove: DataTypes.BOOLEAN,
     isActive: DataTypes.BOOLEAN,
     isDeleted: DataTypes.BOOLEAN
