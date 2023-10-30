@@ -1,4 +1,4 @@
-const { Organization, SubAccount, Log } = require('../models');
+const { Organization, SubAccount, SubUser, Log, Role, User } = require('../models');
 const StratumService = require('../services/stratum/stratum.service');
 const SubAccountValidation = require('../validators/SubAccountValidation');
 
@@ -110,12 +110,32 @@ module.exports = {
     try {
       const subAccount = await SubAccount.findByPk(req.query.id);
 
+      const subUsers = await SubUser.findAll({
+        where: {
+          SubAccountId: req.query.id
+        },
+        include: [
+          {
+            model: User,
+            attributes: ['email', 'isConfirmed'],
+            as: 'user',
+            include: [{
+              model: Role,
+              attributes: ['roleName'],
+              as: 'role'
+            }]
+          }
+        ]
+      })
+
       const info = {
         subAccount,
+        subUsers
       };
       
       res.status(200).json(info);
     } catch (error) {
+      console.log(error);
       return res.status(500).send(`Error: ${ error.message }`);
     }
   },

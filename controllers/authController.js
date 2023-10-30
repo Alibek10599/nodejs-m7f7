@@ -8,6 +8,7 @@ const sendMail = require('../utils/sendMail');
 const { AccessToken, RefreshToken } = require('../utils/jwt');
 const QRCode = require('qrcode');
 const speakeasy = require('speakeasy');
+const requestIp = require('request-ip');
 const TwoFAValidation = require('../validators/TwoFAValidation');
 
 const createActivationToken = (user) => jwt.sign(user, process.env.ACTIVATION_SECRET);
@@ -97,6 +98,7 @@ module.exports = {
       });
       res.status(200).json(token);
     } catch (error) {
+      console.log(error);
       return res.status(500).send(`Error: ${ error.message }`);
     }
   },
@@ -105,6 +107,7 @@ module.exports = {
   signin: async (req, res) => {
     const { email, password, otp } = req.body;
     const { errors, isValid } = SigninValidation(req.body);
+    const clientIp = requestIp.getClientIp(req)
 
     try {
       if (!isValid) {
@@ -144,6 +147,14 @@ module.exports = {
           }
         }
       }
+
+      await sendMail(
+        userExist.email,
+        clientIp,
+        userExist.userName,
+        'Login Attempted',
+        'loginattempt',
+      );
 
       const token = AccessToken(userExist);
       const refreshToken = RefreshToken(userExist._id);
@@ -233,6 +244,7 @@ module.exports = {
       const token = AccessToken(user);
       return res.status(200).json(token);
     } catch (error) {
+      console.log(error);
       return res.status(500).send(`Error: ${ error.message }`);
     }
   },

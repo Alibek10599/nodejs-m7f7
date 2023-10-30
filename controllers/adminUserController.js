@@ -1,5 +1,9 @@
-const { User, Log, SubUser } = require('../models');
+const { User, Log, Role, SubUser } = require('../models');
+const jwt = require('jsonwebtoken');
+const sendMail = require('../utils/sendMail');
 const UserValidation = require('../validators/UserValidation');
+
+const createActivationToken = (user) => jwt.sign(user, process.env.ACTIVATION_SECRET);
 
 module.exports = {
   GetUsers: async (req, res) => {
@@ -32,11 +36,11 @@ module.exports = {
       return res.status(500).send(`Error: ${ error.message }`);
     }
   },
-// <-- to finish
+  
   inviteUser: async (req, res) => {
-    const { email, roleId, subAccountId, orgId } = req.body;
+    console.log(req.user);
+    const { email, roleValue, subAccountId, orgId } = req.body;
     const { errors, isValid } = UserValidation(req.body);
-
     try{
       if (!isValid) {
         return res.status(400).json(errors);
@@ -53,14 +57,22 @@ module.exports = {
         return res.status(404).json(errors);
       }
 
+      let role = await Role.findOne({
+        where: {
+          roleName: roleValue
+        }
+      })
+
       exisitingUser = await User.create({
         email,
-        roleId,
-        orgId
+        userName: email,
+        roleId: role.id,
+        orgId,
+        password: 'default'
       });
 
       const user = {
-        userId: exisitingUser._id,
+        userId: exisitingUser.id,
         email: exisitingUser.email,
       };
         
@@ -68,21 +80,30 @@ module.exports = {
         subAccountId,
         userId: user.userId
       });
-
+      
       const activationToken = createActivationToken(user);
-      const activationUrl = `${ process.env.FRONTEND_URL }/emailverification?activationToken=${ activationToken }`;
+      const activationUrl = `${ process.env.FRONTEND_URL }/acceptinvitation?activationToken=${ activationToken }`;
       await sendMail(
         exisitingUser.email,
         activationUrl,
         exisitingUser.userName,
-        'Email Verification',
-        'verificationmail',
+        'Accept Invitation',
+        'acceptinvitation',
       );
+
+      await Log.create({
+        userId: req.user.dataValues.id,
+        action: 'update',
+        controller: 'adminUser',
+        description: req.user.dataValues.userName + ' invite: ' + user.email  + ' to SubAccountId: ' + subAccountId
+      });
+
       res.status(201).json({
         success: true,
-        message: `please check your email:- ${ exisitingUser.email } to activate your account!`,
+        message: `please wait your invited user to activate his account!`,
       });
     } catch (error) {
+      console.log(error);
       return res.status(500).send(`Error: ${ error.message }`);
     }
   }
