@@ -34,11 +34,11 @@ class StratumService extends AbstractService {
       });
       const btcAgentIsActive = await this.checkBTCAgentHealth()
       if(!btcAgentIsActive) await this.startBTCAgent();
+      console.info(`Sub account created with name: ${ subAccountName }`);
+      return { subAccount, isSuccess: true };
     } catch (error) {
       return { isSuccess: false, error };
     }
-    console.info(`Sub account created with name: ${ subAccountName }`);
-    return { isSuccess: true };
   }
 
   async createStrata(subAccountId){

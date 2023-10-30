@@ -7,6 +7,7 @@
   "license": "MIT",
   "dependencies": {
     "@conga/annotations": "^1.0.5",
+    "axios": "^1.6.0",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^1.37.3",
     "cookie-parser": "^1.4.6",
