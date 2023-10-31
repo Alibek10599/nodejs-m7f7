@@ -6,7 +6,7 @@ module.exports = {
     await queryInterface.bulkInsert('GlobalPools', [
       {
         name: 'demoSbiPool',
-        login: 'mailto:kairhat@gmail.com',
+        login: 'kairhat@gmail.com',
         password: '2KCj68JCAjHrpb@',
         token: '',
         isActive: true,

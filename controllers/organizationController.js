@@ -117,4 +117,31 @@ module.exports = {
       return res.status(500).send(`Error: ${ error.message }`);
     }
   },
+  ApproveOrganization: async (req, res) => {
+    const {feesRate, orgId} = req.body;
+    
+    try {
+      const organization = await Organization.findByPk(orgId);
+
+      if (!organization) {
+        return res.status(400).json('Organization not found');
+      }
+
+      organization.feesRate = feesRate;
+      organization.isRequestedApprove = true;
+      organization.save();
+      
+      await Log.create({
+        userId: req.user.dataValues.id,
+        action: 'update',
+        controller: 'organization',
+        description: req.user.dataValues.userName + ' approved: ' + organization.orgName + ', with value of FeesRate: ' + feesRate
+      });
+
+      return res.status(200).json(organization);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send(`Error: ${ error.message }`);
+    }
+  }
 };

@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { User, Log, Role } = require('../models');
+const { Organization, User, Log, Role } = require('../models');
 const SignupValidation = require('../validators/SignupValidation');
 const SigninValidation = require('../validators/SigninValidation');
 const ResetValidation = require('../validators/ResetValidation');
@@ -134,6 +134,14 @@ module.exports = {
       }
       if (!userExist.dataValues.isConfirmed) {
         return res.status(401).json('Please Verify Your Email and Try again');
+      }
+
+      const orgExist = await Organization.findByPk(userExist.orgId);
+
+      if(orgExist){
+        if (!orgExist.dataValues.isRequestedApprove) {
+          return res.status(401).json('Please Wait Your Organization Verification');
+        }
       }
 
       if (userExist.dataValues.secret2FA) {
