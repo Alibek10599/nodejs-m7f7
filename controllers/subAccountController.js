@@ -46,6 +46,11 @@ module.exports = {
           description: req.user.dataValues.userName + ' create: ' + subAccount.subAccName
         });
 
+        await SubUser.create({
+          subAccountId: subAccount.id,
+          userId: req.user.dataValues.id
+        });
+
         res.status(201).json({
           success: true,
           message: 'Создание СубСчета прошло успешно',

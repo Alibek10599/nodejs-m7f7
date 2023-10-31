@@ -9,6 +9,7 @@ const orgRoutes = require('./routes/orgRoutes');
 const subAccountRoutes = require('./routes/subAccountRoutes');
 const walletRoutes = require('./routes/walletRoutes');
 const logRoutes = require('./routes/logRoutes');
+const globalPoolRoutes = require('./routes/globalPoolRoutes');
 
 require('dotenv').config();
 
@@ -35,6 +36,7 @@ const cron = require('node-cron');
   app.use('/api/v1/subaccount', subAccountRoutes);
   app.use('/api/v1/wallet', walletRoutes);
   app.use('/api/v1/log', logRoutes);
+  app.use('/api/v1/globalPool', globalPoolRoutes)
 
   const container = await Container.create();
 
