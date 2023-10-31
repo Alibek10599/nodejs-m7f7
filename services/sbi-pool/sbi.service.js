@@ -51,7 +51,9 @@ class SbiService {
         
     }
 
-    subAccount(){}
+    getSubAccounts(){
+        return this.client.get('api/external/v1/subaccounts')
+    }
 
     getCollector(query){
         return this.client.get('/')

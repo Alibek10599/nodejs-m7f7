@@ -9,5 +9,6 @@ router.get('/', isAuth, SubAccountController.GetSubAccounts);
 router.get('/getinfo', isAuth, SubAccountController.GetInfo);
 router.post('/activate/:id', isAuth, isPoolAdmin, SubAccountController.ActivateSubAccount);
 router.post('/deactivate/:id', isAuth, isPoolAdmin, SubAccountController.DeactivateSubAccount);
+router.get('/sbi', isAuth, SubAccountController.GetSBISubAccounts);
 
 module.exports = router;

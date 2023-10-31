@@ -26,16 +26,12 @@ class StratumService extends AbstractService {
      * @param{string} subAccountName
      * @returns {Object}
      */
-  async createSubAccount(subAccountName, exisitingOrganization) {
+  async createSubAccount(subAccountName) {
     try {
-      const subAccount = await SubAccount.create({
-        subAccName: subAccountName,
-        orgId: exisitingOrganization.id,
-      });
       const btcAgentIsActive = await this.checkBTCAgentHealth()
       if(!btcAgentIsActive) await this.startBTCAgent();
       console.info(`Sub account created with name: ${ subAccountName }`);
-      return { subAccount, isSuccess: true };
+      return { isSuccess: true };
     } catch (error) {
       return { isSuccess: false, error };
     }

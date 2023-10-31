@@ -34,9 +34,14 @@ module.exports = {
         },
       });
 
-      const { subAccount, isSuccess } = await stratumService.createSubAccount(name, exisitingOrganization);
+      const response = await sbiService.createCollector(name, exisitingOrganization.dataValues)
 
-      const response = await sbiService.createCollector(subAccount.dataValues.subAccName, exisitingOrganization.dataValues)
+      const subAccount = await SubAccount.create({
+        subAccName: name,
+        orgId: exisitingOrganization.id,
+      });
+
+      const { isSuccess } = await stratumService.createSubAccount(name, exisitingOrganization);
 
       if (isSuccess) {
         await Log.create({
@@ -152,4 +157,13 @@ module.exports = {
       return res.status(500).send(`Error: ${ error.message }`);
     }
   },
+  GetSBISubAccounts: async (req, res) => {
+    try {
+      const { data: sbiSubAccount } = await sbiService.getSubAccounts()
+      res.status(200).json(sbiSubAccount)
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send(`Error: ${ error.message }`);
+    }
+  }
 };
