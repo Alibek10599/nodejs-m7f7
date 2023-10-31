@@ -30,6 +30,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'SubStratum',
+    freezeTableName: true
   });
   return SubStratum;
 };

@@ -32,6 +32,7 @@
     "nodemailer": "^6.9.4",
     "nodemailer-express-handlebars": "^6.1.0",
     "nodemon": "^3.0.1",
+    "ps-node": "^0.1.6",
     "qrcode": "^1.5.3",
     "request-ip": "^3.3.0",
     "sequelize": "^6.33.0",
@@ -52,9 +53,11 @@
     "db:migrate:undo": "sequelize db:migrate:undo",
     "db:seed": "sequelize db:seed:all",
     "db:seed:undo": "sequelize db:seed:all:undo",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "test": "jest"
   },
   "devDependencies": {
+    "jest": "^29.7.0",
     "sequelize-cli": "^6.6.1"
   }
 }

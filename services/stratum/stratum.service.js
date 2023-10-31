@@ -3,11 +3,18 @@ const AbstractService = require('../abstract-service');
 const fs = require('fs');
 const path = require('path')
 
+const util = require('util');
+const fsPromises = {
+  mkdir: util.promisify(fs.mkdir),
+  copyFile: util.promisify(fs.copyFile),
+  writeFile: util.promisify(fs.writeFile),
+};
+
 const { Stratum, SubStratum, SubAccount } = require('../../models');
 const { STRATUM_SERVICE_STATE } = require('./constants');
 
 // TODO: rename conventions of templates and files to be copied
-// const binaryPath = path.resolve(__dirname, '../../btcagent/btcagent'); 
+const binaryPath = path.resolve(__dirname, '../../btcagent/btcagent'); 
 // const configFile = path.resolve(__dirname, '../../btcagent/agent_conf.json'); // Full path to agent_conf.json
 // const logFile = path.resolve(__dirname, '../../btcagent/log'); // Full path to log file
 
@@ -18,7 +25,7 @@ class StratumService extends AbstractService {
   constructor() {
     super();
     this.state = STRATUM_SERVICE_STATE.ENABLED
-    this.btcAgentProcess = null; // инстанс процесса btcagent
+    this.btcAgentProcess = []; // инстансы процессов btcagent
   }
 
   /**
@@ -26,74 +33,85 @@ class StratumService extends AbstractService {
      * @param{string} subAccountName
      * @returns {Object}
      */
-  async createSubAccount(subAccountName) {
+  async createSubAccount(subAccount) {
     try {
+      await this.createStrata(subAccount)
       const btcAgentIsActive = await this.checkBTCAgentHealth()
-      if(!btcAgentIsActive) await this.startBTCAgent();
-      console.info(`Sub account created with name: ${ subAccountName }`);
+      console.info(`Sub account created with name: ${ subAccount.subAccName }`);
       return { isSuccess: true };
     } catch (error) {
       return { isSuccess: false, error };
     }
   }
 
-  async createStrata(subAccountId){
+  async createStrata(subAccount){
     const lastStratum = await Stratum.findOne({
       order: [['createdAt', 'DESC']]
     })
 
     const stratum = await Stratum.create({
-      strCaption: `btcagent_${lastStratum ? lastStratum.intPort : 3333}`
+      strCaption: `btcagent_${lastStratum ? lastStratum.intPort + 1 : 3333}`,
+      intPort: lastStratum ? lastStratum.intPort + 1 : 3333,
+      isActive: true
     })
 
     const subStratum = await SubStratum.create({
-      subAccountId,
+      subAccountId: subAccount.id,
       stratumId: stratum.id,
       isActive: true
     })
 
-    await this.createBTCAgent()
+    // await this.createBTCAgent(stratum, subAccount.subAccName)
     return { isSuccess: true }
   }
 
-  async createBTCAgent (){
-    agentConf.port = agentConf.port + 1
-    const newDirectory = path.resolve(__dirname, `../../btcagent/btcagent_${uniquePortNumber}`);
-    fs.mkdirSync(newDirectory);
+async createBTCAgent(stratum, subAccountName) {
+  try {
+    const newDirectory = path.resolve(__dirname, `../../btcagent/btcagent_${stratum.intPort}`);
+    await fsPromises.mkdir(newDirectory);
 
     // Copy btcagent
-    fs.copyFileSync(binaryPath, path.join(newDirectory, 'btcagent'));
+    await fsPromises.copyFile(binaryPath, path.join(newDirectory, `btcagent_${stratum.intPort}`));
 
     // Copy and modify agent_conf.json if needed
-    const newAgentConfPath = path.join(newDirectory, `agent_conf${uniquePortNumber}.json`);
-    fs.copyFileSync(agentConfPath, newAgentConfPath);
+    const newAgentConfPath = path.join(newDirectory, `agent_conf_${stratum.intPort}.json`);
 
-    // Optionally, modify parameters in newAgentConfPath
-    const newAgentConf = require(newAgentConfPath);
-    newAgentConf.pool = []; // Modify as needed
-    fs.writeFileSync(newAgentConfPath, JSON.stringify(newAgentConf, null, 2));
-  
+    agentConf.agent_listen_port = stratum.intPort;
+    agentConf.pools = [
+      ["us.ss.btc.com", 1800, subAccountName],
+      ["us.ss.btc.com", 443, subAccountName],
+      ["us.ss.btc.com", stratum.intPort, subAccountName]
+    ]; // Modify as needed
+
+    await fsPromises.writeFile(newAgentConfPath, JSON.stringify(agentConf, null, 2));
+    
+    return { isSuccess: true };
+  } catch (err) {
+    console.error('error is: ', err);
+    return { isSuccess: false, error: err };
   }
+}
 
-  async startBTCAgent(name, configName) {
-    const binaryPath = path.resolve(__dirname, `../../btcagent/btcagent`); 
-    const configFile = path.resolve(__dirname, '../../btcagent/agent_conf.json'); // Full path to agent_conf.json
-    const logFile = path.resolve(__dirname, '../../btcagent/log'); // Full path to log file
+
+  async startBTCAgent(stratum) {
+    const binaryPath = path.resolve(__dirname, `../../btcagent/btcagent_${stratum.intPort}/btcagent_${stratum.intPort}`); 
+    const configFile = path.resolve(__dirname, `../../btcagent/btcagent_${stratum.intPort}/agent_conf_${stratum.intPort}.json`); // Full path to agent_conf.json
+    const logFile = path.resolve(__dirname, `../../btcagent/btcagent_${stratum.intPort}/log_${stratum.intPort}`); // Full path to log file
 
     const args = ['-c', configFile, '-l', logFile, '-alsologtostderr'];
-    this.btcAgentProcess = spawn(binaryPath, args);
+    const btcAgentProcess = spawn(binaryPath, args);
 
 
-    this.btcAgentProcess.stdout.on('data', (data) => {
+    btcAgentProcess.stdout.on('data', (data) => {
       console.log(`btcagent stdout: ${ data }`);
     });
 
-    this.btcAgentProcess.stderr.on('data', (data) => {
+    btcAgentProcess.stderr.on('data', (data) => {
       console.error(`btcagent stderr: ${ data }`);
     });
 
 
-    this.btcAgentProcess.on('close', (code, signal) => {
+    btcAgentProcess.on('close', (code, signal) => {
       if (code === 0) {
         console.log('btcagent process exited successfully.');
       } else {
@@ -101,7 +119,8 @@ class StratumService extends AbstractService {
       }
     });
 
-    return this.btcAgentProcess;
+    this.btcAgentProcess.push(btcAgentProcess)
+    return btcAgentProcess;
   }
 
   async checkBTCAgentHealth() {

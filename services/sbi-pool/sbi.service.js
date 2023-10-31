@@ -18,7 +18,7 @@ class SbiService {
         })
     }
 
-    createCollector(subAccName, organization){
+    createCollector(subAccName, organization, walletName){
         const dblFeesRate = organization.feesRate ? organization.feesRate : 0
         const vsub2_allocation= dblFeesRate/100 * 1000000000000000
         const vsub1_allocation= 1000000000000000 - vsub2_allocation
@@ -32,7 +32,7 @@ class SbiService {
             "virtualSubaccounts": [
                 {
                     "name": "vsub1",
-                    "withdrawAddress": "",
+                    "withdrawAddress": walletName || "",
                     "allocation": vsub1_allocation,
                     "tier": 1,
                     "isPaymentEnabled": true

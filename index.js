@@ -17,7 +17,7 @@ const Container = require('./container');
 const ComponentFactory = require('./component/factory');
 const ServiceFactory = require('./services/factory');
 
-const cron = require('node-cron');
+
 
 (async () => {
   const app = express();
@@ -46,10 +46,6 @@ const cron = require('node-cron');
 
   process.on('uncaughtException', (reason) => {
     console.error(reason);
-  });
-
-  cron.schedule('* * * * *', () => {
-    console.log('########## matching active subAccount every minute');
   });
 
   const components = await ComponentFactory.fromContainer(container);

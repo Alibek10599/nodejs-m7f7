@@ -23,6 +23,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'Stratum',
+    freezeTableName: true
   });
   return Stratum;
 };
