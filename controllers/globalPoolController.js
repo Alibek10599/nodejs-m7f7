@@ -44,17 +44,15 @@ module.exports = {
     },
     ActivateGlobalPool: async (req, res) =>{
         try {
-            const { id } = req.params
+            const id = +req.params.id
             const globalPools = await GlobalPool.findAll()
             for (const pool of globalPools){
-                pool.isActive  = false
-                pool.save()
+                if (pool.id === id) 
+                    await GlobalPool.update({isActive: true}, { where: { id }})
+                else 
+                    await GlobalPool.update({isActive: false}, { where: { id: pool.id }})
             }
-            const globalPool = await GlobalPool.update(
-                { isActive: true },
-                { where: { id } }
-            )
-            return res.status(201).json(globalPool)
+            return res.status(201).json(globalPools.find((item) => item.id === id))
         } catch (error) {
             console.log(error);
             return res.status(500).send(`Error: ${ error.message }`);

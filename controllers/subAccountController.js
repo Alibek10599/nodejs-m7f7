@@ -178,8 +178,21 @@ module.exports = {
   },
   GetSBISubAccounts: async (req, res) => {
     try {
+      const {service: sbiService } = await getService();
       const { data: sbiSubAccount } = await sbiService.getSubAccounts()
       res.status(200).json(sbiSubAccount)
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send(`Error: ${ error.message }`);
+    }
+  },
+  GetSubPoolSubAccountInfo: async (req, res) => {
+    try {
+      const {service: sbiService } = await getService();
+      const { data: { subaccounts } } = await sbiService.getSubAccounts()
+      const subAccount = await SubAccount.findByPk(req.params.id);
+      const subAccountInfo = await subaccounts.filter(item => item.subaccountName === subAccount.subAccName)
+      res.status(200).json(subAccountInfo)
     } catch (error) {
       console.log(error);
       return res.status(500).send(`Error: ${ error.message }`);
