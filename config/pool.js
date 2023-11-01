@@ -1,5 +1,4 @@
 const { GlobalPool } = require('../models');
-const { POOL_SELECTOR } = process.env;
 
 const serviceMap = {
   SBI: require('../services/sbi-pool/sbi.service'),
@@ -15,10 +14,10 @@ async function getService() {
     ]
   })
   if (serviceMap[globalPool.name]) {
-    const service = new serviceMap[POOL_SELECTOR]();
+    const service = new serviceMap[globalPool.name]();
     return { service, globalPool };
   } else {
-    throw new Error(`Service not found for POOL_SELECTOR: ${POOL_SELECTOR}`);
+    throw new Error(`Service not found for global pool: ${globalPool.name}`);
   }
 }
 
