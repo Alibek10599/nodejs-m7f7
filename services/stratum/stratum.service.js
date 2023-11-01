@@ -45,6 +45,7 @@ class StratumService extends AbstractService {
   }
 
   async createStrata(subAccount){
+    try {
     const lastStratum = await Stratum.findOne({
       order: [['createdAt', 'DESC']]
     })
@@ -61,14 +62,21 @@ class StratumService extends AbstractService {
       isActive: true
     })
 
-    // await this.createBTCAgent(stratum, subAccount.subAccName)
+    await this.createBTCAgent(stratum, subAccount.subAccName)
+    await this.startBTCAgent(stratum)
     return { isSuccess: true }
+  } catch (error){
+    return { isSuccess: false }
+  }
   }
 
 async createBTCAgent(stratum, subAccountName) {
   try {
     const newDirectory = path.resolve(__dirname, `../../btcagent/btcagent_${stratum.intPort}`);
     await fsPromises.mkdir(newDirectory);
+
+    const logFileDirectory = path.resolve(__dirname, `../../btcagent/btcagent_${stratum.intPort}/log_${stratum.intPort}`);
+    await fsPromises.mkdir(logFileDirectory);
 
     // Copy btcagent
     await fsPromises.copyFile(binaryPath, path.join(newDirectory, `btcagent_${stratum.intPort}`));
@@ -86,7 +94,7 @@ async createBTCAgent(stratum, subAccountName) {
     await fsPromises.writeFile(newAgentConfPath, JSON.stringify(agentConf, null, 2));
     
     return { isSuccess: true };
-  } catch (err) {
+  } catch (error) {
     console.error('error is: ', err);
     return { isSuccess: false, error: err };
   }

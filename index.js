@@ -10,6 +10,7 @@ const subAccountRoutes = require('./routes/subAccountRoutes');
 const walletRoutes = require('./routes/walletRoutes');
 const logRoutes = require('./routes/logRoutes');
 const globalPoolRoutes = require('./routes/globalPoolRoutes');
+const { spawn } = require('child_process');
 
 require('dotenv').config();
 
@@ -17,7 +18,7 @@ const Container = require('./container');
 const ComponentFactory = require('./component/factory');
 const ServiceFactory = require('./services/factory');
 
-
+const cron = require('node-cron');
 
 (async () => {
   const app = express();
@@ -46,6 +47,28 @@ const ServiceFactory = require('./services/factory');
 
   process.on('uncaughtException', (reason) => {
     console.error(reason);
+  });
+
+  cron.schedule('* * * * *', () => {
+    console.log('########## matching active subAccount every minute');
+    console.log('Running heartbeat service script...');
+    const psProcess = spawn('node', ['./ps.js']); // Replace 'path_to_ps.js' with the actual path to your ps.js script
+  
+    psProcess.stdout.on('data', (data) => {
+      console.log(`ps.js stdout: ${data}`);
+    });
+  
+    psProcess.stderr.on('data', (data) => {
+      console.error(`ps.js stderr: ${data}`);
+    });
+  
+    psProcess.on('close', (code) => {
+      if (code === 0) {
+        console.log('ps.js script exited successfully.');
+      } else {
+        console.error(`ps.js script exited with code ${code}.`);
+      }
+    });
   });
 
   const components = await ComponentFactory.fromContainer(container);

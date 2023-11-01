@@ -106,4 +106,5 @@ dist
 # local docker mysql volume
 mysql-data
 
-btcagent
+/btcagent/
+!/btcagent/btcagent.service

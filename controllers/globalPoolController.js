@@ -19,4 +19,14 @@ module.exports = {
             return res.status(500).send(`Error: ${ error.message }`);
         }
     },
+    CreateGlobalPool: async (req, res) =>{
+        try {
+            const data = req.body
+            const globalPool = await GlobalPool.create({...data})
+            return res.status(201).json(globalPool)
+        } catch (error) {
+            console.log(error);
+            return res.status(500).send(`Error: ${ error.message }`);
+        }
+    }
 };

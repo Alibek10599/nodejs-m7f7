@@ -1,14 +1,22 @@
-// serviceFactory.js
-
+const { GlobalPool } = require('../models');
 const { POOL_SELECTOR } = process.env;
 
 const serviceMap = {
   SBI: require('../services/sbi-pool/sbi.service'),
 };
 
-function getService() {
-  if (serviceMap[POOL_SELECTOR]) {
-    return new serviceMap[POOL_SELECTOR]();
+async function getService() {
+  const globalPool = await GlobalPool.findOne({
+    where: {
+      isActive: true
+    },
+    order: [
+      ['id', 'DESC'],
+    ]
+  })
+  if (serviceMap[globalPool.name]) {
+    const service = new serviceMap[POOL_SELECTOR]();
+    return { service, globalPool };
   } else {
     throw new Error(`Service not found for POOL_SELECTOR: ${POOL_SELECTOR}`);
   }

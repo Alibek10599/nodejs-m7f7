@@ -32,7 +32,7 @@ class SbiService {
             "virtualSubaccounts": [
                 {
                     "name": "vsub1",
-                    "withdrawAddress": walletName || "",
+                    "withdrawAddress": walletName,
                     "allocation": vsub1_allocation,
                     "tier": 1,
                     "isPaymentEnabled": true

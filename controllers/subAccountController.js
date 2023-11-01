@@ -1,17 +1,23 @@
-const { Organization, SubAccount, SubUser, Log, Role, User } = require('../models');
+const { 
+    Organization,
+    SubAccount,
+    SubUser,
+    Log,
+    Role,
+    User, 
+    SubPoolApi } = require('../models');
 const SbiService = require('../services/sbi-pool/sbi.service');
 const StratumService = require('../services/stratum/stratum.service');
 const SubAccountValidation = require('../validators/SubAccountValidation');
 const getService = require('../config/pool')
 
-const stratumService = new StratumService();
-const sbiService = getService();
-
 module.exports = {
   CreateSubAccount: async (req, res) => {
     try {
+      const stratumService = new StratumService();
+      const {service: sbiService, globalPool } = await getService();
       
-      const { name } = req.body;
+      const { name, walletName } = req.body;
       const { errors, isValid } = SubAccountValidation(req.body);
 
       if (!isValid) {
@@ -35,12 +41,19 @@ module.exports = {
         },
       });
 
-      // const response = await sbiService.createCollector(name, exisitingOrganization.dataValues)
+      const response = await sbiService.createCollector(name, exisitingOrganization.dataValues, walletName)
 
       const subAccount = await SubAccount.create({
         subAccName: name,
         orgId: exisitingOrganization.id,
       });
+
+      await SubPoolApi.create({
+        globalPoolId: globalPool.id,
+        subAccountId: subAccount.id,
+        apiKey: globalPool.apiKey,
+        apiSecret: globalPool.apiSecret
+      })
 
       const { isSuccess } = await stratumService.createSubAccount(subAccount.dataValues, exisitingOrganization);
 
