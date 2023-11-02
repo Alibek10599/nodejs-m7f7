@@ -10,6 +10,8 @@ module.exports = function WalletValidation(data) {
     if (validator.isEmpty(data.name)) {
         errors.name = "Name field is required";
     }
+
+    data.address = !isEmpty(data.address) ? data.address : "";
     // Address checks
     if (validator.isEmpty(data.address)) {
         errors.address = "Address field is required";

@@ -2,6 +2,8 @@ const {
     Organization,
     SubAccount,
     SubUser,
+    SubWallet,
+    Wallet,
     Log,
     Role,
     User, 
@@ -17,7 +19,7 @@ module.exports = {
       const stratumService = new StratumService();
       const {service: sbiService, globalPool } = await getService();
       
-      const { name, walletName } = req.body;
+      const { name, walletName, walletAddress } = req.body;
       const { errors, isValid } = SubAccountValidation(req.body);
 
       if (!isValid) {
@@ -41,11 +43,21 @@ module.exports = {
         },
       });
 
-      const response = await sbiService.createCollector(name, exisitingOrganization.dataValues, walletName)
+      const response = await sbiService.createCollector(name, exisitingOrganization.dataValues, walletAddress)
 
       const subAccount = await SubAccount.create({
         subAccName: name,
         orgId: exisitingOrganization.id,
+      });
+
+      const wallet = await Wallet.create({
+        name: walletName,
+        address: walletAddress
+      });
+
+      SubWallet.create({
+        subAccountId: subAccount.id,
+        walletId: wallet.id
       });
 
       await SubPoolApi.create({
@@ -62,7 +74,7 @@ module.exports = {
           userId: req.user.dataValues.id,
           action: 'create',
           controller: 'subAccount',
-          description: req.user.dataValues.userName + ' create: ' + subAccount.subAccName
+          description: req.user.dataValues.userName + ' create: ' + subAccount.subAccName + ' with wallet name: ' + 'wallet.name'
         });
 
         await SubUser.create({
@@ -87,6 +99,7 @@ module.exports = {
         });
       }
     } catch (error) {
+      console.log(error);
       return res.status(500).send(`Error on creating organization: ${ error.message }`);
     }
   },

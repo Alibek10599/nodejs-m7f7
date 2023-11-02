@@ -1,4 +1,4 @@
-const { Wallet, Log, SubWallet } = require('../models');
+const { Wallet, Log, SubAccount, SubWallet } = require('../models');
 const WalletValidation = require('../validators/WalletValidation');
 
 module.exports = {
@@ -71,7 +71,7 @@ module.exports = {
       res.status(500).send(`Error: ${ error.message }`);
     }
   },
-  GetWallets: async (req, res) => {
+  GetSubWallets: async (req, res) => {
     try {
       const wallets = await SubWallet.findAll({
         where: {
@@ -88,6 +88,45 @@ module.exports = {
 
       return res.status(200).json(wallets);
     } catch (error) {
+      res.status(500).send(`Error: ${ error.message }`);
+    }
+  },
+  GetWallets: async (req, res) => {
+    try {
+      const subAccounts = await SubAccount.findAll({
+        where: {
+          orgId: req.query.id,
+        },
+      });
+      
+      const walletPromises = subAccounts.map(async (subAccount) => {
+        const subWallets = await SubWallet.findAll({
+          where: {
+            subAccountId: subAccount.id,
+          },
+          include: [
+            {
+              model: Wallet,
+              attributes: ['address'],
+              as: 'wallet',
+            },
+          ],
+        });
+        
+        // Extract only the wallets from subWallets
+        return subWallets.map((subWallet) => subWallet.wallet);
+      });
+      
+      const walletsArrays = await Promise.all(walletPromises);
+      const wallets = walletsArrays.flat(); // Flatten the array of arrays into a single array
+      const uniqueWallets = wallets.filter((obj, index, self) => 
+        index === self.findIndex((t) => (
+          t.address === obj.address
+        ))
+      );
+      return res.status(200).json(uniqueWallets);
+    } catch (error) {
+      console.log(error);
       res.status(500).send(`Error: ${ error.message }`);
     }
   },
