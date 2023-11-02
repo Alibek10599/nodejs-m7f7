@@ -200,12 +200,44 @@ module.exports = {
       return res.status(500).send(`Error: ${ error.message }`);
     }
   },
+  GetPoolSubAccountsInfo: async (req, res) => {
+    try{
+      
+
+    
+
+     
+      const {service: sbiService, globalPool } = await getService();
+      let { data: sbiSubAccounts } = await sbiService.getSubAccounts();
+     
+    
+    } catch (error) {
+      console.error(error);
+      return res.status(500).send(`Error: ${ error.message }`);
+    }
+  },
   GetSubPoolSubAccountInfo: async (req, res) => {
     try {
+      const { orgId } = req.user.dataValues
+      if (!orgId) res.status(404).send(`This user has not organization`);
+
       const {service: sbiService } = await getService();
-      const { data: { subaccounts } } = await sbiService.getSubAccounts()
-      const subAccount = await SubAccount.findByPk(req.params.id);
-      const subAccountInfo = await subaccounts.filter(item => item.subaccountName === subAccount.subAccName)
+      const { data: { subaccounts: sbiSubAccounts } } = await sbiService.getSubAccounts()
+
+      const subAccounts = await SubAccount.findAll({
+        where: {
+          orgId,
+        },
+      });
+
+      const subAccountInfo = [];
+      for (const subAccount of subAccounts) {
+        const sbiSubAccountInfo = await sbiSubAccounts.find(item => item.subaccountName === subAccount.subAccName)
+        if (sbiSubAccountInfo && sbiSubAccountInfo.subaccountId){
+          const {data: { content: collectorInfo }} = await sbiService.getCollector(sbiSubAccountInfo.subaccountId)
+          subAccountInfo.push({subAccount, info: collectorInfo})
+        }
+      }
       res.status(200).json(subAccountInfo)
     } catch (error) {
       console.log(error);
