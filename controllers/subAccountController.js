@@ -100,7 +100,8 @@ module.exports = {
       }
     } catch (error) {
       console.log(error);
-      return res.status(500).send(`Error on creating organization: ${ error.message }`);
+      console.log('user datavalues: ',  req.user.dataValues.id)
+      return res.status(500).send(`Error on creating organization: ${ error.message } Datavalues: user - ${req.user.dataValues}, subAccount : ${subAccount.dataValues}.`);
     }
   },
   ActivateSubAccount: async (req, res) => {
@@ -120,7 +121,7 @@ module.exports = {
 
       return res.status(200).json(subAccount);
     } catch (error) {
-      res.status(500).send(`Error: ${ error.message }`);
+      res.status(500).send(`Error: ${ error.message } `);
     }
   },
   DeactivateSubAccount: async (req, res) => {

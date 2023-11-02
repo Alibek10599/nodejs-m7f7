@@ -36,10 +36,10 @@ class StratumService extends AbstractService {
   async createSubAccount(subAccount) {
     try {
       await this.createStrata(subAccount)
-      const btcAgentIsActive = await this.checkBTCAgentHealth()
       console.info(`Sub account created with name: ${ subAccount.subAccName }`);
       return { isSuccess: true };
     } catch (error) {
+      console.log('Error on stratumService.createSubAccount: ', error)
       return { isSuccess: false, error };
     }
   }
@@ -66,6 +66,7 @@ class StratumService extends AbstractService {
     await this.startBTCAgent(stratum)
     return { isSuccess: true }
   } catch (error){
+    console.error('Error on createStrata:', error)
     return { isSuccess: false }
   }
   }
@@ -95,13 +96,14 @@ async createBTCAgent(stratum, subAccountName) {
     
     return { isSuccess: true };
   } catch (error) {
-    console.error('error is: ', err);
+    console.error('error on createBTCAgent : ', err);
     return { isSuccess: false, error: err };
   }
 }
 
 
   async startBTCAgent(stratum) {
+    try{ 
     const binaryPath = path.resolve(__dirname, `../../btcagent/btcagent_${stratum.intPort}/btcagent_${stratum.intPort}`); 
     const configFile = path.resolve(__dirname, `../../btcagent/btcagent_${stratum.intPort}/agent_conf_${stratum.intPort}.json`); // Full path to agent_conf.json
     const logFile = path.resolve(__dirname, `../../btcagent/btcagent_${stratum.intPort}/log_${stratum.intPort}`); // Full path to log file
@@ -129,6 +131,10 @@ async createBTCAgent(stratum, subAccountName) {
 
     this.btcAgentProcess.push(btcAgentProcess)
     return btcAgentProcess;
+    } catch (error){
+      console.error('error is: ', err);
+      return { isSuccess: false, error: err };
+    }
   }
 
   async checkBTCAgentHealth() {
