@@ -57,7 +57,8 @@ module.exports = {
 
       SubWallet.create({
         subAccountId: subAccount.id,
-        walletId: wallet.id
+        walletId: wallet.id,
+        isActive: true
       });
 
       await SubPoolApi.create({
@@ -239,6 +240,61 @@ module.exports = {
         }
       }
       res.status(200).json(subAccountInfo)
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send(`Error: ${ error.message }`);
+    }
+  },
+  GetStatus: async (req, res) => {
+    try {
+      const { orgId } = req.user.dataValues
+      if (!orgId) res.status(404).send(`This user has not organization`);
+
+      const {service: sbiService } = await getService();
+      const { data: { subaccounts: sbiSubAccounts } } = await sbiService.getSubAccounts()
+
+      const subAccounts = await SubAccount.findAll({
+        where: {
+          orgId,
+        },
+      });
+
+      const walletPromises = subAccounts.map(async (subAccount) => {
+        const subWallets = await SubWallet.findAll({
+          where: {
+            subAccountId: subAccount.id,
+            isActive: true
+          },
+          include: [
+            {
+              model: Wallet,
+              attributes: ['address'],
+              as: 'wallet',
+            },
+            {
+              model: SubAccount,
+              attributes: ['subAccName'],
+              as: 'subAccount'
+            }
+          ]
+        });
+        
+        return subWallets;
+      });
+      
+      const walletsArrays = await Promise.all(walletPromises);
+      const wallets = walletsArrays.flat();
+      const newWallets = wallets.map((wallet) => {return {address: wallet.wallet.address, subAccName: wallet.subAccount.subAccName}});
+
+      const subAccountInfo = [];
+      for (const subAccount of subAccounts) {
+        const sbiSubAccountInfo = await sbiSubAccounts.find(item => item.subaccountName === subAccount.subAccName);
+        const {data: { content: collectorInfo }} = await sbiService.getCollector(sbiSubAccountInfo.subaccountId);
+        // const orgSbiSubAccInfo = await collectorInfo.find(item => item.address === subAccount.address);
+        // <--- поиск по адресам кошельков
+        subAccountInfo.push({subAccountId: subAccount.id, hashrate: collectorInfo[0].hashrate, revenue: collectorInfo[2].revenue, balance: collectorInfo[2].balance});
+      }
+      res.status(200).json(subAccountInfo);
     } catch (error) {
       console.log(error);
       return res.status(500).send(`Error: ${ error.message }`);

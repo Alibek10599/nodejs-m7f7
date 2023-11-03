@@ -11,5 +11,6 @@ router.post('/activate/:id', isAuth, isPoolAdmin, SubAccountController.ActivateS
 router.post('/deactivate/:id', isAuth, isPoolAdmin, SubAccountController.DeactivateSubAccount);
 router.get('/sbi', isAuth, SubAccountController.GetSBISubAccounts);
 router.get('/subpool-info', isAuth, SubAccountController.GetSubPoolSubAccountInfo);
+router.get('/getstatus', isAuth, SubAccountController.GetStatus);
 
 module.exports = router;
