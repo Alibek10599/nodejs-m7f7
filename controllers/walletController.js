@@ -33,20 +33,28 @@ module.exports = {
   },
   ActivateWallet: async (req, res) => {
     try {
-      const { id } = req.params;
-      const wallet = await Wallet.findByPk(id);
+      const {subAccountId, subWalletId} = req.body
+      const subWallets = await SubWallet.findAll({
+        where: {
+          subAccountId
+        }
+      }); 
 
-      wallet.isActive = true;
-      wallet.save();
+      for (const subWallet of subWallets) {
+        subWallet.isActive = subWallet.id === subWalletId ? true : false;
+        subWallet.save();
+      }
 
+      const subWallet = await SubWallet.findByPk(subWalletId)
+  
       await Log.create({
         userId: req.user.dataValues.id,
         action: 'update',
         controller: 'wallet',
-        description: req.user.dataValues.userName + ' activate: ' + wallet.name
+        description: req.user.dataValues.userName + ' activate: ' + subWallet
       });
 
-      return res.status(200).json(wallet);
+      return res.status(200).json(subWallet);
     } catch (error) {
       res.status(500).send(`Error: ${ error.message }`);
     }

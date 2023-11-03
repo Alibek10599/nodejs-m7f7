@@ -201,22 +201,6 @@ module.exports = {
       return res.status(500).send(`Error: ${ error.message }`);
     }
   },
-  GetPoolSubAccountsInfo: async (req, res) => {
-    try{
-      
-
-    
-
-     
-      const {service: sbiService, globalPool } = await getService();
-      let { data: sbiSubAccounts } = await sbiService.getSubAccounts();
-     
-    
-    } catch (error) {
-      console.error(error);
-      return res.status(500).send(`Error: ${ error.message }`);
-    }
-  },
   GetSubPoolSubAccountInfo: async (req, res) => {
     try {
       const { orgId } = req.user.dataValues
