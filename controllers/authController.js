@@ -81,7 +81,18 @@ module.exports = {
         activationToken,
         process.env.ACTIVATION_SECRET,
       );
-      const user = await User.findOne({ where: { email } });
+      const user = await User.findOne({
+        where: {
+          id: req.user.dataValues.id,
+        },
+        include: [
+          {
+            model: Role,
+            attributes: ['roleName'],
+            as: 'role'
+          }
+        ]
+      });
       if (!user) {
         return res.status(404).json('Invalid token');
       }
@@ -294,7 +305,7 @@ module.exports = {
   generate2fa: async (req, res) => {
     const secret = speakeasy.generateSecret({
       length: 20, // Adjust the length of the secret as needed
-      name: 'Midas Pool', // app name
+      name: 'Midas Pool: ' + req.user.dataValues.email, // app name
       algorithm: 'sha1', // Use the SHA-1 algorithm
       digits: 6, // Generate 8-digit OTP codes
       totp: true, // Use TOTP (Time-Based One-Time Password) mode
@@ -318,6 +329,13 @@ module.exports = {
       where: {
         id: req.user.dataValues.id,
       },
+      include: [
+        {
+          model: Role,
+          attributes: ['roleName'],
+          as: 'role'
+        }
+      ]
     });
 
     if (!user) {
@@ -334,7 +352,7 @@ module.exports = {
       controller: 'auth',
       description: req.user.dataValues.userName + ' add 2FA'
     });
-
+    
     const token = AccessToken(user);
     const refreshToken = RefreshToken(user.id);
 
@@ -358,6 +376,13 @@ module.exports = {
       where: {
         id: req.user.dataValues.id,
       },
+      include: [
+        {
+          model: Role,
+          attributes: ['roleName'],
+          as: 'role'
+        }
+      ]
     });
 
     if (!user) {
