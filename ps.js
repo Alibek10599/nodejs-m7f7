@@ -17,9 +17,9 @@ ps.lookup({ arguments: '-alsologtostderr' }, async function(err, resultList ) {
 
   for (const stratum of activeStrata){
     const isBTCAgentShutDown = resultList.find(item =>{
-        const { strCaption } = stratum
-        const regex = new RegExp(`${strCaption}$`); // new RegExp(`\\b${stratum.intPort}\\b`); 
-        console.log('Searching for port: ', stratum.intPort, strCaption);
+        const { intPort } = stratum
+        const regex = new RegExp(`${intPort}$`); // new RegExp(`\\b${stratum.intPort}\\b`); 
+        console.log('Searching for port: ', stratum.intPort);
         console.log('Item arguments:', item.arguments[1]);
         if (regex.test(item.arguments[1])) return item
     })

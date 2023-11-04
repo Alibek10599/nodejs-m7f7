@@ -16,6 +16,7 @@ const getService = require('../config/pool')
 module.exports = {
   CreateSubAccount: async (req, res) => {
     try {
+      console.info('req body is', req.body)
       const stratumService = new StratumService();
       const {service: sbiService, globalPool } = await getService();
       
