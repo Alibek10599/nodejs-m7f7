@@ -90,7 +90,7 @@ const cron = require('node-cron');
   }
 
   app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${ PORT }/`);
+    console.log(`Server running at http://10.20.1.4:${ PORT }/`);
   });
 })().catch((error) => {
   console.error(error);

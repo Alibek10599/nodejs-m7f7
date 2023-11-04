@@ -9,11 +9,7 @@
     "submit_response_from_server": false,
     "agent_listen_ip": "0.0.0.0",
     "agent_listen_port": 3333,
-    "proxy": [
-        "socks5://127.0.0.1:1089",
-        "socks5://192.168.1.1:1089",
-        "http://127.0.0.1:8889"
-     ],
+    "proxy": [],
     "use_proxy": true,
     "direct_connect_with_proxy": false,
     "direct_connect_after_proxy": true,

@@ -1,7 +1,7 @@
 require('dotenv').config({ path: `${ process.cwd() }/.env` });
 
 module.exports = {
-  development: {
+  local: {
     username: 'myuser',
     password: 'myuserpassword',
     database: 'mydatabase',
@@ -9,7 +9,7 @@ module.exports = {
     port: '3306',
     dialect: 'mysql',
   },
-  production: {
+  development: {
     username: process.env.MYSQL_DB_USER,
     password: process.env.MYSQL_DB_PASSWORD,
     database: process.env.MYSQL_DB,
