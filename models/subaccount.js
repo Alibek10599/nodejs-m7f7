@@ -38,6 +38,18 @@ module.exports = (sequelize, DataTypes) => {
       },
       allowNull: false
     },
+    collectorId: {
+      type:DataTypes.INTEGER,
+      allowNull: true,
+    },
+    vsub1Id:{
+      type:DataTypes.INTEGER,
+      allowNull: true,
+    },
+    vsub2Id:{
+      type:DataTypes.INTEGER,
+      allowNull: true,
+    },
   }, {
     sequelize,
     modelName: 'SubAccount',

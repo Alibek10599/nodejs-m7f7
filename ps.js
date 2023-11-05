@@ -16,16 +16,16 @@ ps.lookup({ arguments: '-alsologtostderr' }, async function(err, resultList ) {
   })
 
   for (const stratum of activeStrata){
-    const isBTCAgentShutDown = resultList.find(item =>{
+    const isBTCAgentShutDown = resultList.find((item) =>{
         const { intPort } = stratum
-        const regex = new RegExp(`${intPort}$`); // new RegExp(`\\b${stratum.intPort}\\b`); 
-        console.log('Searching for port: ', stratum.intPort);
-        console.log('Item arguments:', item.arguments[1]);
-        if (regex.test(item.arguments[1])) return item
+        const regex = new RegExp(`${intPort}$`); 
+        if (regex.test(item.arguments[0].slice(-4))) return item
     })
 
     try{
-        if (!isBTCAgentShutDown) await stratumService.startBTCAgent(stratum)
+        if (!isBTCAgentShutDown) {
+            await stratumService.startBTCAgent(stratum)
+        }
     } catch (error){
         console.error('Error heartbeat schedule service: ', error)
     }

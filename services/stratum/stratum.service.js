@@ -46,29 +46,31 @@ class StratumService extends AbstractService {
 
   async createStrata(subAccount){
     try {
-    const lastStratum = await Stratum.findOne({
-      order: [['createdAt', 'DESC']]
-    })
+      const lastStratum = await Stratum.findOne({
+        order: [['createdAt', 'DESC']]
+      })
 
-    const stratum = await Stratum.create({
-      strCaption: `btcagent_${lastStratum ? lastStratum.intPort + 1 : 3333}`,
-      intPort: lastStratum ? lastStratum.intPort + 1 : 3333,
-      isActive: true
-    })
+      const stratum = await Stratum.create({
+        strCaption: `btcagent_${lastStratum ? lastStratum.intPort + 1 : 3333}`,
+        intPort: lastStratum ? lastStratum.intPort + 1 : 3333,
+        isActive: true
+      })
 
-    const subStratum = await SubStratum.create({
-      subAccountId: subAccount.id,
-      stratumId: stratum.id,
-      isActive: true
-    })
+      const subStratum = await SubStratum.create({
+        subAccountId: subAccount.id,
+        stratumId: stratum.id,
+        isActive: true
+      })
 
-    await this.createBTCAgent(stratum, subAccount.subAccName)
-    await this.startBTCAgent(stratum)
-    return { isSuccess: true }
-  } catch (error){
-    console.error('Error on createStrata:', error)
-    return { isSuccess: false }
-  }
+      await this.createBTCAgent(stratum, subAccount.subAccName)
+      const { isSuccess } = await this.startBTCAgent(stratum)
+      
+      if (isSuccess) return { isSuccess: true }
+      return { isSuccess: false }
+    } catch (error){
+      console.error('Error on createStrata:', error)
+      return { isSuccess: false }
+    }
   }
 
 async createBTCAgent(stratum, subAccountName) {
@@ -87,9 +89,9 @@ async createBTCAgent(stratum, subAccountName) {
 
     agentConf.agent_listen_port = stratum.intPort;
     agentConf.pools = [
-      ["us.ss.btc.com", 1800, subAccountName],
-      ["us.ss.btc.com", 443, subAccountName],
-      ["us.ss.btc.com", stratum.intPort, subAccountName]
+      ["eu1.sbicrypto.com", stratum.intPort, subAccountName],
+      ["eu1.sbicrypto.com", stratum.intPort, subAccountName],
+      ["eu1.sbicrypto.com", stratum.intPort, subAccountName]
     ]; // Modify as needed
 
     await fsPromises.writeFile(newAgentConfPath, JSON.stringify(agentConf, null, 2));
@@ -141,7 +143,7 @@ async createBTCAgent(stratum, subAccountName) {
           console.error(`btcagent process exited with code ${ code } and signal ${ signal }.`);
         }
       });
-      return btcAgentProcess;
+      return { isSuccess: true };
     } catch (error){
       console.error('error is: ', err);
       return { isSuccess: false, error: err };

@@ -44,11 +44,14 @@ module.exports = {
         },
       });
 
-      const response = await sbiService.createCollector(name, exisitingOrganization.dataValues, walletAddress)
+      const { data: {id, virtualSubaccounts}} = await sbiService.createCollector(name, exisitingOrganization, walletAddress)
 
       const subAccount = await SubAccount.create({
         subAccName: name,
         orgId: exisitingOrganization.id,
+        collectorId: id,
+        vsub1Id: virtualSubaccounts.find(item => item.name === 'vsub1').id,
+        vsub2Id: virtualSubaccounts.find(item => item.name === 'vsub2').id
       });
 
       const wallet = await Wallet.create({
