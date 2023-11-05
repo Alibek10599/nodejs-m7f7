@@ -28,6 +28,17 @@ class StratumService extends AbstractService {
     super();
   }
 
+  async runShellCommand(command) {
+    exec(command, (error, stdout, stderr) => {
+      if (error) {
+        console.error(`Error running command: ${command}`);
+        console.error(stderr);
+        return;
+      }
+      console.log(stdout);
+    });
+  }
+
   /**
      * crete sub account on global pool
      * @param{string} subAccountName
@@ -147,6 +158,56 @@ async createBTCAgent(stratum, subAccountName) {
     } catch (error){
       console.error('error is: ', err);
       return { isSuccess: false, error: err };
+    }
+  }
+
+  async startBtcAgentService(stratum) {
+    try {
+      const binaryPath = path.resolve(__dirname, `../../btcagent/btcagent_${stratum.intPort}/btcagent_${stratum.intPort}`); 
+      const configFile = path.resolve(__dirname, `../../btcagent/btcagent_${stratum.intPort}/agent_conf_${stratum.intPort}.json`);
+      const logFile = path.resolve(__dirname, `../../btcagent/btcagent_${stratum.intPort}/log_${stratum.intPort}`);
+
+      const serviceFileContent = `[Unit]
+Description=BTCAgent
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=root
+ExecStart="${binaryPath}" -c "${configFile}" -l "${logFile}"
+
+[Install]
+WantedBy=multi-user.target
+`;
+      const serviceName = `btcagent_${stratum.intPort}}`;  
+        
+      const serviceFilePath = `/etc/systemd/system/btcagent_${stratum.intPort}.service`;
+    
+      fs.writeFile(serviceFilePath, serviceFileContent, (err) => {
+        if (err) {
+          console.error(`Error creating service file: ${err}`);
+          return;
+        }
+    
+        console.log(`Service file ${serviceName} successfully at ${serviceFilePath}`);
+      });
+
+      // Command to start the service
+      const startServiceCommand = `systemctl start ${serviceName}`;
+
+      // Command to enable the service to start automatically
+      const enableServiceCommand = `systemctl enable ${serviceName}`;
+
+      await this.runShellCommand(startServiceCommand);
+      await this.runShellCommand(enableServiceCommand);
+      
+      return { isSuccess: true }
+    } catch (error) {
+      console.error('Error upon starting btcagent service: ', error);
+      return { isSuccess: false, error }
     }
   }
 
