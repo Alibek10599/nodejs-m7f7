@@ -26,8 +26,22 @@ module.exports = {
         description: req.user.dataValues.userName + ' create: ' + wallet.name
       });
 
-      return res.status(201).json(subWallet);
+      const wallets = await SubWallet.findAll({
+        where: {
+          subAccountId,
+        },
+        include: [
+          {
+            model: Wallet,
+            attributes: ['name', 'address'],
+            as: 'wallet'
+          }
+        ]
+      });
+
+      return res.status(201).json(wallets);
     } catch (error) {
+      console.log(error);
       return res.status(500).send(`Error on creating wallet: ${ error.message }`);
     }
   },
