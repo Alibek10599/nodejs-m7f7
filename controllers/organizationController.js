@@ -1,4 +1,4 @@
-const { Organization, User, Log } = require('../models');
+const { Organization, User, Log, Role, SubAccount, SubUser } = require('../models');
 const OrganizationValidation = require('../validators/OrganizationValidation');
 
 module.exports = {
@@ -139,6 +139,50 @@ module.exports = {
       });
 
       return res.status(200).json(organization);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send(`Error: ${ error.message }`);
+    }
+  },
+  GetOrganizationIfo: async (req, res) => {
+    const orgId = req.query.id;
+
+    try{
+      const organization = await Organization.findByPk(orgId);
+      const subAccounts = await SubAccount.findAll({
+        where: {
+          orgId
+        }
+      });
+
+      const subUsersPromises = subAccounts.map(async (subAccount) => {
+        const subUsers = await SubUser.findAll({
+          where: {
+            subAccountId: subAccount.id,
+          },
+          include: [
+            {
+              model: User,
+              attributes: ['userName', 'email', 'isConfirmed'],
+              as: 'user',
+              include: [{
+                model: Role,
+                attributes: ['roleName'],
+                as: 'role'
+              }]
+            }
+          ]
+        });
+
+        const subAccountWithUsers = {subAccount, subUsers};
+
+        return subAccountWithUsers;
+      });
+
+      const subAccountsArrays = await Promise.all(subUsersPromises);
+      const subAccountsFlat = subAccountsArrays.flat();
+
+      res.status(200).json({organization, subAccounts: subAccountsFlat})
     } catch (error) {
       console.log(error);
       return res.status(500).send(`Error: ${ error.message }`);
