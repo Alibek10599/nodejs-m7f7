@@ -100,9 +100,9 @@ async createBTCAgent(stratum, subAccountName) {
 
     agentConf.agent_listen_port = stratum.intPort;
     agentConf.pools = [
-      ["eu1.sbicrypto.com", stratum.intPort, subAccountName],
-      ["eu1.sbicrypto.com", stratum.intPort, subAccountName],
-      ["eu1.sbicrypto.com", stratum.intPort, subAccountName]
+      ["eu1.sbicrypto.com", 1800, subAccountName],   //
+      ["eu1.sbicrypto.com", 443, subAccountName],
+      ["eu1.sbicrypto.com", 3333, subAccountName]
     ]; // Modify as needed
 
     await fsPromises.writeFile(newAgentConfPath, JSON.stringify(agentConf, null, 2));
