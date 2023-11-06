@@ -38,7 +38,6 @@ module.exports = {
   },
   
   inviteUser: async (req, res) => {
-    console.log(req.user);
     const { email, roleValue, subAccountId, orgId } = req.body;
     const { errors, isValid } = UserValidation(req.body);
     try{
@@ -104,6 +103,49 @@ module.exports = {
       });
     } catch (error) {
       console.log(error);
+      return res.status(500).send(`Error: ${ error.message }`);
+    }
+  },
+  GetUserInfo: async (req, res) => {
+    const id = req.query.id;
+
+    try{
+      const user = await User.findByPk(id);
+      const logs = await Log.findAll({
+        where: {
+          userId: id
+        },                
+        order: [
+          ['createdAt', 'DESC'],
+        ],
+        include: [
+          {
+            model: User,
+            attributes: ['userName'],
+            as: 'user'
+          }
+        ]
+      });
+
+      res.status(200).json({user, logs})
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send(`Error: ${ error.message }`);
+    }
+  },
+  activateUser: async (req, res) => {
+    console.log(req.body);
+    try {
+
+    } catch (error) {
+      return res.status(500).send(`Error: ${ error.message }`);
+    }
+  },
+  deactivateUser: async (req, res) => {
+    console.log(req.body);
+    try {
+
+    } catch (error) {
       return res.status(500).send(`Error: ${ error.message }`);
     }
   }

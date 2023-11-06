@@ -7,5 +7,8 @@ const { isAuth, isPoolAdmin } = require('../middlewares/checkAuth');
 router.get('/', isAuth, isPoolAdmin, AdminUserController.GetUsers);
 router.post('/inviteUser', isAuth, AdminUserController.inviteUser);
 router.post('/verify/:id', isAuth, isPoolAdmin, AdminUserController.verifyUser);
+router.get('/user-info', isAuth, isPoolAdmin, AdminUserController.GetUserInfo);
+router.patch('/activate', isAuth, isPoolAdmin, AdminUserController.activateUser);
+router.patch('/deactivate', isAuth, isPoolAdmin, AdminUserController.deactivateUser);
 
 module.exports = router;

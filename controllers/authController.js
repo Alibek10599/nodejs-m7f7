@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { Organization, User, Log, Role } = require('../models');
+const { Organization, User, Log, LoginLog, Role } = require('../models');
 const SignupValidation = require('../validators/SignupValidation');
 const SigninValidation = require('../validators/SigninValidation');
 const ResetValidation = require('../validators/ResetValidation');
@@ -10,6 +10,8 @@ const QRCode = require('qrcode');
 const speakeasy = require('speakeasy');
 const requestIp = require('request-ip');
 const TwoFAValidation = require('../validators/TwoFAValidation');
+const UAParser = require('ua-parser-js');
+const axios = require('axios');
 
 const createActivationToken = (user) => jwt.sign(user, process.env.ACTIVATION_SECRET);
 
@@ -118,7 +120,7 @@ module.exports = {
   signin: async (req, res) => {
     const { email, password, otp } = req.body;
     const { errors, isValid } = SigninValidation(req.body);
-    const clientIp = requestIp.getClientIp(req)
+    const clientIp = requestIp.getClientIp(req);
 
     try {
       if (!isValid) {
@@ -174,6 +176,38 @@ module.exports = {
         'Login Attempted',
         'loginattempt',
       );
+
+      // // Create a new instance of UAParser
+      const parser = new UAParser();
+
+      // Parse the User-Agent string
+      const result = parser.setUA(req.get('user-agent')).getResult();
+
+      // Get the device information
+      const deviceModel = result.device.model;
+      // const deviceType = result.device.type; // This will be 'mobile', 'tablet', 'smarttv', 'console', or 'desktop'
+
+      const apiKey = 'cef741fa768b78';
+
+      const apiUrl = `https://ipinfo.io/${clientIp}?token=${apiKey}`;
+
+      const location = await axios.get(apiUrl)
+        .then(response => {
+          const data = response.data;
+          const locationStr = data.region + ', ' + data.country
+          return locationStr;
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+
+      await LoginLog.create({
+        userId: userExist.id,
+        ip: clientIp,
+        device: deviceModel,
+        location: location,
+        type: 1
+      });
 
       const token = AccessToken(userExist);
       const refreshToken = RefreshToken(userExist._id);

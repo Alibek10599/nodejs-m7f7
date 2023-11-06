@@ -280,7 +280,7 @@ module.exports = {
         const {data: { content: collectorInfo }} = await sbiService.getCollector(sbiSubAccountInfo.subaccountId);
         // const orgSbiSubAccInfo = await collectorInfo.find(item => item.address === subAccount.address);
         // <--- поиск по адресам кошельков
-        subAccountInfo.push({subAccountId: subAccount.id, hashrate: collectorInfo[0].hashrate, revenue: collectorInfo[2].revenue, balance: collectorInfo[2].balance});
+        subAccountInfo.push({subAccountId: subAccount.id, hashrate: sbiSubAccountInfo.hashrate, workerStatus: sbiSubAccountInfo.workerStatus, revenue: collectorInfo[2].revenue, balance: collectorInfo[2].balance});
       }
       res.status(200).json(subAccountInfo);
     } catch (error) {

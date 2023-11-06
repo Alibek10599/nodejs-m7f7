@@ -3,16 +3,16 @@ const {
   Model
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  class Log extends Model {
+  class LoginLog extends Model {
     static associate(models) {
-      Log.belongsTo(models.User, {
+        LoginLog.belongsTo(models.User, {
         as: 'user',
         foreignKey: 'userId',
         targetKey: 'id'
       });
     }
   }
-  Log.init({
+  LoginLog.init({
     userId: {
       type: DataTypes.INTEGER,
       references: {
@@ -21,13 +21,14 @@ module.exports = (sequelize, DataTypes) => {
       },
       allowNull: false
     },
-    action: DataTypes.STRING,
-    controller: DataTypes.STRING,
-    description: DataTypes.TEXT
+    ip: DataTypes.STRING,
+    device: DataTypes.STRING,
+    location: DataTypes.STRING,
+    type: DataTypes.INTEGER
   }, {
     sequelize,
     updatedAt: false,
-    modelName: 'Log',
+    modelName: 'LoginLog',
   });
-  return Log;
+  return LoginLog;
 };
