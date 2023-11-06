@@ -121,18 +121,18 @@ async createBTCAgent(stratum, subAccountName) {
       const configFile = path.resolve(__dirname, `../../btcagent/btcagent_${stratum.intPort}/agent_conf_${stratum.intPort}.json`); // Full path to agent_conf.json
       const logFile = path.resolve(__dirname, `../../btcagent/btcagent_${stratum.intPort}/log_${stratum.intPort}`); // Full path to log file
 
-      exec(`chmod +x "${binaryPath}"`, (error, stdout, stderr) => {
-        if (error) {
-          console.error(`Error: ${error}`);
-          return;
-        }
+      // exec(`chmod +x "${binaryPath}"`, (error, stdout, stderr) => {
+      //   if (error) {
+      //     console.error(`Error: ${error}`);
+      //     return;
+      //   }
       
-        if (stderr) {
-          console.error(`Error output: ${stderr}`);
-        }
+      //   if (stderr) {
+      //     console.error(`Error output: ${stderr}`);
+      //   }
       
-        console.log(`File "${binaryPath}" is now executable.`);
-      });
+      //   console.log(`File "${binaryPath}" is now executable.`);
+      // });
 
       const args = ['-c', configFile, '-l', logFile, '-alsologtostderr'];
       const btcAgentProcess = spawn(binaryPath, args);

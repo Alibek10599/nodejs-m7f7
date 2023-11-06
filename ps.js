@@ -16,14 +16,13 @@ ps.lookup({ arguments: '-alsologtostderr' }, async function(err, resultList ) {
   })
 
   for (const stratum of activeStrata){
-    const isBTCAgentShutDown = resultList.find((item) =>{
-        const { intPort } = stratum
-        const regex = new RegExp(`${intPort}$`); 
-        if (regex.test(item.arguments[0].slice(-4))) return item
-    })
+    const isBTCAgentShutDown = resultList.find((item) => stratum.intPort === +item.command.slice(-4))
+
+    console.log('isBTCagentshut down variable: ', isBTCAgentShutDown)
 
     try{
-        if (!isBTCAgentShutDown) {
+        if (isBTCAgentShutDown === undefined) {
+            console.log('############ btcagent for given subaccount is shut down ........', isBTCAgentShutDown)
             await stratumService.startBTCAgent(stratum)
         }
     } catch (error){
