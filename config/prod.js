@@ -10,11 +10,11 @@ localConfig.services.logger = {
     level: 'info',
     transports: [
       new (winston.transports.Console)(),
-      new (winston.transports.DailyRotateFile)({
-        filename: path.join(__dirname, '../logs.'),
-        datePattern: '/yyyy/MM/dd.log',
-        createTree: true,
-      }),
+      // new (winston.transports.DailyRotateFile)({
+      //   filename: path.join(__dirname, '../logs.'),
+      //   datePattern: '/yyyy/MM/dd.log',
+      //   createTree: true,
+      // }),
     ],
   };
 
