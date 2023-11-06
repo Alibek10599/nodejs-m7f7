@@ -12,6 +12,8 @@ const fsPromises = {
   writeFile: util.promisify(fs.writeFile),
 };
 
+const { STRATUM_IS_ACTIVE } = process.env;
+
 const { Stratum, SubStratum, SubAccount } = require('../../models');
 const { STRATUM_SERVICE_STATE } = require('./constants');
 
@@ -117,43 +119,45 @@ async createBTCAgent(stratum, subAccountName) {
 
   async startBTCAgent(stratum) {
     try{ 
-      const binaryPath = path.resolve(__dirname, `../../btcagent/btcagent_${stratum.intPort}/btcagent_${stratum.intPort}`); 
-      const configFile = path.resolve(__dirname, `../../btcagent/btcagent_${stratum.intPort}/agent_conf_${stratum.intPort}.json`); // Full path to agent_conf.json
-      const logFile = path.resolve(__dirname, `../../btcagent/btcagent_${stratum.intPort}/log_${stratum.intPort}`); // Full path to log file
+      if (STRATUM_IS_ACTIVE){
+        const binaryPath = path.resolve(__dirname, `../../btcagent/btcagent_${stratum.intPort}/btcagent_${stratum.intPort}`); 
+        const configFile = path.resolve(__dirname, `../../btcagent/btcagent_${stratum.intPort}/agent_conf_${stratum.intPort}.json`); // Full path to agent_conf.json
+        const logFile = path.resolve(__dirname, `../../btcagent/btcagent_${stratum.intPort}/log_${stratum.intPort}`); // Full path to log file
 
-      // exec(`chmod +x "${binaryPath}"`, (error, stdout, stderr) => {
-      //   if (error) {
-      //     console.error(`Error: ${error}`);
-      //     return;
-      //   }
-      
-      //   if (stderr) {
-      //     console.error(`Error output: ${stderr}`);
-      //   }
-      
-      //   console.log(`File "${binaryPath}" is now executable.`);
-      // });
+        // exec(`chmod +x "${binaryPath}"`, (error, stdout, stderr) => {
+        //   if (error) {
+        //     console.error(`Error: ${error}`);
+        //     return;
+        //   }
+        
+        //   if (stderr) {
+        //     console.error(`Error output: ${stderr}`);
+        //   }
+        
+        //   console.log(`File "${binaryPath}" is now executable.`);
+        // });
 
-      const args = ['-c', configFile, '-l', logFile, '-alsologtostderr'];
-      const btcAgentProcess = spawn(binaryPath, args);
-
-
-      btcAgentProcess.stdout.on('data', (data) => {
-        console.log(`btcagent stdout: ${ data }`);
-      });
-
-      btcAgentProcess.stderr.on('data', (data) => {
-        console.error(`btcagent stderr: ${ data }`);
-      });
+        const args = ['-c', configFile, '-l', logFile, '-alsologtostderr'];
+        const btcAgentProcess = spawn(binaryPath, args);
 
 
-      btcAgentProcess.on('close', (code, signal) => {
-        if (code === 0) {
-          console.log('btcagent process exited successfully.');
-        } else {
-          console.error(`btcagent process exited with code ${ code } and signal ${ signal }.`);
-        }
-      });
+        btcAgentProcess.stdout.on('data', (data) => {
+          console.log(`btcagent stdout: ${ data }`);
+        });
+
+        btcAgentProcess.stderr.on('data', (data) => {
+          console.error(`btcagent stderr: ${ data }`);
+        });
+
+
+        btcAgentProcess.on('close', (code, signal) => {
+          if (code === 0) {
+            console.log('btcagent process exited successfully.');
+          } else {
+            console.error(`btcagent process exited with code ${ code } and signal ${ signal }.`);
+          }
+        });
+      }
       return { isSuccess: true };
     } catch (error){
       console.error('error is: ', err);
