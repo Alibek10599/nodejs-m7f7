@@ -20,6 +20,8 @@ const ServiceFactory = require('./services/factory');
 
 const cron = require('node-cron');
 
+const { NODE_ENV } = process.env;
+
 (async () => {
   const app = express();
   const PORT = process.env.PORT || 3000;
@@ -49,28 +51,29 @@ const cron = require('node-cron');
     console.error(reason);
   });
 
-  cron.schedule('* * * * *', () => {
-    console.log('########## matching active subAccount every minute');
-    console.log('Running heartbeat service script...');
-    const psProcess = spawn('node', ['./ps.js']); // Replace 'path_to_ps.js' with the actual path to your ps.js script
-  
-    psProcess.stdout.on('data', (data) => {
-      console.log(`ps.js stdout: ${data}`);
+  if ( NODE_ENV === 'production') {
+    cron.schedule('* * * * *', () => {
+      console.log('########## matching active subAccount every minute');
+      console.log('Running heartbeat service script...');
+      const psProcess = spawn('node', ['./ps.js']); // Replace 'path_to_ps.js' with the actual path to your ps.js script
+    
+      psProcess.stdout.on('data', (data) => {
+        console.log(`ps.js stdout: ${data}`);
+      });
+    
+      psProcess.stderr.on('data', (data) => {
+        console.error(`ps.js stderr: ${data}`);
+      });
+    
+      psProcess.on('close', (code) => {
+        if (code === 0) {
+          console.log('ps.js script exited successfully.');
+        } else {
+          console.error(`ps.js script exited with code ${code}.`);
+        }
+      });
     });
-  
-    psProcess.stderr.on('data', (data) => {
-      console.error(`ps.js stderr: ${data}`);
-    });
-  
-    psProcess.on('close', (code) => {
-      if (code === 0) {
-        console.log('ps.js script exited successfully.');
-      } else {
-        console.error(`ps.js script exited with code ${code}.`);
-      }
-    });
-  });
-
+  }
   const components = await ComponentFactory.fromContainer(container);
   const services = await ServiceFactory.fromContainer(container);
   const { beforeLoad, afterLoad } = container.$config.$express.hook || {};

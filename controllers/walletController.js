@@ -1,5 +1,6 @@
 const { Wallet, Log, SubAccount, SubWallet } = require('../models');
 const WalletValidation = require('../validators/WalletValidation');
+const getService = require('../config/pool')
 
 module.exports = {
   CreateWallet: async (req, res) => {
@@ -60,6 +61,27 @@ module.exports = {
       }
 
       const subWallet = await SubWallet.findByPk(subWalletId)
+
+      const subAccount = await SubAccount.findByPk(subAccountId)
+      const wallet = await Wallet.findByPk(subWallet.walletId);
+
+      const {service: sbiService } = await getService();
+
+      const {data: { content }} = await sbiService.getCollector(subAccount.collectorId)
+      const virtualSubaccount = content.find((item) => item.vsubaccountId === subAccount.vsub1Id);
+      
+      const sbiRequest = {
+        collector: virtualSubaccount.collectorName,
+        collectorId: virtualSubaccount.collectorId,
+        virtual: 'vsub1',
+        allocation: virtualSubaccount.allocation,
+        withdrawAddress: wallet.address,
+        tier: virtualSubaccount.newTier,
+        isPaymentEnabled: virtualSubaccount.isPaymentEnabled
+      }
+
+      const sbiResponse = await sbiService.updateSubaccount(sbiRequest)
+      
   
       await Log.create({
         userId: req.user.dataValues.id,

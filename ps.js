@@ -30,6 +30,10 @@ ps.lookup({ arguments: '-alsologtostderr' }, async function(err, resultList ) {
     }
   }
 
+  for (const result of resultList){
+    
+  }
+
   console.log('res is: ', resultList, resultList.length)
   var process = resultList[ 0 ];
 

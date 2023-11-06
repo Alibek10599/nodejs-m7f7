@@ -61,7 +61,7 @@ class SbiService {
         })
     }
 
-    updateCollector(collectorData){
+    updateSubaccount(collectorData){
         return this.client.patch('/api/external/v1/subaccount/virtual', collectorData)
     }
 }
