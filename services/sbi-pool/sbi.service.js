@@ -55,6 +55,10 @@ class SbiService {
         return this.client.get('api/external/v1/subaccounts')
     }
 
+    getWorkers(subaccountnames){
+        return this.client.get(`api/external/v1/workers?subaccountNames=${subaccountnames}`);
+    }
+
     getCollector(collectorId, query){
         return this.client.get(`/api/external/v1/subaccount/${collectorId}/virtual`, {
             params: query

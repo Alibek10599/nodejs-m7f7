@@ -10,6 +10,7 @@ const subAccountRoutes = require('./routes/subAccountRoutes');
 const walletRoutes = require('./routes/walletRoutes');
 const logRoutes = require('./routes/logRoutes');
 const globalPoolRoutes = require('./routes/globalPoolRoutes');
+const workerRoutes = require('./routes/workerRoutes');
 const { spawn } = require('child_process');
 
 require('dotenv').config();
@@ -39,7 +40,8 @@ const { NODE_ENV } = process.env;
   app.use('/api/v1/subaccount', subAccountRoutes);
   app.use('/api/v1/wallet', walletRoutes);
   app.use('/api/v1/log', logRoutes);
-  app.use('/api/v1/globalPool', globalPoolRoutes)
+  app.use('/api/v1/globalPool', globalPoolRoutes);
+  app.use('/api/v1/worker', workerRoutes);
 
   const container = await Container.create();
 
