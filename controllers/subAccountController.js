@@ -7,7 +7,10 @@ const {
     Log,
     Role,
     User, 
-    SubPoolApi } = require('../models');
+    SubPoolApi,
+    Stratum,
+    SubStratum
+   } = require('../models');
 const SbiService = require('../services/sbi-pool/sbi.service');
 const StratumService = require('../services/stratum/stratum.service');
 const SubAccountValidation = require('../validators/SubAccountValidation');
@@ -269,10 +272,33 @@ module.exports = {
         
         return subWallets;
       });
+
+      const subAccountIds = subAccounts.map(item => item.id)
+
+      const subStrata = await SubStratum.findAll({
+        where: {
+          subAccountId: subAccountIds
+        }
+      })
+
+      const stratumIds = subStrata.map(item => item.stratumId)
+
+      const strata = await Stratum.findAll({
+        where: {
+          id: stratumIds
+        }
+      })
+
+      const subAccountStrataMapper = {}
+
+      for (const subAccountId of subAccountIds){
+        const stratumId = subStrata.find(item => item.subAccountId === subAccountId).stratumId
+        subAccountStrataMapper[subAccountId] = strata.find(item => item.id === stratumId).intPort
+      }
       
-      const walletsArrays = await Promise.all(walletPromises);
-      const wallets = walletsArrays.flat();
-      const newWallets = wallets.map((wallet) => {return {address: wallet.wallet.address, subAccName: wallet.subAccount.subAccName}});
+      // const walletsArrays = await Promise.all(walletPromises);
+      // const wallets = walletsArrays.flat();
+      // const newWallets = wallets.map((wallet) => {return {address: wallet.wallet.address, subAccName: wallet.subAccount.subAccName}});
 
       const subAccountInfo = [];
       for (const subAccount of subAccounts) {
@@ -280,7 +306,15 @@ module.exports = {
         const {data: { content: collectorInfo }} = await sbiService.getCollector(sbiSubAccountInfo.subaccountId);
         // const orgSbiSubAccInfo = await collectorInfo.find(item => item.address === subAccount.address);
         // <--- поиск по адресам кошельков
-        subAccountInfo.push({subAccountId: subAccount.id, hashrate: sbiSubAccountInfo.hashrate, workerStatus: sbiSubAccountInfo.workerStatus, revenue: collectorInfo[2].revenue, balance: collectorInfo[2].balance});
+        
+        subAccountInfo.push({
+          subAccountId: subAccount.id,
+          hashrate: sbiSubAccountInfo.hashrate,
+          workerStatus: sbiSubAccountInfo.workerStatus,
+          revenue: collectorInfo[2].revenue,
+          balance: collectorInfo[2].balance,
+          port: subAccountStrataMapper[subAccount.id]
+        });
       }
       res.status(200).json(subAccountInfo);
     } catch (error) {

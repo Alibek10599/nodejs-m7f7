@@ -23,15 +23,24 @@ ps.lookup({ arguments: '-alsologtostderr' }, async function(err, resultList ) {
     try{
         if (isBTCAgentShutDown === undefined) {
             console.log('############ btcagent for given subaccount is shut down ........', isBTCAgentShutDown)
-            await stratumService.startBTCAgent(stratum)
+            await stratumService.startBtcAgentService(stratum)
         }
     } catch (error){
         console.error('Error heartbeat schedule service: ', error)
     }
   }
 
-  for (const result of resultList){
-    
+  const inactiveStrata = await Stratum.findAll({
+    where: {
+        isActive: false
+    }
+  })
+
+  for (const stratum of inactiveStrata){
+    const isBTCAgentActive = resultList.find((item) => stratum.intPort === +item.command.slice(-4))
+
+    console.log('ps object: isBTCAgentActive: ', isBTCAgentActive)
+    // if(isBTCAgentActive !== undefined) isBTCAgentActive.kill()
   }
 
   console.log('res is: ', resultList, resultList.length)

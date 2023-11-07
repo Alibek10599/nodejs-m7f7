@@ -171,39 +171,39 @@ async createBTCAgent(stratum, subAccountName) {
       const configFile = path.resolve(__dirname, `../../btcagent/btcagent_${stratum.intPort}/agent_conf_${stratum.intPort}.json`);
       const logFile = path.resolve(__dirname, `../../btcagent/btcagent_${stratum.intPort}/log_${stratum.intPort}`);
 
-      const serviceFileContent = `[Unit]
-Description=BTCAgent
-After=network.target
-StartLimitIntervalSec=0
+//       const serviceFileContent = `[Unit]
+// Description=BTCAgent
+// After=network.target
+// StartLimitIntervalSec=0
 
-[Service]
-Type=simple
-Restart=always
-RestartSec=1
-User=root
-ExecStart="${binaryPath}" -c "${configFile}" -l "${logFile}"
+// [Service]
+// Type=simple
+// Restart=always
+// RestartSec=1
+// User=root
+// ExecStart="${binaryPath}" -c "${configFile}" -l "${logFile}"
 
-[Install]
-WantedBy=multi-user.target
-`;
-      const serviceName = `btcagent_${stratum.intPort}}`;  
+// [Install]
+// WantedBy=multi-user.target
+// `;
+      const serviceName = `btcagent_${stratum.intPort}`;  
         
-      const serviceFilePath = `/etc/systemd/system/btcagent_${stratum.intPort}.service`;
+//       const serviceFilePath = `/etc/systemd/system/btcagent_${stratum.intPort}.service`;
     
-      fs.writeFile(serviceFilePath, serviceFileContent, (err) => {
-        if (err) {
-          console.error(`Error creating service file: ${err}`);
-          return;
-        }
+//       fs.writeFile(serviceFilePath, serviceFileContent, (err) => {
+//         if (err) {
+//           console.error(`Error creating service file: ${err}`);
+//           return;
+//         }
     
-        console.log(`Service file ${serviceName} successfully at ${serviceFilePath}`);
-      });
+//         console.log(`Service file ${serviceName} successfully at ${serviceFilePath}`);
+//       });
 
       // Command to start the service
-      const startServiceCommand = `systemctl start ${serviceName}`;
+      const startServiceCommand = `sudo systemctl start ${serviceName}`;
 
       // Command to enable the service to start automatically
-      const enableServiceCommand = `systemctl enable ${serviceName}`;
+      const enableServiceCommand = `sudo systemctl enable ${serviceName}`;
 
       await this.runShellCommand(startServiceCommand);
       await this.runShellCommand(enableServiceCommand);

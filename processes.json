@@ -1,0 +1,16 @@
+{
+    "apps" : [{
+      "name": "backend",
+      "script": "index.js",
+      "log_date_format"  : "YYYY-MM-DD HH:mm Z",
+      "ignore_watch": ["node_modules", "btcagent"],
+      "watch_options": {
+        "usePolling": true,
+        "alwaysStat": true,
+        "useFsEvents": false
+      },
+      "env": {
+          "NODE_ENV": "production"
+      }
+    }]
+  }
