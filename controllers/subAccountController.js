@@ -14,7 +14,8 @@ const {
 const SbiService = require('../services/sbi-pool/sbi.service');
 const StratumService = require('../services/stratum/stratum.service');
 const SubAccountValidation = require('../validators/SubAccountValidation');
-const getService = require('../config/pool')
+const getService = require('../config/pool');
+const { default: axios } = require('axios');
 
 module.exports = {
   CreateSubAccount: async (req, res) => {
@@ -242,7 +243,6 @@ module.exports = {
       if (!orgId) res.status(404).send(`This user has not organization`);
 
       const {service: sbiService } = await getService();
-      const { data: { subaccounts: sbiSubAccounts } } = await sbiService.getSubAccounts()
 
       const subAccounts = await SubAccount.findAll({
         where: {
@@ -250,28 +250,32 @@ module.exports = {
         },
       });
 
-      const walletPromises = subAccounts.map(async (subAccount) => {
-        const subWallets = await SubWallet.findAll({
-          where: {
-            subAccountId: subAccount.id,
-            isActive: true
-          },
-          include: [
-            {
-              model: Wallet,
-              attributes: ['address'],
-              as: 'wallet',
-            },
-            {
-              model: SubAccount,
-              attributes: ['subAccName'],
-              as: 'subAccount'
-            }
-          ]
-        });
+      const subAccountNames = subAccounts.map(subAccount => subAccount.subAccName).join(',')
+
+      const { data: { subaccounts: sbiSubAccounts } } = await sbiService.getSubAccountsByNames(subAccountNames)
+
+      // const walletPromises = subAccounts.map(async (subAccount) => {
+      //   const subWallets = await SubWallet.findAll({
+      //     where: {
+      //       subAccountId: subAccount.id,
+      //       isActive: true
+      //     },
+      //     include: [
+      //       {
+      //         model: Wallet,
+      //         attributes: ['address'],
+      //         as: 'wallet',
+      //       },
+      //       {
+      //         model: SubAccount,
+      //         attributes: ['subAccName'],
+      //         as: 'subAccount'
+      //       }
+      //     ]
+      //   });
         
-        return subWallets;
-      });
+      //   return subWallets;
+      // });
 
       const subAccountIds = subAccounts.map(item => item.id)
 
@@ -302,8 +306,8 @@ module.exports = {
 
       const subAccountInfo = [];
       for (const subAccount of subAccounts) {
-        const sbiSubAccountInfo = await sbiSubAccounts.find(item => item.subaccountName === subAccount.subAccName);
-        const {data: { content: collectorInfo }} = await sbiService.getCollector(sbiSubAccountInfo.subaccountId);
+        const sbiSubAccountInfo = sbiSubAccounts.find((item) => item.subaccountId === subAccount.collectorId);
+        // const {data: { content: collectorInfo }} = await sbiService.getCollector(sbiSubAccountInfo.subaccountId);
         // const orgSbiSubAccInfo = await collectorInfo.find(item => item.address === subAccount.address);
         // <--- поиск по адресам кошельков
         
@@ -321,5 +325,19 @@ module.exports = {
       console.log(error);
       return res.status(500).send(`Error: ${ error.message }`);
     }
-  }
+  },
+  GetHashRate: async (req, res) => {
+    try {
+      const { data } = await axios.get('https://pool-api.sbicrypto.com/api/observer/v1/workers/hashrates?ranges=10,60,1440', {
+        headers: {
+          'x-observer-key': 'iU9kiayLLTKtACtlMUv4vbk_bzuIQt-7'
+        }
+      })
+
+      res.status(200).json(data);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send(`Error: ${ error.message }`);
+    }
+  },
 };

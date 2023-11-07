@@ -10,6 +10,7 @@ router.get('/getinfo', isAuth, SubAccountController.GetInfo);
 router.post('/activate/:id', isAuth, isPoolAdmin, SubAccountController.ActivateSubAccount);
 router.post('/deactivate/:id', isAuth, isPoolAdmin, SubAccountController.DeactivateSubAccount);
 router.get('/sbi', isAuth, SubAccountController.GetSBISubAccounts);
+router.get('/hashrate', isAuth, SubAccountController.GetHashRate);
 router.get('/subpool-info', isAuth, SubAccountController.GetSubPoolSubAccountInfo);
 router.get('/getstatus', isAuth, SubAccountController.GetStatus);
 
