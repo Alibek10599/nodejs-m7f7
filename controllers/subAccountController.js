@@ -313,10 +313,8 @@ module.exports = {
         
         subAccountInfo.push({
           subAccountId: subAccount.id,
-          hashrate: sbiSubAccountInfo.hashrate,
-          workerStatus: sbiSubAccountInfo.workerStatus,
-          revenue: collectorInfo[2].revenue,
-          balance: collectorInfo[2].balance,
+          hashrate: sbiSubAccountInfo?.hashrate || null,
+          workerStatus: sbiSubAccountInfo?.workerStatus || null,
           port: subAccountStrataMapper[subAccount.id]
         });
       }
