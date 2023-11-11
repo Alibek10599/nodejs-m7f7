@@ -41,9 +41,31 @@ class StratumService extends AbstractService {
     });
   }
 
-  async openRemotePort(){}
+  async openRemotePort(intPort){
+    try{
+      console.log(`Current user: ${process.env.USER}`);
 
-  async closeRemotePort(){}
+      const scriptPath = path.resolve(__dirname, '../../scripts/create_iptables_rule.sh')
+      console.info('Script path is : ', scriptPath)
+      const command = `sudo sh ${scriptPath} ${intPort}`
+
+      return this.runShellCommand(command)
+    } catch(error){
+      console.error(`Error at openRemotePort withb port number ${intPort} :`, error)
+    }
+  }
+
+  async closeRemotePort(intPort){
+    try{
+      const scriptPath = path.resolve(__dirname, '../../scripts/delete_iptables_rule.sh')
+      console.info('Script path is : ', scriptPath)
+      const command = `sudo sh ${scriptPath} ${intPort}`
+
+      return this.runShellCommand(command)
+    } catch(error){
+      console.error(`Error at closeRemotePort withb port number ${intPort} :`, error)
+    }
+  }
 
   /**
      * crete sub account on global pool
@@ -73,17 +95,17 @@ class StratumService extends AbstractService {
         isActive: true
       })
 
-      const subStratum = await SubStratum.create({
+      await SubStratum.create({
         subAccountId: subAccount.id,
         stratumId: stratum.id,
         isActive: true
       })
 
       await this.createBTCAgent(stratum, subAccount.subAccName)
-      const { isSuccess } = await this.startBTCAgent(stratum)
+      const { isSuccess } = await this.startBtcAgentService(stratum)
       
       if (isSuccess) return { isSuccess: true }
-      return { isSuccess: false }
+      return { isSuccess: false, error: `Error upon ` }
     } catch (error){
       console.error('Error on createStrata:', error)
       return { isSuccess: false }
@@ -113,6 +135,21 @@ async createBTCAgent(stratum, subAccountName) {
 
     await fsPromises.writeFile(newAgentConfPath, JSON.stringify(agentConf, null, 2));
 
+    await this.createBTCAgentService(stratum.intPort);
+  
+    return { isSuccess: true };
+  } catch (error) {
+    console.error('error on createBTCAgent : ', error);
+    return { isSuccess: false, error };
+  }
+}
+
+async createBTCAgentService(intPort){
+  try {
+    const binaryPath = path.resolve(__dirname, `../../btcagent/btcagent_${intPort}/btcagent_${intPort}`); 
+    const configFile = path.resolve(__dirname, `../../btcagent/btcagent_${intPort}/agent_conf_${intPort}.json`); // Full path to agent_conf.json
+    const logFile = path.resolve(__dirname, `../../btcagent/btcagent_${intPort}/log_${intPort}`);
+
     const serviceFileContent = `[Unit]
 Description=BTCAgent
 After=network.target
@@ -123,98 +160,27 @@ Type=simple
 Restart=always
 RestartSec=1
 User=root
-ExecStart="${newDirectory}" -c "${newAgentConfPath}" -l "${logFileDirectory}"
+ExecStart="${binaryPath}" -c "${configFile}" -l "${logFile}"
 
 [Install]
 WantedBy=multi-user.target
 `;
 
-    const serviceFilePath = `/etc/systemd/system/btcagent_${stratum.intPort}.service`;
+    const serviceFilePath = `/etc/systemd/system/btcagent_${intPort}.service`;
 
     await fsPromises.writeFile(serviceFilePath, serviceFileContent)
-    
-    return { isSuccess: true };
+  
+
   } catch (error) {
-    console.error('error on createBTCAgent : ', err);
-    return { isSuccess: false, error: err };
+    throw new Error(`error on creating systemd btcagent service with port ${intPort}`,error.message)
   }
 }
 
-
-  async startBTCAgent(stratum) {
-    try{ 
-      if (STRATUM_IS_ACTIVE){
-        const binaryPath = path.resolve(__dirname, `../../btcagent/btcagent_${stratum.intPort}/btcagent_${stratum.intPort}`); 
-        const configFile = path.resolve(__dirname, `../../btcagent/btcagent_${stratum.intPort}/agent_conf_${stratum.intPort}.json`); // Full path to agent_conf.json
-        const logFile = path.resolve(__dirname, `../../btcagent/btcagent_${stratum.intPort}/log_${stratum.intPort}`); // Full path to log file
-
-        exec(`chmod +x "${binaryPath}"`, (error, stdout, stderr) => {
-          if (error) {
-            console.error(`Error: ${error}`);
-            return;
-          }
-        
-          if (stderr) {
-            console.error(`Error output: ${stderr}`);
-          }
-        
-          console.log(`File "${binaryPath}" is now executable.`);
-        });
-
-        const args = ['-c', configFile, '-l', logFile, '-alsologtostderr'];
-        const btcAgentProcess = spawn(binaryPath, args);
-
-
-        btcAgentProcess.stdout.on('data', (data) => {
-          console.log(`btcagent stdout: ${ data }`);
-        });
-
-        btcAgentProcess.stderr.on('data', (data) => {
-          console.error(`btcagent stderr: ${ data }`);
-        });
-
-
-        btcAgentProcess.on('close', (code, signal) => {
-          if (code === 0) {
-            console.log('btcagent process exited successfully.');
-          } else {
-            console.error(`btcagent process exited with code ${ code } and signal ${ signal }.`);
-          }
-        });
-      }
-      return { isSuccess: true };
-    } catch (error){
-      console.error('error is: ', err);
-      return { isSuccess: false, error: err };
-    }
-  }
-
   async startBtcAgentService(stratum) {
+    const { intPort } = stratum
+    const serviceName = `btcagent_${intPort}`;
     try {
-      const { intPort } = stratum
-      const binaryPath = path.resolve(__dirname, `../../btcagent/btcagent_${intPort}/btcagent_${intPort}`)
-      const configFile = path.resolve(__dirname, `../../btcagent/btcagent_${intPort}/agent_conf_${intPort}.json`)
-      const logFile = path.resolve(__dirname, `../../btcagent/btcagent_${intPort}/log_${intPort}`)
-
-//TODO: ensure that we have such service in case of fail in creating BTC agent service part at createBTCAgent method
-//       const serviceFileContent = `[Unit]
-// Description=BTCAgent
-// After=network.target
-// StartLimitIntervalSec=0
-
-// [Service]
-// Type=simple
-// Restart=always
-// RestartSec=1
-// User=root
-// ExecStart="${binaryPath}" -c "${configFile}" -l "${logFile}"
-
-// [Install]
-// WantedBy=multi-user.target
-// `;
-      const serviceName = `btcagent_${intPort}`;
-
-      const unmaskServiceCommand = `sudo unmask ${serviceName}` // unmask service to avoid app privelege issues
+      const unmaskServiceCommand = `sudo systemctl unmask ${serviceName}` // unmask service to avoid app priveledge issues
       // Command to start the service
       const startServiceCommand = `sudo systemctl start ${serviceName}`
 
@@ -224,7 +190,8 @@ WantedBy=multi-user.target
       await Promise.all([
         this.runShellCommand(startServiceCommand),
         this.runShellCommand(enableServiceCommand),
-        this.runShellCommand(unmaskServiceCommand)
+        this.runShellCommand(unmaskServiceCommand),
+        this.openRemotePort(intPort)
       ])
       
       return { isSuccess: true }
@@ -238,10 +205,15 @@ WantedBy=multi-user.target
     try{
       const { intPort } = stratum
       const serviceName = `btcagent_${intPort}`
-      const stopServiceCommand = `sudo systemctl stop btcagent
+      const stopServiceCommand = `sudo systemctl stop ${serviceName}`
+      const disableServiceCommand = `sudo systemctl disable ${serviceName}`
 
-      # Disable automatic startup
-      sudo systemctl disable btcagent`
+      await Promise.all([
+        this.runShellCommand(stopServiceCommand),
+        this.runShellCommand(disableServiceCommand),
+        this.closeRemotePort(intPort)
+      ])
+
     } catch (error){
       console.error(`Error upon deactivating ${serviceName} service: `, error)
       return { isSuccess: false, error }
