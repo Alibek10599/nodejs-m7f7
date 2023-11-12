@@ -177,22 +177,26 @@ WantedBy=multi-user.target
 }
 
   async startBtcAgentService(stratum) {
-    const { intPort } = stratum
-    const serviceName = `btcagent_${intPort}`;
     try {
-      const unmaskServiceCommand = `sudo systemctl unmask ${serviceName}` // unmask service to avoid app priveledge issues
-      // Command to start the service
-      const startServiceCommand = `sudo systemctl start ${serviceName}`
+      const { intPort } = stratum
+      const serviceName = `btcagent_${intPort}`;
 
-      // Command to enable the service to start automatically
-      const enableServiceCommand = `sudo systemctl enable ${serviceName}`
+      if (STRATUM_IS_ACTIVE){
+        const unmaskServiceCommand = `sudo systemctl unmask ${serviceName}` // unmask service to avoid app priveledge issues
+        // Command to start the service
+        const startServiceCommand = `sudo systemctl start ${serviceName}`
 
-      await Promise.all([
-        this.runShellCommand(startServiceCommand),
-        this.runShellCommand(enableServiceCommand),
-        this.runShellCommand(unmaskServiceCommand),
-        this.openRemotePort(intPort)
-      ])
+        // Command to enable the service to start automatically
+        const enableServiceCommand = `sudo systemctl enable ${serviceName}`
+
+      
+        await Promise.all([
+          this.runShellCommand(startServiceCommand),
+          this.runShellCommand(enableServiceCommand),
+          this.runShellCommand(unmaskServiceCommand),
+          this.openRemotePort(intPort)
+        ])
+      }
       
       return { isSuccess: true }
     } catch (error) {
