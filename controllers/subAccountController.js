@@ -312,9 +312,10 @@ module.exports = {
         // <--- поиск по адресам кошельков
         
         subAccountInfo.push({
+          subAccName: subAccount.subAccName,
           subAccountId: subAccount.id,
-          hashrate: sbiSubAccountInfo?.hashrate || null,
-          workerStatus: sbiSubAccountInfo?.workerStatus || null,
+          hashrate: sbiSubAccountInfo?.hashrate || [0, 0, 0],
+          workerStatus: sbiSubAccountInfo?.workerStatus || [0, 0, 0],
           port: subAccountStrataMapper[subAccount.id]
         });
       }
