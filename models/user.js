@@ -46,6 +46,8 @@ module.exports = (sequelize, DataTypes) => {
     resetPasswordToken: DataTypes.STRING,
     isActive2FA: DataTypes.BOOLEAN,
     secret2FA: DataTypes.STRING,
+    tgUserId: DataTypes.STRING,
+    isActiveTg: DataTypes.BOOLEAN
   }, {
     sequelize,
     modelName: 'User',
