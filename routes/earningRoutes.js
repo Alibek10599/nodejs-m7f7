@@ -6,4 +6,6 @@ const EarningController = require('../controllers/EarningController');
 
 router.get('/', isAuth, EarningController.GetPayouts);
 
+router.get('/revenue', isAuth, EarningController.GetEstimatedRevenue);
+
 module.exports = router;
