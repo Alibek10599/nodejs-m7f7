@@ -1,6 +1,6 @@
 const { User, Log, Role, SubUser } = require('../models');
 const jwt = require('jsonwebtoken');
-const sendMail = require('../utils/sendMail');
+const sendMail = require('../notifications/mail-sender/sendMail');
 const UserValidation = require('../validators/UserValidation');
 
 const createActivationToken = (user) => jwt.sign(user, process.env.ACTIVATION_SECRET);

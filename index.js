@@ -11,6 +11,7 @@ const walletRoutes = require('./routes/walletRoutes');
 const logRoutes = require('./routes/logRoutes');
 const globalPoolRoutes = require('./routes/globalPoolRoutes');
 const workerRoutes = require('./routes/workerRoutes');
+const telegramRoutes = require('./routes/telegramRoutes');
 const earningRoutes = require('./routes/earningRoutes');
 const { spawn } = require('child_process');
 
@@ -43,6 +44,7 @@ const { NODE_ENV } = process.env;
   app.use('/api/v1/log', logRoutes);
   app.use('/api/v1/globalPool', globalPoolRoutes);
   app.use('/api/v1/worker', workerRoutes);
+  app.use('/api/v1/notifications', telegramRoutes);
   app.use('/api/v1/earning', earningRoutes);
 
   const container = await Container.create();

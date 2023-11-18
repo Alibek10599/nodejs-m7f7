@@ -47,7 +47,9 @@ module.exports = (sequelize, DataTypes) => {
     isActive2FA: DataTypes.BOOLEAN,
     secret2FA: DataTypes.STRING,
     tgUserId: DataTypes.STRING,
-    isActiveTg: DataTypes.BOOLEAN
+    isActiveTg: DataTypes.BOOLEAN,
+    expirationDate: DataTypes.STRING,
+    confirmationCode: DataTypes.INTEGER,
   }, {
     sequelize,
     modelName: 'User',
