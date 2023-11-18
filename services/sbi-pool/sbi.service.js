@@ -80,6 +80,13 @@ class SbiService {
             params: query
         })
     }
+
+    getRevenues(query){
+        return this.client.get('api/external/v1/revenue', {
+            params: query
+        })
+    }
+    
 }
 
 module.exports = SbiService
