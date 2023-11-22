@@ -95,6 +95,31 @@ class SBIPool {
     return subAccountInfo;
   }
 
+  async getTransactions(fromDate, toDate, size) {
+    const sbiPayouts = await sbiService.getPayouts({
+      fromDate,
+      toDate,
+      size,
+    });
+    const filteredPayouts = sbiPayouts.data.content.filter(
+      (item) => item.vsubaccountName === "vsub1"
+    );
+
+    return filteredPayouts;
+  }
+
+  async getSubAccountsStatus(subAccounts) {
+    const subAccountNames = subAccounts
+      .map((subAccount) => subAccount.subAccName)
+      .join(",");
+
+    const { data: { subaccounts } } = await this.client.get(
+      `api/external/v1/subaccounts?subAccountNames=${subAccountNames}`
+    );
+
+    return subaccounts;
+  }
+
   getCollector(collectorId, query) {
     return this.client.get(
       `/api/external/v1/subaccount/${collectorId}/virtual`,
@@ -113,6 +138,12 @@ class SBIPool {
 
   getSubAccounts(query) {
     return this.client.get("api/external/v1/subaccounts", {
+      params: query,
+    });
+  }
+
+  getPayouts(query) {
+    return this.client.get("/api/external/v2/earnings", {
       params: query,
     });
   }

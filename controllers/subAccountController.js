@@ -17,6 +17,8 @@ const SubAccountValidation = require("../validators/SubAccountValidation");
 const getService = require("../config/pool");
 const { default: axios } = require("axios");
 const { PoolFactory, isSBIPool, isLuxorPool } = require("../pool/pool-factory");
+const PoolTypes = require("../pool/pool-types");
+const { Op } = require("sequelize");
 
 module.exports = {
   CreateSubAccount: async (req, res) => {
@@ -324,24 +326,45 @@ module.exports = {
   },
   GetStatus: async (req, res) => {
     try {
+      const globalPool = await GlobalPool.findOne({
+        where: {
+          isActive: true,
+        },
+        order: [["id", "DESC"]],
+      });
+
+      if (!globalPool) {
+        throw new Error("No one global pool active");
+      }
+
+      const pool = PoolFactory.createPool(globalPool.name);      
+
       const { orgId } = req.user.dataValues;
       if (!orgId) res.status(404).send(`This user has not organization`);
 
-      const { service: sbiService } = await getService();
+      // const { service: sbiService } = await getService();
 
       const subAccounts = await SubAccount.findAll({
         where: {
           orgId,
+          [globalPool.name === PoolTypes.SBI ? "collectorId" : "luxorId"]: {
+            [Op.ne]: null,
+          },
         },
       });
 
-      const subAccountNames = subAccounts
-        .map((subAccount) => subAccount.subAccName)
-        .join(",");
+      const poolSubaccounts = await pool.getSubAccountsStatus(subAccounts)
 
-      const {
-        data: { subaccounts: sbiSubAccounts },
-      } = await sbiService.getSubAccountsByNames(subAccountNames);
+      // const subAccountNames = subAccounts
+      //   .map((subAccount) => subAccount.subAccName)
+      //   .join(",");
+
+      // const {
+      //   data: { subaccounts: sbiSubAccounts },
+      // } = await sbiService.getSubAccountsByNames(subAccountNames);
+
+      // console.log('sbiSubAccounts')
+      // console.dir(sbiSubAccounts, { depth: 10 })
 
       // const walletPromises = subAccounts.map(async (subAccount) => {
       //   const subWallets = await SubWallet.findAll({
@@ -399,8 +422,8 @@ module.exports = {
 
       const subAccountInfo = [];
       for (const subAccount of subAccounts) {
-        const sbiSubAccountInfo = sbiSubAccounts.find(
-          (item) => item.subaccountId === subAccount.collectorId
+        const poolSubAccountInfo = poolSubaccounts.find(
+          (item) => (item.subaccountId === subAccount.collectorId) || (item.id === subAccount.luxorId)
         );
         // const {data: { content: collectorInfo }} = await sbiService.getCollector(sbiSubAccountInfo.subaccountId);
         // const orgSbiSubAccInfo = await collectorInfo.find(item => item.address === subAccount.address);
@@ -409,8 +432,8 @@ module.exports = {
         subAccountInfo.push({
           subAccName: subAccount.subAccName,
           subAccountId: subAccount.id,
-          hashrate: sbiSubAccountInfo?.hashrate || [0, 0, 0],
-          workerStatus: sbiSubAccountInfo?.workerStatus || [0, 0, 0],
+          hashrate: poolSubAccountInfo?.hashrate || [0, 0, 0],
+          workerStatus: poolSubAccountInfo?.workerStatus || [0, 0, 0],
           port: subAccountStrataMapper[subAccount.id],
         });
       }

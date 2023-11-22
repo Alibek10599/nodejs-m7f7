@@ -1,4 +1,6 @@
 const axios = require("axios");
+const { SubAccount } = require("../models");
+const { Op } = require("sequelize");
 
 const { LUXOR_URL, LUXOR_API_KEY, MIDAS_GLOBAL_POOL_ADDRESS } = process.env;
 
@@ -226,29 +228,41 @@ class LuxorPool {
           this.#walletQuery(subaccountInfo.node.username)
         );
 
-        if (walletErrors) return this.#error(walletErrors)
+        if (walletErrors) return this.#error(walletErrors);
 
-        let addresses = []
+        let addresses = [];
 
         if (walletData.getWallet) {
-          const { data: { data: addressesData, errors: addressesErrors } } = await this.#client.post(
+          const {
+            data: { data: addressesData, errors: addressesErrors },
+          } = await this.#client.post(
             this.#url,
             this.#walletAddressesQuery(
               walletData.getWallet.rowId,
               subaccountInfo.node.username
             )
           );
-  
+
           if (addressesErrors) return this.#error(addressesErrors);
-          
+
           addresses = addressesData.getWalletAddresses.edges;
         }
+
+        const {
+          data: { data: userMinersStatusData, errors: userMinersStatusErrors },
+        } = await this.#client.post(
+          this.#url,
+          this.#userMinersStatusCount(subaccountInfo.node.username)
+        );
+
+        if (userMinersStatusErrors) return this.#error(userMinersStatusErrors);
+
+        const { getUserMinersStatusCount } = userMinersStatusData;
 
         subAccountInfo.push({
           subAccount,
           info: [
             {
-              ...subaccountInfo.node,
               hashrate: [
                 miningSummary15mData.getMiningSummary.hashrate,
                 miningSummary6hData.getMiningSummary.hashrate,
@@ -261,6 +275,8 @@ class LuxorPool {
               ],
               ...walletData.getWallet,
               addresses,
+              workerStatus: getUserMinersStatusCount,
+              ...subaccountInfo.node
             },
           ],
         });
@@ -268,6 +284,45 @@ class LuxorPool {
     }
 
     return subAccountInfo;
+  }
+
+  async getTransactions(fromDate, toDate, size) {
+    const subAccounts = await SubAccount.findAll({
+      where: {
+        luxorId: {
+          [Op.ne]: null,
+        },
+      },
+    });
+
+    if (!subAccounts.length) return { content: [] };
+
+    const result = await Promise.all(
+      subAccounts.map(async (item) => {
+        const result = await this.#client.post(
+          this.#url,
+          this.#transactionHistoryQuery(item.subAccName, "BTC", size)
+        );
+
+        const {
+          data: {
+            data: {
+              getTransactionHistory: { nodes },
+            },
+          },
+        } = result;
+
+        return nodes;
+      })
+    ).then((result) => result.flat());
+
+    return { content: result };
+  }
+
+  async getSubAccountsStatus(subAccounts) {
+    const info = await this.getSubaccountInfo(subAccounts)
+
+    return info.map((item) => { return item.info }).flat()
   }
 
   #createSubAccountMutation(username) {
@@ -462,7 +517,7 @@ class LuxorPool {
     };
   }
 
-  #transactionHistoryQuery(username, cid = 'BTC', first = 10) {
+  #transactionHistoryQuery(username, cid = "BTC", first = 10) {
     return {
       query: `
         query getTransactionHistory {
@@ -477,8 +532,22 @@ class LuxorPool {
             }
           }
         }
-      `
-    }
+      `,
+    };
+  }
+
+  #userMinersStatusCount(username, mpn = "BTC") {
+    return {
+      query: `
+        query getUserMinersStatusCount {
+          getUserMinersStatusCount(mpn: ${mpn}, usrname: "${username}") {
+            active
+            dead
+            warning
+          }
+        }
+      `,
+    };
   }
 
   #walletName(accountName) {
