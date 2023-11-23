@@ -19,16 +19,35 @@ module.exports = {
             const pool = PoolFactory.createPool(globalPool.name);
 
             const { fromDate, toDate } = req.query;
-
-            const transactions = await pool.getTransactions(fromDate, toDate, 20)
-
-            // const {service: sbiService } = await getService();
-
-            // const sbiPayouts = await sbiService.getPayouts({fromDate, toDate, size: 20});
-            // // console.log(sbiPayouts);
-            // const filteredPayouts = await sbiPayouts.data.content.filter((item) => item.vsubaccountName === 'vsub1');
+            const transactions = await pool.getTransactions(fromDate, toDate, 100);
             
             return res.status(200).json(transactions);
+        } catch (error) {
+            console.log(error);
+            return res.status(500).send(`Error: ${ error.message }`);
+        }
+    },
+
+    GetEarnings: async (req, res) => {
+        try {
+            const globalPool = await GlobalPool.findOne({
+              where: {
+                isActive: true,
+              },
+              order: [["id", "DESC"]],
+            });
+
+            if (!globalPool) {
+              throw new Error("No one global pool active");
+            }
+
+            const pool = PoolFactory.createPool(globalPool.name);
+
+            const { fromDate, toDate } = req.query;
+            
+            const earnings = await pool.getEarnings(fromDate, toDate, 100)
+            
+            return res.status(200).json(earnings);
         } catch (error) {
             console.log(error);
             return res.status(500).send(`Error: ${ error.message }`);

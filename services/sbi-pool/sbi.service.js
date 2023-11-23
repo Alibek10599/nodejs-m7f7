@@ -75,8 +75,14 @@ class SbiService {
         return this.client.patch('/api/external/v1/subaccount/virtual', collectorData)
     }
 
-    getPayouts(query){
+    getEarnings(query){
         return this.client.get('/api/external/v2/earnings', {
+            params: query
+        })
+    }
+
+    getPyaouts(query){
+        return this.client.get('/api/external/v1/earnings', {
             params: query
         })
     }

@@ -96,16 +96,26 @@ class SBIPool {
   }
 
   async getTransactions(fromDate, toDate, size) {
-    const sbiPayouts = await sbiService.getPayouts({
-      fromDate,
-      toDate,
-      size,
-    });
-    const filteredPayouts = sbiPayouts.data.content.filter(
+    
+    const sbiPayouts = await this.client(
+      `api/external/v1/earnings?fromDate=${fromDate}&toDate=${toDate}`
+    );
+
+    const payoutsContent = await sbiPayouts.data.content;
+
+    return payoutsContent;
+  }
+
+  async getEarnings(fromDate, toDate, size) {
+    const sbiEarnings = await this.client(
+      `api/external/v2/earnings?startDate=${fromDate}&endDate=${toDate}&size=${size}`
+    );
+    
+    const filteredEarnings = sbiEarnings.data.content.filter(
       (item) => item.vsubaccountName === "vsub1"
     );
 
-    return filteredPayouts;
+    return filteredEarnings;
   }
 
   async getSubAccountsStatus(subAccounts) {
