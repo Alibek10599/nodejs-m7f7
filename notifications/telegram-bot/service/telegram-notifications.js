@@ -13,7 +13,6 @@ const sendMail = require("../../mail-sender/sendMail");
 const {isInt} = require("validator");
 
 bot.on('text', async msg => {
-    console.log(msg, 'message received');
     if (msg.text === '/start') {
         await bot.sendMessage(msg.chat.id, greetingsMessage).catch((error) => {
             console.log(error.code);  // => 'ETELEGRAM'

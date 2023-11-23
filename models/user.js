@@ -49,7 +49,7 @@ module.exports = (sequelize, DataTypes) => {
     tgUserId: DataTypes.STRING,
     isActiveTg: DataTypes.BOOLEAN,
     expirationDate: DataTypes.STRING,
-    confirmationCode: DataTypes.INTEGER,
+    confirmationCode: DataTypes.STRING,
   }, {
     sequelize,
     modelName: 'User',

@@ -1,4 +1,5 @@
 const getTransport = require("./config/email-config");
+const {Message} = require("../../models");
 
 const sendMail = async (to, url, name, subject, template) => {
   try {
@@ -18,8 +19,20 @@ const sendMail = async (to, url, name, subject, template) => {
       },
     };
 
-    return await transporter.sendMail(mailOptions, (err, info) => {
-        if(err) return console.error('error while sending mail', err)
+    return await transporter.sendMail(mailOptions, async (err, info) => {
+        if(err) {
+          await Message.create({
+            userName: mailOptions.context.name,
+            email: mailOptions.to,
+            isDelivered: false,
+            subject: mailOptions.subject,
+            template: mailOptions.template,
+            url: mailOptions.context.url
+          })
+          return console.error('error while sending mail', err)
+        } else {
+          return info
+        }
     });
   } catch (error) {
     console.error('error on sending mail: ', error);

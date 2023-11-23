@@ -20,6 +20,7 @@ require('dotenv').config();
 const Container = require('./container');
 const ComponentFactory = require('./component/factory');
 const ServiceFactory = require('./services/factory');
+const findAndSendUndeliveredMessages = require('./notifications/mail-sender/service/message-queue-job');
 
 const cron = require('node-cron');
 
@@ -80,6 +81,13 @@ const { NODE_ENV } = process.env;
       });
     });
   }
+
+  cron.schedule('* * * * *',  () => {
+    console.log('########## send again undelivered messages every hour');
+    console.log("Undelivered message queue job started");
+    findAndSendUndeliveredMessages()
+  });
+
   const components = await ComponentFactory.fromContainer(container);
   const services = await ServiceFactory.fromContainer(container);
   const { beforeLoad, afterLoad } = container.$config.$express.hook || {};
