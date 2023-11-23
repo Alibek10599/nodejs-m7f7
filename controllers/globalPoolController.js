@@ -38,13 +38,12 @@ module.exports = {
             })
             return res.status(201).json(globalPool)
         } catch (error) {
-            console.log(error);
             return res.status(500).send(`Error: ${ error.message }`);
         }
     },
     ActivateGlobalPool: async (req, res) =>{
         try {
-            const id = +req.params.id
+            const { id } = req.body
             const globalPools = await GlobalPool.findAll()
             for (const pool of globalPools){
                 if (pool.id === id) 
@@ -54,7 +53,6 @@ module.exports = {
             }
             return res.status(201).json(globalPools.find((item) => item.id === id))
         } catch (error) {
-            console.log(error);
             return res.status(500).send(`Error: ${ error.message }`);
         }
     }

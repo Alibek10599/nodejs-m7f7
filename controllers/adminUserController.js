@@ -134,18 +134,67 @@ module.exports = {
     }
   },
   activateUser: async (req, res) => {
-    console.log(req.body);
-    try {
+    const { id } = req.body;
 
+    try {
+      const user = await User.findByPk(id);
+
+      user.isActive = true;
+      user.save();
+
+      await Log.create({
+        userId: req.user.dataValues.id,
+        action: 'update',
+        controller: 'user',
+        description: req.user.dataValues.userName + ' activate: ' + user.userName
+      });
+
+      return res.status(200).json(user);
     } catch (error) {
       return res.status(500).send(`Error: ${ error.message }`);
     }
   },
   deactivateUser: async (req, res) => {
-    console.log(req.body);
-    try {
+    const { id } = req.body;
 
+    try {
+      const user = await User.findByPk(id);
+
+      user.isActive = false;
+      user.save();
+
+      await Log.create({
+        userId: req.user.dataValues.id,
+        action: 'update',
+        controller: 'user',
+        description: req.user.dataValues.userName + ' deactivate: ' + user.userName
+      });
+
+      return res.status(200).json(user);
     } catch (error) {
+      console.log(error);
+      return res.status(500).send(`Error: ${ error.message }`);
+    }
+  },
+  delete2fa: async (req, res) => {
+    const { id } = req.body;
+
+    try {
+      const user = await User.findByPk(id);
+
+      user.isActive2FA = false;
+      user.save();
+
+      await Log.create({
+        userId: req.user.dataValues.id,
+        action: 'update',
+        controller: 'user',
+        description: req.user.dataValues.userName + ' deactivate 2FA: ' + user.userName
+      });
+
+      return res.status(200).json(user);
+    } catch (error) {
+      console.log(error);
       return res.status(500).send(`Error: ${ error.message }`);
     }
   }
