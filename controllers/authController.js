@@ -444,5 +444,69 @@ module.exports = {
       maxAge: 7 * 24 * 60 * 60 * 1000, // cookie expiry: set to match rT
     });
     res.status(200).json(token);
+  },
+
+  addTg: async (req, res) => {
+    const { id, tgUserId } = req.body;
+    try {
+      const user = await User.findByPk(id);
+
+      user.isActiveTg = true;
+      user.tgUserId = tgUserId;
+      user.save();
+
+      await Log.create({
+        userId: req.user.dataValues.id,
+        action: 'update',
+        controller: 'user',
+        description: req.user.dataValues.userName + ' add Telegram: ' + user.userName
+      });
+
+      return res.status(200).json(user);
+    } catch (error) {
+      return res.status(500).send(`Error: ${ error.message }`);
+    }
+  },
+
+  activateTg: async (req, res) => {
+    const { id } = req.body;
+    try {
+      const user = await User.findByPk(id);
+
+      user.isActiveTg = true;
+      user.save();
+
+      await Log.create({
+        userId: req.user.dataValues.id,
+        action: 'update',
+        controller: 'user',
+        description: req.user.dataValues.userName + ' activate Telegram: ' + user.userName
+      });
+
+      return res.status(200).json(user);
+    } catch (error) {
+      return res.status(500).send(`Error: ${ error.message }`);
+    }
+  },
+
+  deactivateTg: async (req, res) => {
+    const { id } = req.body;
+    try {
+      const user = await User.findByPk(id);
+
+      user.isActiveTg = false;
+      user.save();
+
+      await Log.create({
+        userId: req.user.dataValues.id,
+        action: 'update',
+        controller: 'user',
+        description: req.user.dataValues.userName + ' deactivate Telegram: ' + user.userName
+      });
+
+      return res.status(200).json(user);
+    } catch (error) {
+      return res.status(500).send(`Error: ${ error.message }`);
+    }
   }
 };

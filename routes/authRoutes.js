@@ -24,4 +24,10 @@ router.post('/add2fa', isAuth, AuthController.add2fa);
 
 router.patch('/delete2fa', isAuth, AuthController.delete2fa);
 
+router.post('/addTg', isAuth, AuthController.addTg);
+
+router.patch('/activateTg', isAuth, AuthController.activateTg);
+
+router.post('/deactivateTg', isAuth, AuthController.deactivateTg);
+
 module.exports = router;
