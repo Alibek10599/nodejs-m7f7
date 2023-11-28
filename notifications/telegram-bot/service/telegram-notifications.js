@@ -61,7 +61,6 @@ async function findUserByEmail(message) {
     const user = await User.findOne({
         where: {
             email: message.text,
-            isActiveTg: true
         },
     });
     if (!user) {
@@ -100,12 +99,19 @@ async function validateConfirmationCode(message) {
     const user = await User.findOne({
         where: {
             tgUserId: message.from.id,
-            isActiveTg: true,
             confirmationCode: message.text,
         },
     });
 
-    return !(!user || user.expirationDate < new Date().getTime());
+    if(!user || user.expirationDate < new Date().getTime()) {
+        return false
+    } else {
+        return User.update({isActiveTg: true}, {
+            where: {
+                tgUserId: message.from.id,
+            },
+        });
+    }
 
 }
 
