@@ -18,15 +18,17 @@ module.exports = {
     }
     const pool = PoolFactory.createPool(globalPool.name);
     const { subaccountnames } = req.query;
+    console.log('1', subaccountnames)
     try {
       // const { service: sbiService } = await getService();
       // const { data: sbiworkers } = await sbiService.getWorkers(subaccountnames);
       const result = await pool.getWorkers(subaccountnames);
-      
+
       res.status(200).json(result);
     } catch (error) {
       console.log(error);
-      res.status(500).send(`Error: ${ error.message }`);
+      console.error(error.response.data)
+      res.status(500).send(`Error: ${error.message}`);
     }
   }
 };
