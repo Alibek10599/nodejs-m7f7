@@ -21,6 +21,7 @@ const Container = require('./container');
 const ComponentFactory = require('./component/factory');
 const ServiceFactory = require('./services/factory');
 const findAndSendUndeliveredMessages = require('./notifications/mail-sender/service/message-queue-job');
+const deleteDeliveredMessages = require('./notifications/mail-sender/service/delete-delivered-messages-job');
 
 const cron = require('node-cron');
 
@@ -82,10 +83,24 @@ const { NODE_ENV } = process.env;
     });
   }
 
+  /*
+  * This cron jobs send again undelivered messages every minute, you can change schedule time in prod
+  * */
+
   cron.schedule('* * * * *',  () => {
-    console.log('########## send again undelivered messages every hour');
+    console.log('########## send again undelivered messages every minute');
     console.log("Undelivered message queue job started");
     findAndSendUndeliveredMessages()
+  });
+
+  /*
+  * This cron jobs delete all delivered messages to clean up DB every two hours, you can change schedule time in prod
+  * */
+
+  cron.schedule('0 0 */2 * * *',  () => {
+    console.log('########## clean up delivered messages in db every 2 hours');
+    console.log("Delete delivered messages job started");
+    deleteDeliveredMessages()
   });
 
   const components = await ComponentFactory.fromContainer(container);
