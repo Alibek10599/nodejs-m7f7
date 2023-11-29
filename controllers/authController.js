@@ -85,7 +85,7 @@ module.exports = {
       );
       const user = await User.findOne({
         where: {
-          id: req.user.dataValues.id,
+          email
         },
         include: [
           {
