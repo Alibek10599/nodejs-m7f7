@@ -9,8 +9,9 @@ exports.AccessToken = (user) => {
     iin: user.iin,
     email: user.email,
     orgId: user.orgId,
-    secret2FA: user.secret2FA,
-    role: user.role.dataValues.roleName
+    role: user.role.dataValues.roleName,
+    isActiveTg: user.isActiveTg,
+    isActive2FA: user.isActive2FA
   };
 
   const token = jwt.sign(tokenPayload, process.env.ACCESS_TOKEN_SECRET, {

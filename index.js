@@ -11,6 +11,8 @@ const walletRoutes = require('./routes/walletRoutes');
 const logRoutes = require('./routes/logRoutes');
 const globalPoolRoutes = require('./routes/globalPoolRoutes');
 const workerRoutes = require('./routes/workerRoutes');
+const telegramRoutes = require('./routes/telegramRoutes');
+const earningRoutes = require('./routes/earningRoutes');
 const { spawn } = require('child_process');
 
 require('dotenv').config();
@@ -18,6 +20,7 @@ require('dotenv').config();
 const Container = require('./container');
 const ComponentFactory = require('./component/factory');
 const ServiceFactory = require('./services/factory');
+const findAndSendUndeliveredMessages = require('./notifications/mail-sender/service/message-queue-job');
 
 const cron = require('node-cron');
 
@@ -42,6 +45,8 @@ const { NODE_ENV } = process.env;
   app.use('/api/v1/log', logRoutes);
   app.use('/api/v1/globalPool', globalPoolRoutes);
   app.use('/api/v1/worker', workerRoutes);
+  app.use('/api/v1/notifications', telegramRoutes);
+  app.use('/api/v1/earning', earningRoutes);
 
   const container = await Container.create();
 
@@ -76,6 +81,13 @@ const { NODE_ENV } = process.env;
       });
     });
   }
+
+  cron.schedule('* * * * *',  () => {
+    console.log('########## send again undelivered messages every hour');
+    console.log("Undelivered message queue job started");
+    findAndSendUndeliveredMessages()
+  });
+
   const components = await ComponentFactory.fromContainer(container);
   const services = await ServiceFactory.fromContainer(container);
   const { beforeLoad, afterLoad } = container.$config.$express.hook || {};

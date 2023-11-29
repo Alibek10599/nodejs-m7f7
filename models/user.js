@@ -25,8 +25,6 @@ module.exports = (sequelize, DataTypes) => {
   User.init({
     userName: DataTypes.STRING,
     email: DataTypes.STRING,
-    iin: DataTypes.STRING,
-    egovToken: DataTypes.STRING,
     isConfirmed: DataTypes.BOOLEAN,
     isActive: DataTypes.BOOLEAN,
     isDeleted: DataTypes.BOOLEAN,
@@ -48,7 +46,10 @@ module.exports = (sequelize, DataTypes) => {
     resetPasswordToken: DataTypes.STRING,
     isActive2FA: DataTypes.BOOLEAN,
     secret2FA: DataTypes.STRING,
-    iin: DataTypes.STRING
+    tgUserId: DataTypes.STRING,
+    isActiveTg: DataTypes.BOOLEAN,
+    expirationDate: DataTypes.STRING,
+    confirmationCode: DataTypes.STRING,
   }, {
     sequelize,
     modelName: 'User',

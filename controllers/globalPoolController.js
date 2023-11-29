@@ -19,6 +19,25 @@ module.exports = {
             return res.status(500).send(`Error: ${ error.message }`);
         }
     },
+    GetActivePoolFees: async (req, res) => {
+        try {
+            const globalPool = await GlobalPool.findOne({
+                where: {
+                    isActive: true
+                },
+                order: [["id", "DESC"]],
+            });
+
+            if (!globalPool) {
+                throw new Error("No one global pool active");
+            }
+
+            return res.status(200).json({fees: globalPool.globalFees });
+        } catch (error) {
+            console.log(error);
+            return res.status(500).send(`Error: ${ error.message }`);
+        }
+    },
     CreateGlobalPool: async (req, res) =>{
         try {
             const data = req.body
@@ -38,13 +57,12 @@ module.exports = {
             })
             return res.status(201).json(globalPool)
         } catch (error) {
-            console.log(error);
             return res.status(500).send(`Error: ${ error.message }`);
         }
     },
     ActivateGlobalPool: async (req, res) =>{
         try {
-            const id = +req.params.id
+            const { id } = req.body
             const globalPools = await GlobalPool.findAll()
             for (const pool of globalPools){
                 if (pool.id === id) 
@@ -54,7 +72,6 @@ module.exports = {
             }
             return res.status(201).json(globalPools.find((item) => item.id === id))
         } catch (error) {
-            console.log(error);
             return res.status(500).send(`Error: ${ error.message }`);
         }
     }

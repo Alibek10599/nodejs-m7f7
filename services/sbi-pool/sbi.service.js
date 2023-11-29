@@ -74,6 +74,25 @@ class SbiService {
     updateSubaccount(collectorData){
         return this.client.patch('/api/external/v1/subaccount/virtual', collectorData)
     }
+
+    getEarnings(query){
+        return this.client.get('/api/external/v2/earnings', {
+            params: query
+        })
+    }
+
+    getPyaouts(query){
+        return this.client.get('/api/external/v1/earnings', {
+            params: query
+        })
+    }
+
+    getRevenues(query){
+        return this.client.get('api/external/v1/revenue', {
+            params: query
+        })
+    }
+    
 }
 
 module.exports = SbiService

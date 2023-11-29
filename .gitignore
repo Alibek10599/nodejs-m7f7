@@ -108,3 +108,7 @@ mysql-data
 
 /btcagent/
 !/btcagent/btcagent.service
+
+.idea
+
+scripts

@@ -10,5 +10,6 @@ router.post('/verify/:id', isAuth, isPoolAdmin, AdminUserController.verifyUser);
 router.get('/user-info', isAuth, isPoolAdmin, AdminUserController.GetUserInfo);
 router.patch('/activate', isAuth, isPoolAdmin, AdminUserController.activateUser);
 router.patch('/deactivate', isAuth, isPoolAdmin, AdminUserController.deactivateUser);
+router.patch('/delete2fa', isAuth, isPoolAdmin, AdminUserController.delete2fa);
 
 module.exports = router;

@@ -1,13 +1,20 @@
 const { Stratum } = require('./models')
-const ps = require('ps-node');
+const {exec} = require('child_process');
 
 const StratumService = require('./services/stratum/stratum.service')
 const stratumService = new StratumService()
 
-ps.lookup({ arguments: '-alsologtostderr' }, async function(err, resultList ) {
-  if (err) {
-      throw new Error( err );
+exec('systemctl --type=service --state=running', async (error, stdout, stderr) => {
+  if (error) {
+    reject(error);
+    return;
   }
+
+  // Process the stdout as needed (e.g., parsing or filtering)
+  const runningServices = stdout.split('\n').filter(service => service.trim() !== '').filter(serviceName => serviceName.includes('btcagent'));
+
+  console.log('runningServices : ', runningServices)
+
 
   const activeStrata = await Stratum.findAll({
     where: {
@@ -16,9 +23,9 @@ ps.lookup({ arguments: '-alsologtostderr' }, async function(err, resultList ) {
   })
 
   for (const stratum of activeStrata){
-    const isBTCAgentShutDown = resultList.find((item) => stratum.intPort === +item.command.slice(-4))
+    const isBTCAgentShutDown = runningServices.find((item) => item.includes(`btcagent_${stratum.intPort}.service`))
 
-    console.log('isBTCagentshut down variable: ', isBTCAgentShutDown)
+    console.log('isBTCagentShutDown variable: ', isBTCAgentShutDown)
 
     try{
         if (isBTCAgentShutDown === undefined) {
@@ -37,20 +44,9 @@ ps.lookup({ arguments: '-alsologtostderr' }, async function(err, resultList ) {
   })
 
   for (const stratum of inactiveStrata){
-    const isBTCAgentActive = resultList.find((item) => stratum.intPort === +item.command.slice(-4))
+    const isBTCAgentActive = runningServices.find((item) => item.includes(`btcagent_${stratum.intPort}.service`))
 
-    console.log('ps object: isBTCAgentActive: ', isBTCAgentActive)
-    // if(isBTCAgentActive !== undefined) isBTCAgentActive.kill()
-  }
-
-  console.log('res is: ', resultList, resultList.length)
-  var process = resultList[ 0 ];
-
-  if( process ){
-
-      console.log( 'PID: %s, COMMAND: %s, ARGUMENTS: %s', process.pid, process.command, process.arguments );
-  }
-  else {
-      console.log( 'No such process found!' );
+    console.log(`isBTCAgentActive among inactive stratum: ${JSON.stringify(stratum)} `, isBTCAgentActive)
+    if(isBTCAgentActive !== undefined) await stratumService.deactivateBtcAgentService(stratum)
   }
 });

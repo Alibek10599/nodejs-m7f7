@@ -1,6 +1,7 @@
 const { Wallet, Log, SubAccount, SubWallet } = require('../models');
 const WalletValidation = require('../validators/WalletValidation');
-const getService = require('../config/pool')
+const { PoolFactory } = require('../pool/pool-factory');
+const PoolTypes = require('../pool/pool-types');
 
 module.exports = {
   CreateWallet: async (req, res) => {
@@ -65,24 +66,14 @@ module.exports = {
       const subAccount = await SubAccount.findByPk(subAccountId)
       const wallet = await Wallet.findByPk(subWallet.walletId);
 
-      const {service: sbiService } = await getService();
+      const pool = PoolFactory.createPool(subAccount.collectorId ? PoolTypes.SBI : PoolTypes.Luxor)
 
-      const {data: { content }} = await sbiService.getCollector(subAccount.collectorId)
-      const virtualSubaccount = content.find((item) => item.vsubaccountId === subAccount.vsub1Id);
-      
-      const sbiRequest = {
-        collector: virtualSubaccount.collectorName,
-        collectorId: virtualSubaccount.collectorId,
-        virtual: 'vsub1',
-        allocation: virtualSubaccount.allocation,
-        withdrawAddress: wallet.address,
-        tier: virtualSubaccount.newTier,
-        isPaymentEnabled: virtualSubaccount.isPaymentEnabled
+      const { error: updateWalletError } = await pool.updateWallet({ subAccount, address: wallet.address })
+
+      if (updateWalletError && updateWalletError.length) {
+        return res.status(400).json({ message: updateWalletError[0].message })
       }
-
-      const sbiResponse = await sbiService.updateSubaccount(sbiRequest)
-      
-  
+    
       await Log.create({
         userId: req.user.dataValues.id,
         action: 'update',

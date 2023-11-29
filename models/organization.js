@@ -25,10 +25,14 @@ module.exports = (sequelize, DataTypes) => {
   Organization.init({
     orgName: DataTypes.STRING,
     bin: DataTypes.STRING,
+    iinDir: DataTypes.STRING,
+    tokenEgov: DataTypes.STRING,
     feesRate: DataTypes.DECIMAL(5,2),
     isRequestedApprove: DataTypes.BOOLEAN,
     isActive: DataTypes.BOOLEAN,
-    isDeleted: DataTypes.BOOLEAN
+    isDeleted: DataTypes.BOOLEAN,
+    licId: DataTypes.STRING,
+    licDate: DataTypes.DATE
   }, {
     sequelize,
     modelName: 'Organization',
