@@ -96,7 +96,6 @@ class SBIPool {
   }
 
   async getTransactions(fromDate, toDate, size) {
-    
     const sbiPayouts = await this.client(
       `api/external/v1/earnings?fromDate=${fromDate}&toDate=${toDate}`
     );
@@ -110,7 +109,7 @@ class SBIPool {
     const sbiEarnings = await this.client(
       `api/external/v2/earnings?startDate=${fromDate}&endDate=${toDate}&size=${size}`
     );
-    
+
     const filteredEarnings = sbiEarnings.data.content.filter(
       (item) => item.vsubaccountName === "vsub1"
     );
@@ -123,11 +122,19 @@ class SBIPool {
       .map((subAccount) => subAccount.subAccName)
       .join(",");
 
-    const { data: { subaccounts } } = await this.client.get(
+    const {
+      data: { subaccounts },
+    } = await this.client.get(
       `api/external/v1/subaccounts?subAccountNames=${subAccountNames}`
     );
 
     return subaccounts;
+  }
+
+  async getWorkers(subaccountnames) {
+    return this.client.get(
+      `api/external/v1/workers?subaccountNames=${subaccountnames}`
+    );
   }
 
   getCollector(collectorId, query) {

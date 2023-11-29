@@ -276,7 +276,7 @@ class LuxorPool {
               ...walletData.getWallet,
               addresses,
               workerStatus: getUserMinersStatusCount,
-              ...subaccountInfo.node
+              ...subaccountInfo.node,
             },
           ],
         });
@@ -320,9 +320,58 @@ class LuxorPool {
   }
 
   async getSubAccountsStatus(subAccounts) {
-    const info = await this.getSubaccountInfo(subAccounts)
+    const info = await this.getSubaccountInfo(subAccounts);
 
-    return info.map((item) => { return item.info }).flat()
+    return info
+      .map((item) => {
+        return item.info;
+      })
+      .flat();
+  }
+
+  async getWorkers(subaccountnames) {
+    const subAccounts = await SubAccount.findAll({
+      where: {
+        subAccName: {
+          [Op.in]: Array.isArray(subaccountnames) ? subaccountnames : [subaccountnames],
+        },
+      },
+    });
+
+    const result = await Promise.all(subAccounts.map((item) => this.#workerDetails(item.subAccName)))
+
+    return result.map((item) => item.data.data.getWorkerDetails.nodes).flat();
+  }
+
+  async #workerDetails(username, mpn = "BTC", first = 100) {
+    return this.#client.post(this.#url, this.#workerDetailsQuery(username));
+  }
+
+  #workerDetailsQuery(username, mpn = "BTC", first = 100) {
+    return {
+      query: `
+        query getWorkerDetails {
+          getWorkerDetails(uname: "${username}", mpn: ${mpn}, first: ${first}, duration: { days: 10 }) {
+            nodes {
+              minerId
+              workerName
+              miningProfileName
+              updatedAt
+              status
+              hashrate
+              validShares
+              staleShares
+              invalidShares
+              lowDiffShares
+              badShares
+              duplicateShares
+              revenue
+              efficiency
+            }
+          }
+        }
+      `,
+    };
   }
 
   #createSubAccountMutation(username) {
