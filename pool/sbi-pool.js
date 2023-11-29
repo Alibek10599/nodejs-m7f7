@@ -1,16 +1,16 @@
 const axios = require("axios");
 
-const { SBI_URL, SBI_API_KEY, SBI_API_SECRET, MIDAS_GLOBAL_POOL_ADDRESS } =
+const { SBI_URL, MIDAS_GLOBAL_POOL_ADDRESS } =
   process.env;
 
 class SBIPool {
-  constructor(type) {
-    this.type = type;
+  constructor(pool) {
+    this.type = pool.name;
     this.client = axios.create({
       baseURL: SBI_URL,
       headers: {
-        "x-api-key": SBI_API_KEY,
-        "x-api-secret": SBI_API_SECRET,
+        "x-api-key": pool.apiKey,
+        "x-api-secret": pool.apiSecret,
       },
     });
   }

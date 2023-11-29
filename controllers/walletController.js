@@ -1,4 +1,4 @@
-const { Wallet, Log, SubAccount, SubWallet } = require('../models');
+const { Wallet, Log, SubAccount, SubWallet, GlobalPool } = require('../models');
 const WalletValidation = require('../validators/WalletValidation');
 const { PoolFactory } = require('../pool/pool-factory');
 const PoolTypes = require('../pool/pool-types');
@@ -66,7 +66,15 @@ module.exports = {
       const subAccount = await SubAccount.findByPk(subAccountId)
       const wallet = await Wallet.findByPk(subWallet.walletId);
 
-      const pool = PoolFactory.createPool(subAccount.collectorId ? PoolTypes.SBI : PoolTypes.Luxor)
+      const globalPool = await GlobalPool.findOne({
+        where: {
+          isActive: true,
+          name: subAccount.collectorId ? PoolTypes.SBI : PoolTypes.Luxor,
+        },
+        order: [["id", "DESC"]],
+      });
+
+      const pool = PoolFactory.createPool(globalPool)
 
       const { error: updateWalletError } = await pool.updateWallet({ subAccount, address: wallet.address })
 

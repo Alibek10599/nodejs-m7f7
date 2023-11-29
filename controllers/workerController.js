@@ -16,7 +16,7 @@ module.exports = {
     if (!globalPool) {
       throw new Error("No one global pool active");
     }
-    const pool = PoolFactory.createPool(globalPool.name);
+    const pool = PoolFactory.createPool(globalPool);
     const { subaccountnames } = req.query;
     console.log('1', subaccountnames)
     try {

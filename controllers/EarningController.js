@@ -16,7 +16,7 @@ module.exports = {
               throw new Error("No one global pool active");
             }
 
-            const pool = PoolFactory.createPool(globalPool.name);
+            const pool = PoolFactory.createPool(globalPool);
 
             const { fromDate, toDate } = req.query;
             const transactions = await pool.getTransactions(fromDate, toDate, 100);

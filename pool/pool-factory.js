@@ -3,10 +3,10 @@ const LuxorPool = require("./luxor-pool");
 const PoolTypes = require("./pool-types");
 
 class PoolFactory {
-  static createPool(type) {
+  static createPool(pool) {
     let Pool;
 
-    switch (type) {
+    switch (pool.name) {
       case PoolTypes.SBI:
         Pool = SBIPool;
         break;
@@ -19,7 +19,7 @@ class PoolFactory {
       throw new Error(`Unknown type ${type} for pool`);
     }
 
-    return new Pool(type);
+    return new Pool(pool);
   }
 }
 

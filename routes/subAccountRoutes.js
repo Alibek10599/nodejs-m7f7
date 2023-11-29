@@ -13,5 +13,6 @@ router.get('/sbi', isAuth, SubAccountController.GetSBISubAccounts);
 router.get('/hashrate', isAuth, SubAccountController.GetHashRate);
 router.get('/subpool-info', isAuth, SubAccountController.GetSubPoolSubAccountInfo);
 router.get('/getstatus', isAuth, SubAccountController.GetStatus);
+router.get('/report', isAuth, SubAccountController.Report);
 
 module.exports = router;

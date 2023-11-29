@@ -36,7 +36,7 @@ module.exports = {
 
       console.info("req body is", req.body);
       const stratumService = new StratumService();
-      const pool = PoolFactory.createPool(globalPool.name);
+      const pool = PoolFactory.createPool(globalPool);
 
       const { name, walletName, walletAddress } = req.body;
       const { errors, isValid } = SubAccountValidation(req.body);
@@ -85,16 +85,19 @@ module.exports = {
       }
 
       if (isLuxorPool(pool)) {
-        const {
-          data: luxorSubAccountData,
-          error
-        } = poolSubAccount;
+        const { data: luxorSubAccountData, error } = poolSubAccount;
 
         if (error && error.length) {
           return res.status(400).json({ message: error[0].message });
         }
 
-        const { data: { provisionNewUser: { user: { id } } } } = luxorSubAccountData;
+        const {
+          data: {
+            provisionNewUser: {
+              user: { id },
+            },
+          },
+        } = luxorSubAccountData;
 
         subAccount = await SubAccount.create({
           subAccName: name,
@@ -291,7 +294,7 @@ module.exports = {
         throw new Error("No one global pool active");
       }
 
-      const pool = PoolFactory.createPool(globalPool.name);
+      const pool = PoolFactory.createPool(globalPool);
 
       // const { service: sbiService } = await getService();
       // const {
@@ -337,7 +340,7 @@ module.exports = {
         throw new Error("No one global pool active");
       }
 
-      const pool = PoolFactory.createPool(globalPool.name);      
+      const pool = PoolFactory.createPool(globalPool);
 
       const { orgId } = req.user.dataValues;
       if (!orgId) res.status(404).send(`This user has not organization`);
@@ -353,7 +356,7 @@ module.exports = {
         },
       });
 
-      const poolSubaccounts = await pool.getSubAccountsStatus(subAccounts)
+      const poolSubaccounts = await pool.getSubAccountsStatus(subAccounts);
 
       // const subAccountNames = subAccounts
       //   .map((subAccount) => subAccount.subAccName)
@@ -423,7 +426,9 @@ module.exports = {
       const subAccountInfo = [];
       for (const subAccount of subAccounts) {
         const poolSubAccountInfo = poolSubaccounts.find(
-          (item) => (item.subaccountId === subAccount.collectorId) || (item.id === subAccount.luxorId)
+          (item) =>
+            item.subaccountId === subAccount.collectorId ||
+            item.id === subAccount.luxorId
         );
         // const {data: { content: collectorInfo }} = await sbiService.getCollector(sbiSubAccountInfo.subaccountId);
         // const orgSbiSubAccInfo = await collectorInfo.find(item => item.address === subAccount.address);
@@ -459,5 +464,28 @@ module.exports = {
       console.log(error);
       return res.status(500).send(`Error: ${error.message}`);
     }
+  },
+  Report: async (req, res) => {
+    const globalPool = await GlobalPool.findOne({
+      where: {
+        isActive: true,
+      },
+      order: [["id", "DESC"]],
+    });
+
+    if (!globalPool) {
+      throw new Error("No one global pool active");
+    }
+
+    const {
+      year = new Date().getFullYear(),
+      month = new Date().getMonth() + 1,
+    } = req.query;
+
+    const pool = PoolFactory.createPool(globalPool);
+
+    const result = await pool.getReport(year, month);
+
+    res.status(200).json(result);
   },
 };
