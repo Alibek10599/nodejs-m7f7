@@ -38,12 +38,14 @@ module.exports = {
       const stratumService = new StratumService();
       const pool = PoolFactory.createPool(globalPool);
 
-      const { name, walletName, walletAddress } = req.body;
+      const { walletName, walletAddress } = req.body;
       const { errors, isValid } = SubAccountValidation(req.body);
 
       if (!isValid) {
         return res.status(400).json(errors);
       }
+
+      const name = req.body.name.toLowerCase()
 
       let exisitingSubAcc = await SubAccount.findOne({
         where: {
