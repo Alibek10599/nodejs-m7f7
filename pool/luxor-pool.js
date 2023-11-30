@@ -463,7 +463,6 @@ class LuxorPool {
               duplicateShares
               revenue
               efficiency
->>>>>>> fbcd5b6a7b553dd17630f12380ef74fab9dc348c
             }
           }
         }
@@ -482,9 +481,8 @@ class LuxorPool {
     return {
       query: `
         query getHashrateScoreHistory {
-          getHashrateScoreHistory(uname: "${username}", mpn: ${mpn}, first: ${first}, orderBy: DATE_DESC ${
-        after ? `, after: "${after}"` : ""
-      }) {
+          getHashrateScoreHistory(uname: "${username}", mpn: ${mpn}, first: ${first}, orderBy: DATE_DESC ${after ? `, after: "${after}"` : ""
+        }) {
             edges {
               cursor
               node {
@@ -563,9 +561,8 @@ class LuxorPool {
     return {
       query: `
         mutation createWalletAddress {
-          createWalletAddress(input: { address: "${address}", addressName: "${
-        walletName ?? this.#walletName(username)
-      }", uname: "${username}", walletId: ${walletId} }) {
+          createWalletAddress(input: { address: "${address}", addressName: "${walletName ?? this.#walletName(username)
+        }", uname: "${username}", walletId: ${walletId} }) {
             walletAddress {
               address,
               addressName,
