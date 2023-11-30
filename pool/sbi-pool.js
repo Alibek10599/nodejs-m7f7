@@ -1,4 +1,5 @@
 const axios = require("axios");
+const { SubAccount } = require("../models");
 
 const { SBI_URL, MIDAS_GLOBAL_POOL_ADDRESS } =
   process.env;
@@ -137,12 +138,33 @@ class SBIPool {
     );
   }
 
-  async getEstimatedRevenue(query) {
-    const data = await this.client.get("api/external/v1/revenue", {
-      params: { subaccountNames: query},
-    });
+  async getEstimatedRevenue(subaccountName) {
+    const usernames = []
 
-    return Object.values(data.data.estimatedRevenues);
+    if (subaccountName) usernames.push(subaccountName)
+    else {
+      const subAccounts = await SubAccount.findAll({
+        where: {
+          collectorId: {
+            [Op.ne]: null,
+          },
+        },
+      });
+
+      usernames.push(...subAccounts.map((item) => item.subAccName))
+    }
+
+    const result = await Promise.all(
+      usernames.map(async (item) => {
+        const data = await this.client.get("api/external/v1/revenue", {
+          params: { subaccountNames: item },
+        });
+
+        return { subaccount: item, data: Object.values(data.data.estimatedRevenues) }
+      })
+    );
+
+    return result;
   }
 
   getCollector(collectorId, query) {

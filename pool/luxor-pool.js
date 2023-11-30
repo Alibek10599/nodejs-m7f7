@@ -440,21 +440,34 @@ class LuxorPool {
   }
 
   async getEstimatedRevenue(subaccountName) {
-    const {
-      data: {
-        data: {
-          getMiningSummary: { revenue },
-        },
-      },
-    } = await this.#miningSummary(subaccountName, "_1_DAY");
+    const usernames = []
 
-    return {
-      estimatedRevenues: {
-        [`${new Date().getFullYear()}-${new Date().getMonth() + 1}-${
-          new Date().getDate() - 1
-        }T00:00:00.000+00:00`]: [revenue],
-      },
-    };
+    if (subaccountName) usernames.push(subaccountName)
+    else {
+      const subAccounts = await SubAccount.findAll({
+        where: {
+          luxorId: {
+            [Op.ne]: null,
+          },
+        },
+      });
+
+      usernames.push(...subAccounts.map((item) => item.subAccName))
+    }
+
+    const result = await Promise.all(usernames.map(async (item) => {
+      const {
+        data: {
+          data: {
+            getMiningSummary: { revenue },
+          },
+        },
+      } = await this.#miningSummary(item, "_1_DAY");
+
+      return { subaccount: item, data: [revenue] }
+    }))
+
+    return result;
   }
 
   async getEarnings(fromDate, toDate, size) {
