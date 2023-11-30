@@ -19,6 +19,8 @@ const { default: axios } = require("axios");
 const { PoolFactory, isSBIPool, isLuxorPool } = require("../pool/pool-factory");
 const PoolTypes = require("../pool/pool-types");
 const { Op } = require("sequelize");
+const selectNotifyService = require("../notifications/service/notification-selector");
+const {TELEGRAM} = require("../utils/constants/selectors");
 
 module.exports = {
   CreateSubAccount: async (req, res) => {
@@ -148,6 +150,11 @@ module.exports = {
           subAccountId: subAccount.id,
           userId: req.user.dataValues.id,
         });
+
+        await selectNotifyService.notificationSelector({
+          userId: req.user.dataValues.id,
+          message: "Создание СубСчета прошло успешно"
+        }, TELEGRAM)
 
         res.status(201).json({
           success: true,

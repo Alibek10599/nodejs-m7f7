@@ -4,7 +4,6 @@ const { Organization, User, Log, LoginLog, Role } = require('../models');
 const SignupValidation = require('../validators/SignupValidation');
 const SigninValidation = require('../validators/SigninValidation');
 const ResetValidation = require('../validators/ResetValidation');
-const sendMail = require('../notifications/mail-sender/sendMail');
 const { AccessToken, RefreshToken } = require('../utils/jwt');
 const QRCode = require('qrcode');
 const speakeasy = require('speakeasy');
@@ -12,6 +11,8 @@ const requestIp = require('request-ip');
 const TwoFAValidation = require('../validators/TwoFAValidation');
 const UAParser = require('ua-parser-js');
 const axios = require('axios');
+const selectNotifyService = require("../notifications/service/notification-selector");
+const {EMAIL} = require("../utils/constants/selectors");
 
 const createActivationToken = (user) => jwt.sign(user, process.env.ACTIVATION_SECRET);
 
@@ -54,13 +55,15 @@ module.exports = {
 
       const activationToken = createActivationToken(user);
       const activationUrl = `${ process.env.FRONTEND_URL }/emailverification?activationToken=${ activationToken }`;
-      await sendMail(
-        exisitingUser.email,
-        activationUrl,
-        exisitingUser.userName,
-        'Email Verification',
-        'verificationmail',
-      );
+
+      await selectNotifyService.notificationSelector({
+        email: exisitingUser.email,
+        urlOrCode: activationUrl,
+        userName: exisitingUser.userName,
+        subject: 'Email Verification',
+        template: 'verificationmail',
+      }, EMAIL)
+
       res.status(201).json({
         success: true,
         message: `please check your email:- ${ exisitingUser.email } to activate your account!`,
@@ -169,13 +172,13 @@ module.exports = {
         }
       }
 
-      await sendMail(
-        userExist.email,
-        clientIp,
-        userExist.userName,
-        'Login Attempted',
-        'loginattempt',
-      );
+      await selectNotifyService.notificationSelector({
+        email: userExist.email,
+        urlOrCode: clientIp,
+        userName: userExist.userName,
+        subject: 'Login Attempted',
+        template: 'loginattempt',
+      }, EMAIL)
 
       // // Create a new instance of UAParser
       const parser = new UAParser();
@@ -244,13 +247,15 @@ module.exports = {
       user.resetPasswordToken = resetPasswordToken;
       await user.save();
       const reseturl = `${ process.env.FRONTEND_URL }/resetpassword?resetPasswordToken=${ resetPasswordToken }`;
-      await sendMail(
-        user.email,
-        reseturl,
-        user.userName,
-        'RESET YOUR PASSWORD',
-        'forgotpasswordmail',
-      );
+
+      await selectNotifyService.notificationSelector({
+        email: user.email,
+        urlOrCode: reseturl,
+        userName: user.userName,
+        subject: 'RESET YOUR PASSWORD',
+        template: 'forgotpasswordmail',
+      }, EMAIL)
+
       res.status(200).json({
         success: true,
         message: `please check your email:- ${ user.email } to Reset your password!`,

@@ -20,8 +20,8 @@ require('dotenv').config();
 const Container = require('./container');
 const ComponentFactory = require('./component/factory');
 const ServiceFactory = require('./services/factory');
-const findAndSendUndeliveredMessages = require('./notifications/mail-sender/service/message-queue-job');
-const deleteDeliveredMessages = require('./notifications/mail-sender/service/delete-delivered-messages-job');
+const findAndSendUndeliveredMessages = require('./notifications/mail-sender/jobs/message-queue-job');
+const deleteDeliveredMessages = require('./notifications/mail-sender/jobs/delete-delivered-messages-job');
 
 const cron = require('node-cron');
 
@@ -62,7 +62,7 @@ const { NODE_ENV } = process.env;
   if ( NODE_ENV === 'production') {
     cron.schedule('* * * * *', () => {
       console.log('########## matching active subAccount every minute');
-      console.log('Running heartbeat service script...');
+      console.log('Running heartbeat jobs script...');
       const psProcess = spawn('node', ['./ps.js']); // Replace 'path_to_ps.js' with the actual path to your ps.js script
     
       psProcess.stdout.on('data', (data) => {

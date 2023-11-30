@@ -9,8 +9,9 @@ const matchUserMessage = require("../../../validators/emailRegexpMatch");
 const generateCode = require("../../../utils/generate-code");
 const timeToMs = require("../../../utils/time-utils");
 const {User} = require("../../../models");
-const sendMail = require("../../mail-sender/sendMail");
 const {isInt} = require("validator");
+const {EMAIL} = require("../../../utils/constants/selectors");
+const selectNotifyService = require("../../service/notification-selector");
 
 bot.on('text', async msg => {
     if (msg.text === '/start') {
@@ -49,9 +50,15 @@ bot.on('text', async msg => {
     }
 })
 
-async function sendMessage(chatId, message) {
+async function sendTelegramNotification(options) {
     try {
-        return bot.sendMessage(chatId, message);
+        const user = await User.findOne({
+            where: {
+                id: options.userId
+            }
+        })
+
+        return bot.sendMessage(user.tgUserId, options.message);
     } catch (error) {
         console.error('Failed to send message:', error);
     }
@@ -79,13 +86,13 @@ async function findUserByEmail(message) {
             },
         });
 
-        await sendMail(
-            user.email,
-            confirmationCode,
-            user.userName,
-            'Confirmation code',
-            'confirmationcode',
-        );
+        await selectNotifyService.notificationSelector({
+            email: user.email,
+            urlOrCode: confirmationCode,
+            userName: user.userName,
+            subject: 'Confirmation code',
+            template: 'confirmationcode'
+        }, EMAIL)
 
         return true
 
@@ -115,4 +122,4 @@ async function validateConfirmationCode(message) {
 
 }
 
-module.exports = sendMessage
+module.exports = sendTelegramNotification

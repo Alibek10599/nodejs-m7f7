@@ -1,10 +1,11 @@
-const sendMessage = require("../notifications/telegram-bot/service/telegram-notifications");
+const {TELEGRAM} = require("../utils/constants/selectors");
+const notificationSelector = require("../notifications/service/notification-selector");
 
 module.exports = {
     sendMessageToUser: async (req, res) => {
         const { tgUserId } = req.body;
         try {
-            const message = await sendMessage(tgUserId, 'test message');
+            const message = await notificationSelector({tgUserId, message: 'test message'}, TELEGRAM);
 
             if (!message) {
                 return res.status(404).json('Telegram message delivered failed');

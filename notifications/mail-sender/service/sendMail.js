@@ -1,7 +1,7 @@
-const getTransport = require("./config/email-config");
-const {Message} = require("../../models");
+const getTransport = require("../config/email-config");
+const {Message} = require("../../../models");
 
-const sendMail = async (to, url, name, subject, template) => {
+const sendMail = async (options) => {
   try {
     const transporter = getTransport()
 
@@ -10,12 +10,12 @@ const sendMail = async (to, url, name, subject, template) => {
         name: 'MidasPool',
         address: process.env.SMPT_MAIL,
       },
-      to,
-      subject,
-      template,
+      to: options.to,
+      subject: options.subject,
+      template: options.template,
       context: {
-        name,
-        url,
+        name: options.userName,
+        url: options.urlOrCode,
       },
     };
 

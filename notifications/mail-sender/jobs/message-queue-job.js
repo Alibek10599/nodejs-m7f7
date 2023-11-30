@@ -1,4 +1,4 @@
-const sendMail = require("../sendMail");
+const sendMail = require("../service/sendMail");
 const {Message} = require("../../../models");
 
 module.exports = async function findAndSendUndeliveredMessages() {
@@ -12,7 +12,13 @@ module.exports = async function findAndSendUndeliveredMessages() {
 
     for (const message of messages) {
 
-        const info = !(await sendMail(message.email,message.url,message.userName,message.subject,message.template,))
+        const info = !(await sendMail({
+            to: message.email,
+            urlOrCode: message.url,
+            userName: message.userName,
+            subject: message.subject,
+            template: message.template
+        }))
 
         if(info) {
             await Message.update({isDelivered: true}, {

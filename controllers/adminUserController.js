@@ -1,7 +1,8 @@
 const { User, Log, Role, SubUser } = require('../models');
 const jwt = require('jsonwebtoken');
-const sendMail = require('../notifications/mail-sender/sendMail');
 const UserValidation = require('../validators/UserValidation');
+const selectNotifyService = require("../notifications/service/notification-selector");
+const {EMAIL} = require("../utils/constants/selectors");
 
 const createActivationToken = (user) => jwt.sign(user, process.env.ACTIVATION_SECRET);
 
@@ -82,13 +83,14 @@ module.exports = {
       
       const activationToken = createActivationToken(user);
       const activationUrl = `${ process.env.FRONTEND_URL }/acceptinvitation?activationToken=${ activationToken }`;
-      await sendMail(
-        exisitingUser.email,
-        activationUrl,
-        exisitingUser.userName,
-        'Accept Invitation',
-        'acceptinvitation',
-      );
+
+      await selectNotifyService.notificationSelector({
+        email: exisitingUser.email,
+        urlOrCode: activationUrl,
+        userName: exisitingUser.userName,
+        subject: 'Accept Invitation',
+        template: 'acceptinvitation'
+      }, EMAIL)
 
       await Log.create({
         userId: req.user.dataValues.id,
