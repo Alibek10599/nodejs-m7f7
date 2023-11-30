@@ -41,7 +41,7 @@ module.exports = {
               throw new Error("No one global pool active");
             }
 
-            const pool = PoolFactory.createPool(globalPool.name);
+            const pool = PoolFactory.createPool(globalPool);
 
             const { fromDate, toDate } = req.query;
             
@@ -57,13 +57,28 @@ module.exports = {
     GetEstimatedRevenue: async (req, res) => {
         const { subaccountNames } = req.body;
         try {
-            const {service: sbiService } = await getService();
+          const globalPool = await GlobalPool.findOne({
+            where: {
+              isActive: true,
+            },
+            order: [["id", "DESC"]],
+          });
+
+          if (!globalPool) {
+            throw new Error("No one global pool active");
+          }
+
+          const pool = PoolFactory.createPool(globalPool);
+
+          const result = await pool.getEstimatedRevenue(subaccountNames)
+
+            // const {service: sbiService } = await getService();
             
-            const sbiRevenues = await sbiService.getRevenues({subaccountNames: 'MidasTest1'});
+            // const sbiRevenues = await sbiService.getRevenues({subaccountNames: 'MidasTest1'});
 
-            const revenues = Object.values(sbiRevenues.data.estimatedRevenues)
+            // const revenues = Object.values(sbiRevenues.data.estimatedRevenues)
 
-            return res.status(200).json(revenues);
+            return res.status(200).json(result);
         } catch (error) {
             console.log(error);
             return res.status(500).send(`Error: ${ error.message }`);

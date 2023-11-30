@@ -287,7 +287,7 @@ class LuxorPool {
       })
     ).then((result) => result.flat());
 
-    return { content: result };
+    return result;
   }
 
   async getSubAccountsStatus(subAccounts) {
@@ -439,6 +439,42 @@ class LuxorPool {
     return result.map((item) => item.data.data.getWorkerDetails.nodes).flat();
   }
 
+  async getEstimatedRevenue(subaccountName) {
+    const {
+      data: {
+        data: {
+          getMiningSummary: { revenue },
+        },
+      },
+    } = await this.#miningSummary(subaccountName, "_1_DAY");
+
+    return {
+      estimatedRevenues: {
+        [`${new Date().getFullYear()}-${new Date().getMonth() + 1}-${
+          new Date().getDate() - 1
+        }T00:00:00.000+00:00`]: [revenue],
+      },
+    };
+  }
+
+  async getEarnings(fromDate, toDate, size) {
+    const subAccounts = await SubAccount.findAll({
+      where: {
+        luxorId: {
+          [Op.ne]: null,
+        },
+      },
+    });
+
+    const result = await Promise.all(subAccounts.map(async (item) => {
+      const list = await this.#hashrateScoreHistory(item.subAccName);
+
+      return list.data.data.getHashrateScoreHistory.edges.map((listItem) => ({ ...listItem.node, ...item.dataValues }))
+    }))
+
+    return result.flat();
+  }
+
   async #workerDetails(username, mpn = "BTC", first = 100) {
     return this.#client.post(this.#url, this.#workerDetailsQuery(username));
   }
@@ -481,14 +517,19 @@ class LuxorPool {
     return {
       query: `
         query getHashrateScoreHistory {
-          getHashrateScoreHistory(uname: "${username}", mpn: ${mpn}, first: ${first}, orderBy: DATE_DESC ${after ? `, after: "${after}"` : ""
-        }) {
+          getHashrateScoreHistory(uname: "${username}", mpn: ${mpn}, first: ${first}, orderBy: DATE_DESC ${
+        after ? `, after: "${after}"` : ""
+      }) {
             edges {
               cursor
               node {
                 date
                 revenue
                 hashrate
+                efficiency
+                uptimePercentage
+                uptimeTotalMinutes
+                uptimeTotalMachines
               }
             }
           }
@@ -561,8 +602,9 @@ class LuxorPool {
     return {
       query: `
         mutation createWalletAddress {
-          createWalletAddress(input: { address: "${address}", addressName: "${walletName ?? this.#walletName(username)
-        }", uname: "${username}", walletId: ${walletId} }) {
+          createWalletAddress(input: { address: "${address}", addressName: "${
+        walletName ?? this.#walletName(username)
+      }", uname: "${username}", walletId: ${walletId} }) {
             walletAddress {
               address,
               addressName,

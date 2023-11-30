@@ -137,6 +137,14 @@ class SBIPool {
     );
   }
 
+  async getEstimatedRevenue(query) {
+    const data = await this.client.get("api/external/v1/revenue", {
+      params: { subaccountNames: query},
+    });
+
+    return Object.values(data.data.estimatedRevenues);
+  }
+
   getCollector(collectorId, query) {
     return this.client.get(
       `/api/external/v1/subaccount/${collectorId}/virtual`,
