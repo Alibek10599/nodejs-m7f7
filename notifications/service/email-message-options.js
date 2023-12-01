@@ -4,7 +4,7 @@ async function sendEmailMessage(options) {
     const newOptions = {
         to: options.email,
         urlOrCode: options.urlOrCode,
-        name: options.userName,
+        userName: options.userName,
         subject: options.subject,
         template: options.template
     }

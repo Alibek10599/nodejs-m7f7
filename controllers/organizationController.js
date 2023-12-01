@@ -1,5 +1,7 @@
 const { Organization, User, Log, Role, SubAccount, SubUser } = require('../models');
 const OrganizationValidation = require('../validators/OrganizationValidation');
+const selectNotifyService = require("../notifications/service/notification-selector");
+const { EMAIL } = require("../utils/constants/selectors");
 
 module.exports = {
   GetOrganizations: async (req, res) => {
@@ -8,7 +10,7 @@ module.exports = {
 
       return res.status(200).json(organizations);
     } catch (error) {
-      return res.status(500).send(`Error: ${ error.message }`);
+      return res.status(500).send(`Error: ${error.message}`);
     }
   },
   CreateOrganization: async (req, res) => {
@@ -53,10 +55,10 @@ module.exports = {
 
       res.status(201).json({
         success: true,
-        message: `please wait for activation of your Organization:- ${ name }.`,
+        message: `please wait for activation of your Organization:- ${name}.`,
       });
     } catch (error) {
-      return res.status(500).send(`Error on creating organization: ${ error.message }`);
+      return res.status(500).send(`Error on creating organization: ${error.message}`);
     }
   },
   ActivateOrganization: async (req, res) => {
@@ -75,7 +77,7 @@ module.exports = {
 
       return res.status(200).json(organization);
     } catch (error) {
-      return res.status(500).send(`Error: ${ error.message }`);
+      return res.status(500).send(`Error: ${error.message}`);
     }
   },
   GetInfo: async (req, res) => {
@@ -88,7 +90,7 @@ module.exports = {
 
       res.status(200).json(info);
     } catch (error) {
-      return res.status(500).send(`Error: ${ error.message }`);
+      return res.status(500).send(`Error: ${error.message}`);
     }
   },
   UpdateOrganization: async (req, res) => {
@@ -114,12 +116,12 @@ module.exports = {
 
       return res.status(200).json(organization);
     } catch (error) {
-      return res.status(500).send(`Error: ${ error.message }`);
+      return res.status(500).send(`Error: ${error.message}`);
     }
   },
   ApproveOrganization: async (req, res) => {
-    const {feesRate, orgId} = req.body;
-    
+    const { feesRate, orgId } = req.body;
+
     try {
       const organization = await Organization.findByPk(orgId);
 
@@ -130,7 +132,18 @@ module.exports = {
       organization.feesRate = feesRate;
       organization.isRequestedApprove = true;
       organization.save();
-      
+
+      const orgUser = await User.findOne({
+        where: { orgId: organization.id }
+      })
+
+      await selectNotifyService.notificationSelector({
+        email: orgUser.email,
+        userName: orgUser.userName,
+        subject: 'Organization Approved',
+        template: 'approveOrganization',
+      }, EMAIL)
+
       await Log.create({
         userId: req.user.dataValues.id,
         action: 'update',
@@ -141,13 +154,13 @@ module.exports = {
       return res.status(200).json(organization);
     } catch (error) {
       console.log(error);
-      return res.status(500).send(`Error: ${ error.message }`);
+      return res.status(500).send(`Error: ${error.message}`);
     }
   },
   GetOrganizationIfo: async (req, res) => {
     const orgId = req.query.id;
 
-    try{
+    try {
       const organization = await Organization.findByPk(orgId);
       const subAccounts = await SubAccount.findAll({
         where: {
@@ -174,7 +187,7 @@ module.exports = {
           ]
         });
 
-        const subAccountWithUsers = {subAccount, subUsers};
+        const subAccountWithUsers = { subAccount, subUsers };
 
         return subAccountWithUsers;
       });
@@ -182,10 +195,10 @@ module.exports = {
       const subAccountsArrays = await Promise.all(subUsersPromises);
       const subAccountsFlat = subAccountsArrays.flat();
 
-      res.status(200).json({organization, subAccounts: subAccountsFlat})
+      res.status(200).json({ organization, subAccounts: subAccountsFlat })
     } catch (error) {
       console.log(error);
-      return res.status(500).send(`Error: ${ error.message }`);
+      return res.status(500).send(`Error: ${error.message}`);
     }
   }
 };
