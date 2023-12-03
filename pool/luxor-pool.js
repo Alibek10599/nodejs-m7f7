@@ -234,9 +234,9 @@ class LuxorPool {
           info: [
             {
               hashrate: [
-                miningSummary15mData.getMiningSummary.hashrate,
-                miningSummary6hData.getMiningSummary.hashrate,
-                miningSummary1dData.getMiningSummary.hashrate,
+                Math.floor(miningSummary15mData.getMiningSummary.hashrate / 1e12),
+                Math.floor(miningSummary6hData.getMiningSummary.hashrate / 1e12),
+                Math.floor(miningSummary1dData.getMiningSummary.hashrate / 1e12),
               ],
               revenue: [
                 miningSummary15mData.getMiningSummary.revenue,
