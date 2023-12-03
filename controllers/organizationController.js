@@ -15,7 +15,7 @@ module.exports = {
   },
   CreateOrganization: async (req, res) => {
     try {
-      const { name } = req.body;
+      const { name, bin, iin } = req.body;
       const { errors, isValid } = OrganizationValidation(req.body);
 
       if (!isValid) {
@@ -32,6 +32,8 @@ module.exports = {
       }
       exisitingOrganization = await Organization.create({
         orgName: name,
+        bin,
+        iinDir: iin
       });
       const user = await User.findOne({
         where: {
