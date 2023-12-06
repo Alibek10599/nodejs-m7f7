@@ -19,7 +19,7 @@ module.exports = {
             return res.status(500).send(`Error: ${ error.message }`);
         }
     },
-    GetActivePoolFees: async (req, res) => {
+    GetActivePoolStatus: async (req, res) => {
         try {
             const globalPool = await GlobalPool.findOne({
                 where: {
@@ -32,7 +32,7 @@ module.exports = {
                 throw new Error("No one global pool active");
             }
 
-            return res.status(200).json({fees: globalPool.globalFees });
+            return res.status(200).json({fees: globalPool.globalFees, minTreashold: globalPool.minTreashold, typeEarnings: globalPool.typeEarnings });
         } catch (error) {
             console.log(error);
             return res.status(500).send(`Error: ${ error.message }`);

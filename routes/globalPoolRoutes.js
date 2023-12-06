@@ -8,6 +8,6 @@ router.get('/', isAuth, isPoolAdmin, GlobalPoolController.GetGlobalPools);
 router.post('/', isAuth, isPoolAdmin, GlobalPoolController.CreateGlobalPool);
 router.get('/active', isAuth, isPoolAdmin, GlobalPoolController.GetActivePool);
 router.patch('/activate', isAuth, isPoolAdmin, GlobalPoolController.ActivateGlobalPool);
-router.get('/getfees', isAuth, GlobalPoolController.GetActivePoolFees);
+router.get('/getStatus', isAuth, GlobalPoolController.GetActivePoolStatus);
 
 module.exports = router;
