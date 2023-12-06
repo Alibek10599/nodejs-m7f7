@@ -1,0 +1,34 @@
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <SOAP-ENV:Header xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" />
+  <soap:Body>
+    <SendMessage xmlns="http://bip.bee.kz/SyncChannel/v10/Types">
+      <request xmlns="">
+        <requestInfo>
+          <messageId>dfcf789636a9477ebcc7573c001ced44</messageId>
+          <serviceId>KDP_SERVICE</serviceId>
+          <messageDate>2023-11-29T17:18:38.7371976+06:00</messageDate>
+          <sender>
+            <senderId>senderId</senderId>
+            <password>password</password>
+          </sender>
+          <sessionId>{dff078b0-2ab7-44ae-aa50-1b7fc72ba941}</sessionId>
+        </requestInfo>
+        <requestData>
+          <data
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="ns4:getUserDataRequest">
+            <uin>uin</uin>
+            <company>ТОО "Мидас пул"</company>
+            <company_bin>bin</company_bin>
+            <company_responsible>ТОО "Мидас пул"</company_responsible>
+            <employee_name>test</employee_name>
+            <access_name>CHK_PERSON_LIVE_MSU</access_name>
+            <personal_data_name>CHK_PERSON_LIVE_MSU</personal_data_name>
+            <expiresIn>6000000</expiresIn>
+            <omit-sms>false</omit-sms>
+          </data>
+        </requestData>
+      </request>
+    </SendMessage>
+  </soap:Body>
+</soap:Envelope>
