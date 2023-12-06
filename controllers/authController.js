@@ -288,6 +288,13 @@ module.exports = {
           id: decoded.userId,
           resetPasswordToken,
         },
+        include: [
+          {
+            model: Role,
+            attributes: ['roleName'],
+            as: 'role'
+          }
+        ]
       });
       if (!user) {
         return res.status(404).json('Wrong Reset Password token');
@@ -382,6 +389,7 @@ module.exports = {
     }
 
     user.secret2FA = secret;
+    user.isActive2FA = true;
 
     await user.save();
     
