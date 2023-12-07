@@ -15,11 +15,11 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'orgId',
         targetKeyId: 'id',
       }),
-      Organization.hasMany(models.User, {
-        as: 'users',
-        foreignKey: 'orgId',
-        targetKeyId: 'id'
-      })
+        Organization.hasMany(models.User, {
+          as: 'users',
+          foreignKey: 'orgId',
+          targetKeyId: 'id'
+        })
     }
   }
   Organization.init({
@@ -27,12 +27,16 @@ module.exports = (sequelize, DataTypes) => {
     bin: DataTypes.STRING,
     iinDir: DataTypes.STRING,
     tokenEgov: DataTypes.STRING,
-    feesRate: DataTypes.DECIMAL(5,2),
+    feesRate: DataTypes.DECIMAL(5, 2),
     isRequestedApprove: DataTypes.BOOLEAN,
     isActive: DataTypes.BOOLEAN,
     isDeleted: DataTypes.BOOLEAN,
     licId: DataTypes.STRING,
-    licDate: DataTypes.DATE
+    licDate: DataTypes.DATE,
+    messageDate: DataTypes.DATE,
+    messageId: DataTypes.STRING,
+    sessionId: DataTypes.STRING,
+    kdpStatus: DataTypes.STRING
   }, {
     sequelize,
     modelName: 'Organization',

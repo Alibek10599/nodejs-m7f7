@@ -1,16 +1,8 @@
 const { spawn } = require('child_process');
 const { exec } = require('child_process');
-
 const AbstractService = require('../abstract-service');
-const fs = require('fs');
+const { mkdir, copyFile, writeFile } = require('../../utils/fs-promises')
 const path = require('path')
-
-const util = require('util');
-const fsPromises = {
-  mkdir: util.promisify(fs.mkdir),
-  copyFile: util.promisify(fs.copyFile),
-  writeFile: util.promisify(fs.writeFile),
-};
 
 const { STRATUM_IS_ACTIVE } = process.env;
 
@@ -115,13 +107,13 @@ class StratumService extends AbstractService {
   async createBTCAgent(stratum, subAccountName) {
     try {
       const newDirectory = path.resolve(__dirname, `../../btcagent/btcagent_${stratum.intPort}`);
-      await fsPromises.mkdir(newDirectory);
+      await mkdir(newDirectory);
 
       const logFileDirectory = path.resolve(__dirname, `../../btcagent/btcagent_${stratum.intPort}/log_${stratum.intPort}`);
-      await fsPromises.mkdir(logFileDirectory);
+      await mkdir(logFileDirectory);
 
       // Copy btcagent
-      await fsPromises.copyFile(binaryPath, path.join(newDirectory, `btcagent_${stratum.intPort}`));
+      await copyFile(binaryPath, path.join(newDirectory, `btcagent_${stratum.intPort}`));
 
       // Copy and modify agent_conf.json if needed
       const newAgentConfPath = path.join(newDirectory, `agent_conf_${stratum.intPort}.json`);
@@ -133,7 +125,7 @@ class StratumService extends AbstractService {
         ["eu1.sbicrypto.com", 3333, subAccountName]
       ]; // Modify as needed
 
-      await fsPromises.writeFile(newAgentConfPath, JSON.stringify(agentConf, null, 2));
+      await writeFile(newAgentConfPath, JSON.stringify(agentConf, null, 2));
 
       await this.createBTCAgentService(stratum.intPort);
 
@@ -168,7 +160,7 @@ WantedBy=multi-user.target
 
       const serviceFilePath = `/etc/systemd/system/btcagent_${intPort}.service`;
 
-      await fsPromises.writeFile(serviceFilePath, serviceFileContent)
+      await writeFile(serviceFilePath, serviceFileContent)
 
 
     } catch (error) {
@@ -203,7 +195,7 @@ WantedBy=multi-user.target
 
       const serviceFilePath = `/etc/systemd/system/btcagent_${intPort}.service`;
 
-      await fsPromises.writeFile(serviceFilePath, serviceFileContent)
+      await writeFile(serviceFilePath, serviceFileContent)
 
 
       if (STRATUM_IS_ACTIVE) {

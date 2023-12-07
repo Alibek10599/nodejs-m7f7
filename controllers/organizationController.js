@@ -2,6 +2,7 @@ const { Organization, User, Log, Role, SubAccount, SubUser } = require('../model
 const OrganizationValidation = require('../validators/OrganizationValidation');
 const selectNotifyService = require("../notifications/service/notification-selector");
 const { EMAIL } = require("../utils/constants/selectors");
+const KdpService = require('../services/kdp/kdp.service');
 
 module.exports = {
   GetOrganizations: async (req, res) => {
@@ -21,20 +22,32 @@ module.exports = {
       if (!isValid) {
         return res.status(400).json(errors);
       }
+
       let exisitingOrganization = await Organization.findOne({
         where: {
           orgName: name,
         },
       });
+
       if (exisitingOrganization) {
         errors.name = 'Organization with given name already Exist';
         return res.status(404).json(errors);
       }
+
+      if (!iin) res.status(400).json('iin is not provided')
+
+      const kdpService = new KdpService()
+      const { messageDate, messageId, sessionId } = await kdpService.sendXml(iin)
+
       exisitingOrganization = await Organization.create({
         orgName: name,
         bin,
-        iinDir: iin
+        iinDir: iin,
+        messageDate,
+        messageId,
+        sessionId
       });
+
       const user = await User.findOne({
         where: {
           id: req.user.dataValues.id,
@@ -63,7 +76,7 @@ module.exports = {
       return res.status(500).send(`Error on creating organization: ${error.message}`);
     }
   },
-  ActivateOrganization: async (req, res) => {
+  ActivateOrganizationInKDP: async (req, res) => {
     try {
       const { id } = req.params;
       const organization = await Organization.findByPk(id);

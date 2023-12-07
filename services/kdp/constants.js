@@ -1,0 +1,4 @@
+const KDP_RESPONSE = {
+    NOT_FOUND: 'NOT_FOUND',
+    TIME_OUT: 'TIME_OUT'
+}
