@@ -199,6 +199,7 @@ WantedBy=multi-user.target
 
 
       if (STRATUM_IS_ACTIVE) {
+        const reloadDaemonCommand = 'sudo systemctl daemon-reload'
         const unmaskServiceCommand = `sudo systemctl unmask ${serviceName}` // unmask service to avoid app priveledge issues
         // Command to start the service
         const startServiceCommand = `sudo systemctl start ${serviceName}`
@@ -208,6 +209,7 @@ WantedBy=multi-user.target
 
 
         await Promise.all([
+          this.runShellCommand(reloadDaemonCommand),
           this.runShellCommand(startServiceCommand),
           this.runShellCommand(enableServiceCommand),
           this.runShellCommand(unmaskServiceCommand),

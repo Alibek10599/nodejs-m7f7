@@ -19,7 +19,7 @@
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="ns4:getUserDataRequest">
             <uin>uin</uin>
             <company>ТОО "Мидас пул"</company>
-            <company_bin>bin</company_bin>
+            <company_bin>230940006078</company_bin>
             <company_responsible>ТОО "Мидас пул"</company_responsible>
             <employee_name>test</employee_name>
             <access_name>CHK_PERSON_LIVE_MSU</access_name>

@@ -1,4 +1,10 @@
 const KDP_RESPONSE = {
-    NOT_FOUND: 'NOT_FOUND',
-    TIME_OUT: 'TIME_OUT'
+    PENDING: 'PENDING',
+    VALID: 'VALID',
 }
+
+const KDP_STATUS = {
+    SUCCESS: 'SUCCESS',
+}
+
+module.exports = { KDP_RESPONSE, KDP_STATUS }

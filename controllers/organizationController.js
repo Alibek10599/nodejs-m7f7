@@ -3,6 +3,7 @@ const OrganizationValidation = require('../validators/OrganizationValidation');
 const selectNotifyService = require("../notifications/service/notification-selector");
 const { EMAIL } = require("../utils/constants/selectors");
 const KdpService = require('../services/kdp/kdp.service');
+const kdpService = new KdpService()
 
 module.exports = {
   GetOrganizations: async (req, res) => {
@@ -36,8 +37,8 @@ module.exports = {
 
       if (!iin) res.status(400).json('iin is not provided')
 
-      const kdpService = new KdpService()
-      const { messageDate, messageId, sessionId } = await kdpService.sendXml(iin)
+      const result = await kdpService.sendXml(iin)
+      const { messageDate, messageId, sessionId, kdpStatus } = result
 
       exisitingOrganization = await Organization.create({
         orgName: name,
@@ -45,7 +46,8 @@ module.exports = {
         iinDir: iin,
         messageDate,
         messageId,
-        sessionId
+        sessionId,
+        kdpStatus
       });
 
       const user = await User.findOne({
@@ -80,14 +82,19 @@ module.exports = {
     try {
       const { id } = req.params;
       const organization = await Organization.findByPk(id);
-      organization.isActive = true;
-      organization.save();
 
+      const { iinDir: iin, messageDate, messageId, sessionId } = organization
+
+      const { kdpStatus, tokenEgov } = await kdpService.sendXml(iin, messageDate, messageId, sessionId)
+
+      organization.tokenEgov = tokenEgov
+      organization.kdpStatus = kdpStatus
+      organization.save()
       await Log.create({
         userId: req.user.dataValues.id,
         action: 'update',
         controller: 'organization',
-        description: req.user.dataValues.userName + ' activate: ' + organization.orgName
+        description: req.user.dataValues.userName + ' ActivateOrganizationInKDP: ' + organization.orgName
       });
 
       return res.status(200).json(organization);
