@@ -178,20 +178,20 @@ WantedBy=multi-user.target
       const logFile = path.resolve(__dirname, `../../btcagent/btcagent_${intPort}/log_${intPort}`);
 
       const serviceFileContent = `[Unit]
-  Description=BTCAgent
-  After=network.target
-  StartLimitIntervalSec=0
-  
-  [Service]
-  Type=simple
-  Restart=always
-  RestartSec=1
-  User=root
-  ExecStart="${binaryPath}" -c "${configFile}" -l "${logFile}"
-  
-  [Install]
-  WantedBy=multi-user.target
-  `;
+Description=BTCAgent
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=root
+ExecStart="${binaryPath}" -c "${configFile}" -l "${logFile}"
+
+[Install]
+WantedBy=multi-user.target
+`;
 
       const serviceFilePath = `/etc/systemd/system/btcagent_${intPort}.service`;
 
