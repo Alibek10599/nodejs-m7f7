@@ -1,6 +1,7 @@
 const KDP_RESPONSE = {
     PENDING: 'PENDING',
     VALID: 'VALID',
+    TIMEOUT: 'TIMEOUT',
 }
 
 const KDP_STATUS = {

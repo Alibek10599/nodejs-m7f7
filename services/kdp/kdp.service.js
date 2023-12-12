@@ -7,16 +7,18 @@ const xmlFilePath = path.resolve(__dirname, './kdp.xml');
 
 const { generateFormattedDate, has15MinutesPassed } = require('../../utils/date')
 const generateUUID = require('../../utils/generateUUID')
-const { KDP_RESPONSE, KDP_STATUS } = require('./constants')
+const { KDP_RESPONSE } = require('./constants');
+const nullOrUndefined = require('../../utils/nullOrUndefined');
 
 class KdpService {
 
     async generateXML(iin, messageDate, messageId, sessionId) {
         try {
-            const has15MinsPassed = has15MinutesPassed(messageDate)
-            const reqMessageDate = has15MinsPassed ? generateFormattedDate() : messageDate
-            const reqMessageId = has15MinsPassed ? generateUUID() : messageId
-            const reqSessionId = has15MinsPassed ? `{${generateUUID()}}` : sessionId
+            const isAnyUndefined = nullOrUndefined(messageDate) || nullOrUndefined(messageId) || nullOrUndefined(sessionId);
+            const isNewParametersEnabled = has15MinutesPassed(messageDate) || isAnyUndefined
+            const reqMessageDate = isNewParametersEnabled ? generateFormattedDate() : messageDate
+            const reqMessageId = isNewParametersEnabled ? generateUUID() : messageId
+            const reqSessionId = isNewParametersEnabled ? `{${generateUUID()}}` : sessionId
 
             const xmlTemplate = await readFile(xmlFilePath, 'utf-8');
             let requestXML
@@ -48,7 +50,7 @@ class KdpService {
 
     async sendXml(iin, sentMessageDate, sentMessageId, sentSessionId) {
         try {
-            let kdpStatus, tokenEgov, publicKey
+            let kdpStatus, tokenEgov, publicKey, isSuccess
             const { requestXML, messageDate, messageId, sessionId } = await this.generateXML(iin, sentMessageDate, sentMessageId, sentSessionId)
             const response = await axios.post(KDP_SERVICE_URL, requestXML, {
                 headers: {
@@ -64,18 +66,23 @@ class KdpService {
                 }
 
                 kdpStatus = result["soap:Envelope"]["soap:Body"][0]["ns2:SendMessageResponse"][0].response[0].responseData[0].data[0]["ns3:status"][0]
-                const infoStatus = result["soap:Envelope"]["soap:Body"][0]["ns2:SendMessageResponse"][0].response[0].responseInfo[0].status[0].message[0]
+
+                // TODO: delete or implement logic with status at info tag in future
+                //const infoStatus = result["soap:Envelope"]["soap:Body"][0]["ns2:SendMessageResponse"][0].response[0].responseInfo[0].status[0].message[0]
 
                 if (kdpStatus === KDP_RESPONSE.PENDING) {
-                    return { messageDate, messageId, sessionId, kdpStatus }
+                    isSuccess = true
                 } else if (kdpStatus === KDP_RESPONSE.VALID) {
+                    isSuccess = true
                     tokenEgov = result["soap:Envelope"]["soap:Body"][0]["ns2:SendMessageResponse"][0].response[0].responseData[0].data[0]["ns3:code"][0]
                     publicKey = result["soap:Envelope"]["soap:Body"][0]["ns2:SendMessageResponse"][0].response[0].responseData[0].data[0]["ns3:public-key"][0]
                 } else {
-                    throw new Error('Error on sending KDP request failed with status: ', kdpStatus)
+                    console.error(`Error on sending KDP request failed with status: ${kdpStatus}`)
+                    isSuccess = false
                 }
             })
-            return { messageDate, messageId, sessionId, kdpStatus, tokenEgov, publicKey }
+
+            return { isSuccess, data: { messageDate, messageId, sessionId, kdpStatus, tokenEgov, publicKey } }
         } catch (error) {
             console.error('Error:', error.message);
         }

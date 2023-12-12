@@ -3,6 +3,7 @@ const OrganizationValidation = require('../validators/OrganizationValidation');
 const selectNotifyService = require("../notifications/service/notification-selector");
 const { EMAIL } = require("../utils/constants/selectors");
 const KdpService = require('../services/kdp/kdp.service');
+const { KDP_RESPONSE } = require('../services/kdp/constants');
 const kdpService = new KdpService()
 
 module.exports = {
@@ -11,6 +12,16 @@ module.exports = {
       const organizations = await Organization.findAll();
 
       return res.status(200).json(organizations);
+    } catch (error) {
+      return res.status(500).send(`Error: ${error.message}`);
+    }
+  },
+  GetOrganization: async (req, res) => {
+    try {
+      const { id } = req.params
+      const organization = await Organization.findByPk(id);
+
+      return res.status(200).json(organization);
     } catch (error) {
       return res.status(500).send(`Error: ${error.message}`);
     }
@@ -37,8 +48,9 @@ module.exports = {
 
       if (!iin) res.status(400).json('iin is not provided')
 
-      const result = await kdpService.sendXml(iin)
-      const { messageDate, messageId, sessionId, kdpStatus } = result
+      const { isSuccess, data: { messageDate, messageId, sessionId, kdpStatus } } = await kdpService.sendXml(iin)
+
+      if (!isSuccess) return res.status(503).json(`Error upon KDP request with status: ${kdpStatus}`);
 
       exisitingOrganization = await Organization.create({
         orgName: name,
@@ -85,11 +97,27 @@ module.exports = {
 
       const { iinDir: iin, messageDate, messageId, sessionId } = organization
 
-      const { kdpStatus, tokenEgov } = await kdpService.sendXml(iin, messageDate, messageId, sessionId)
+      const { isSuccess,
+        data: {
+          kdpStatus,
+          tokenEgov,
+          messageDate: newMessageDate,
+          messageId: newMessageId,
+          sessionId: newSessionId
+        }
+      } = await kdpService.sendXml(iin, messageDate, messageId, sessionId)
 
-      organization.tokenEgov = tokenEgov
-      organization.kdpStatus = kdpStatus
-      organization.save()
+      if (isSuccess && tokenEgov) {
+        organization.tokenEgov = tokenEgov
+        organization.kdpStatus = kdpStatus
+      } else if (isSuccess && kdpStatus === KDP_RESPONSE.PENDING) {
+        organization.messageDate = newMessageDate
+        organization.messageId = newMessageId
+        organization.sessionId = newSessionId
+      }
+
+      await organization.save()
+
       await Log.create({
         userId: req.user.dataValues.id,
         action: 'update',
@@ -98,6 +126,29 @@ module.exports = {
       });
 
       return res.status(200).json(organization);
+    } catch (error) {
+      return res.status(500).send(`Error: ${error.message}`);
+    }
+  },
+  SendSMS: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const organization = await Organization.findByPk(id);
+
+      const { isSuccess, data: { messageDate, messageId, sessionId, kdpStatus } } = await kdpService.sendXml(organization.iinDir)
+
+      if (!isSuccess) return res.status(503).json(`Error upon KDP request with status: ${kdpStatus}`);
+
+      await organization.update(
+        {
+          iinDir: organization.iinDir,
+          messageDate,
+          messageId,
+          sessionId,
+          kdpStatus
+        }
+      );
+
     } catch (error) {
       return res.status(500).send(`Error: ${error.message}`);
     }
