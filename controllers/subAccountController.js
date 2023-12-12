@@ -447,7 +447,7 @@ module.exports = {
           subAccName: subAccount.subAccName,
           subAccountId: subAccount.id,
           hashrate: poolSubAccountInfo?.hashrate || [0, 0, 0],
-          workerStatus: poolSubAccountInfo?.workerStatus || [0, 0, 0],
+          workerStatus: poolSubAccountInfo?.workerStatus || {online: 0, dead: 0, offline: 0},
           port: subAccountStrataMapper[subAccount.id],
         });
       }
