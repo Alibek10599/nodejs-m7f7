@@ -133,9 +133,11 @@ class SBIPool {
   }
 
   async getWorkers(subaccountnames) {
-    return this.client.get(
+    const { data: workers } = await this.client.get(
       `api/external/v1/workers?subaccountNames=${subaccountnames}`
     );
+
+    return workers
   }
 
   async getEstimatedRevenue(subaccountName) {
