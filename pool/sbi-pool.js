@@ -133,11 +133,16 @@ class SBIPool {
   }
 
   async getWorkers(subaccountnames) {
-    const { data: workers } = await this.client.get(
-      `api/external/v1/workers?subaccountNames=${subaccountnames}`
-    );
+    try {
+      const { data: workers } = await this.client.get(
+        `/api/external/v1/workers?subaccountNames=${subaccountnames}`
+      );
 
-    return workers
+      return workers
+    } catch (error) {
+      console.error('Error upon SBI getWorkers: ', error.message)
+      return { isSuccess: false, error }
+    }
   }
 
   async getEstimatedRevenue(subaccountName) {
