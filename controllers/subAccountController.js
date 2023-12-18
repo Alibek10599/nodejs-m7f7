@@ -20,7 +20,7 @@ const { PoolFactory, isSBIPool, isLuxorPool } = require("../pool/pool-factory");
 const PoolTypes = require("../pool/pool-types");
 const { Op } = require("sequelize");
 const selectNotifyService = require("../notifications/service/notification-selector");
-const {TELEGRAM} = require("../utils/constants/selectors");
+const { TELEGRAM } = require("../utils/constants/selectors");
 
 module.exports = {
   CreateSubAccount: async (req, res) => {
@@ -231,9 +231,19 @@ module.exports = {
   },
   GetSubAccounts: async (req, res) => {
     try {
+      const globalPool = await GlobalPool.findOne({
+        where: {
+          isActive: true,
+        },
+        order: [["id", "DESC"]],
+      });
+
       const subAccounts = await SubAccount.findAll({
         where: {
           orgId: req.user.dataValues.orgId,
+          [globalPool.name === PoolTypes.SBI ? "collectorId" : "luxorId"]: {
+            [Op.ne]: null,
+          },
         },
       });
 
@@ -447,7 +457,7 @@ module.exports = {
           subAccName: subAccount.subAccName,
           subAccountId: subAccount.id,
           hashrate: poolSubAccountInfo?.hashrate || [0, 0, 0],
-          workerStatus: poolSubAccountInfo?.workerStatus || {online: 0, dead: 0, offline: 0},
+          workerStatus: poolSubAccountInfo?.workerStatus || { online: 0, dead: 0, offline: 0 },
           port: subAccountStrataMapper[subAccount.id],
         });
       }

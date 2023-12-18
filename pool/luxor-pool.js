@@ -422,6 +422,7 @@ class LuxorPool {
   }
 
   async getWorkers(subaccountnames) {
+    subaccountnames = subaccountnames.toLowerCase()
     const subAccounts = await SubAccount.findAll({
       where: {
         subAccName: {
@@ -530,9 +531,8 @@ class LuxorPool {
     return {
       query: `
         query getHashrateScoreHistory {
-          getHashrateScoreHistory(uname: "${username}", mpn: ${mpn}, first: ${first}, orderBy: DATE_DESC ${
-        after ? `, after: "${after}"` : ""
-      }) {
+          getHashrateScoreHistory(uname: "${username}", mpn: ${mpn}, first: ${first}, orderBy: DATE_DESC ${after ? `, after: "${after}"` : ""
+        }) {
             edges {
               cursor
               node {
@@ -615,9 +615,8 @@ class LuxorPool {
     return {
       query: `
         mutation createWalletAddress {
-          createWalletAddress(input: { address: "${address}", addressName: "${
-        walletName ?? this.#walletName(username)
-      }", uname: "${username}", walletId: ${walletId} }) {
+          createWalletAddress(input: { address: "${address}", addressName: "${walletName ?? this.#walletName(username)
+        }", uname: "${username}", walletId: ${walletId} }) {
             walletAddress {
               address,
               addressName,
