@@ -95,7 +95,7 @@ module.exports = {
       const { id } = req.params;
       const organization = await Organization.findByPk(id);
 
-      const { iinDir: iin, messageDate, messageId, sessionId } = organization
+      const { iinDir: iin } = organization
 
       const { isSuccess,
         data: {
@@ -105,7 +105,7 @@ module.exports = {
           messageId: newMessageId,
           sessionId: newSessionId
         }
-      } = await kdpService.sendXml(iin, messageDate, messageId, sessionId)
+      } = await kdpService.sendXml(iin)
 
       if (isSuccess && tokenEgov) {
         organization.tokenEgov = tokenEgov

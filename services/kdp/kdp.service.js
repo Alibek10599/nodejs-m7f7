@@ -5,20 +5,17 @@ const { readFile } = require('../../utils/fs-promises')
 const { KDP_SERVICE_URL, KDP_SENDER_ID, KDP_SENDER_PASSWORD } = process.env
 const xmlFilePath = path.resolve(__dirname, './kdp.xml');
 
-const { generateFormattedDate, has15MinutesPassed } = require('../../utils/date')
+const { generateFormattedDate } = require('../../utils/date')
 const generateUUID = require('../../utils/generateUUID')
 const { KDP_RESPONSE } = require('./constants');
-const nullOrUndefined = require('../../utils/nullOrUndefined');
 
 class KdpService {
 
-    async generateXML(iin, messageDate, messageId, sessionId) {
+    async generateXML(iin) {
         try {
-            const isAnyUndefined = nullOrUndefined(messageDate) || nullOrUndefined(messageId) || nullOrUndefined(sessionId);
-            const isNewParametersEnabled = has15MinutesPassed(messageDate) || isAnyUndefined
-            const reqMessageDate = isNewParametersEnabled ? generateFormattedDate() : messageDate
-            const reqMessageId = isNewParametersEnabled ? generateUUID() : messageId
-            const reqSessionId = isNewParametersEnabled ? `{${generateUUID()}}` : sessionId
+            const messageDate = generateFormattedDate()
+            const messageId = generateUUID()
+            const sessionId = `{${generateUUID()}}`
 
             const xmlTemplate = await readFile(xmlFilePath, 'utf-8');
             let requestXML
@@ -32,9 +29,9 @@ class KdpService {
                 result["soap:Envelope"]["soap:Body"][0].SendMessage[0].request[0].requestInfo[0].sender[0].senderId[0] = KDP_SENDER_ID
                 result["soap:Envelope"]["soap:Body"][0].SendMessage[0].request[0].requestInfo[0].sender[0].password[0] = KDP_SENDER_PASSWORD
 
-                result["soap:Envelope"]["soap:Body"][0].SendMessage[0].request[0].requestInfo[0].messageDate[0] = reqMessageDate
-                result["soap:Envelope"]["soap:Body"][0].SendMessage[0].request[0].requestInfo[0].messageId[0] = reqMessageId
-                result["soap:Envelope"]["soap:Body"][0].SendMessage[0].request[0].requestInfo[0].sessionId[0] = reqSessionId
+                result["soap:Envelope"]["soap:Body"][0].SendMessage[0].request[0].requestInfo[0].messageDate[0] = messageDate
+                result["soap:Envelope"]["soap:Body"][0].SendMessage[0].request[0].requestInfo[0].messageId[0] = messageId
+                result["soap:Envelope"]["soap:Body"][0].SendMessage[0].request[0].requestInfo[0].sessionId[0] = sessionId
                 result["soap:Envelope"]["soap:Body"][0].SendMessage[0].request[0].requestData[0].data[0].uin[0] = iin
 
                 // Convert the modified XML back to a string
@@ -42,16 +39,16 @@ class KdpService {
                 requestXML = xmlBuilder.buildObject(result)
             })
 
-            return { requestXML, messageDate: reqMessageDate, messageId: reqMessageId, sessionId: reqSessionId }
+            return { requestXML, messageDate, messageId, sessionId }
         } catch (e) {
             console.error('Error generating XML file: ' + e.message)
         }
     }
 
-    async sendXml(iin, sentMessageDate, sentMessageId, sentSessionId) {
+    async sendXml(iin) {
         try {
             let kdpStatus, tokenEgov, publicKey, isSuccess
-            const { requestXML, messageDate, messageId, sessionId } = await this.generateXML(iin, sentMessageDate, sentMessageId, sentSessionId)
+            const { requestXML, messageDate, messageId, sessionId } = await this.generateXML(iin)
             const response = await axios.post(KDP_SERVICE_URL, requestXML, {
                 headers: {
                     'Content-Type': 'text/xml'
