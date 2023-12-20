@@ -185,6 +185,7 @@ module.exports = {
       const user = await User.findByPk(id);
 
       user.isActive2FA = false;
+      user.secret2FA = null;
       user.save();
 
       await Log.create({
