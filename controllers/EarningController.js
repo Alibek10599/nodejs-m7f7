@@ -1,6 +1,7 @@
-const getService = require("../config/pool");
-const { GlobalPool } = require('../models')
+const { Op } = require("sequelize")
+const { GlobalPool, SubAccount } = require("../models")
 const { PoolFactory } = require("../pool/pool-factory");
+const PoolTypes = require("../pool/pool-types");
 
 module.exports = {
   GetPayouts: async (req, res) => {
@@ -43,11 +44,26 @@ module.exports = {
 
       const pool = PoolFactory.createPool(globalPool);
 
+      const { orgId } = req.user.dataValues;
+      if (!orgId) res.status(404).send(`This user has not organization`);
+
+      const subAccounts = await SubAccount.findAll({
+        where: {
+          orgId,
+          [globalPool.name === PoolTypes.SBI ? "collectorId" : "luxorId"]: {
+            [Op.ne]: null,
+          },
+        }
+      })
+
       const { fromDate, toDate } = req.query;
 
       const earnings = await pool.getEarnings(fromDate, toDate, 100)
+      const result = earnings.filter((earning) => {
+        return subAccounts.some((subAccount) => subAccount.subAccName === earning.subaccountName)
+      })
 
-      return res.status(200).json(earnings);
+      return res.status(200).json(result);
     } catch (error) {
       console.log(error);
       return res.status(500).send(`Error: ${error.message}`);

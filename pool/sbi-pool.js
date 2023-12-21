@@ -1,5 +1,6 @@
 const axios = require("axios");
 const { SubAccount } = require("../models");
+const { Op } = require("sequelize");
 
 const { SBI_URL, MIDAS_GLOBAL_POOL_ADDRESS, SBI_API_KEY, SBI_API_SECRET } =
   process.env;
