@@ -13,6 +13,9 @@ const globalPoolRoutes = require('./routes/globalPoolRoutes');
 const workerRoutes = require('./routes/workerRoutes');
 const telegramRoutes = require('./routes/telegramRoutes');
 const earningRoutes = require('./routes/earningRoutes');
+
+const subUserRoutes = require('./routes/subUsersRoutes');
+
 const { spawn } = require('child_process');
 
 require('dotenv').config();
@@ -48,6 +51,8 @@ const { NODE_ENV } = process.env;
   app.use('/api/v1/worker', workerRoutes);
   app.use('/api/v1/notifications', telegramRoutes);
   app.use('/api/v1/earning', earningRoutes);
+
+  app.use('/api/v1/subuser' , subUserRoutes);
 
   const container = await Container.create();
 

@@ -212,6 +212,10 @@ module.exports = {
         type: 1
       });
 
+      if(!userExist.dataValues.isActive){
+        return res.status(401).json('Your account is deactivated');
+      }
+
       const token = AccessToken(userExist);
       const refreshToken = RefreshToken(userExist._id);
       // Create secure cookie with refresh token

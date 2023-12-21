@@ -18,7 +18,7 @@ module.exports = {
     }
     const pool = PoolFactory.createPool(globalPool);
     const { subaccountnames } = req.query;
-    console.log('1', subaccountnames)
+    
     try {
       // const { service: sbiService } = await getService();
       // const { data: sbiworkers } = await sbiService.getWorkers(subaccountnames);
