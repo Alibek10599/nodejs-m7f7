@@ -1,8 +1,10 @@
 const { User, Log, Role, SubUser } = require('../models');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 const UserValidation = require('../validators/UserValidation');
 const selectNotifyService = require("../notifications/service/notification-selector");
 const {EMAIL} = require("../utils/constants/selectors");
+const generatePassword = require('../utils/generatePassword');
 
 const createActivationToken = (user) => jwt.sign(user, process.env.ACTIVATION_SECRET);
 
@@ -13,6 +15,33 @@ module.exports = {
 
       return res.status(200).json(users);
     } catch (error) {
+      return res.status(500).send(`Error: ${ error.message }`);
+    }
+  },
+
+  GetOrganizationUsers: async (req, res) => {
+    const orgId = req.user.dataValues.orgId;
+
+    try {
+      const users = await User.findAll({
+        where: {
+          orgId: orgId
+        }
+      });
+
+      // users.forEach(async element => {
+      //   const subUsers = await SubUser.findAll({
+      //     where: {
+      //       userId: element.id
+      //     },
+      //     attributes: ['subAccountId']
+      //   });
+      //   users.push(subUsers);
+      // });
+
+      return res.status(200).json(users);
+    } catch (error) {
+      console.log(error);
       return res.status(500).send(`Error: ${ error.message }`);
     }
   },
@@ -61,14 +90,17 @@ module.exports = {
         where: {
           roleName: roleValue
         }
-      })
+      });
+
+      const password = generatePassword();
+      const hashedpassword = await bcrypt.hash(password, 8);
 
       exisitingUser = await User.create({
         email,
         userName: email,
         roleId: role.id,
         orgId,
-        password: 'default'
+        password: hashedpassword
       });
 
       const user = {
@@ -196,6 +228,33 @@ module.exports = {
       });
 
       return res.status(200).json(user);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send(`Error: ${ error.message }`);
+    }
+  },
+  addUserToSubAcc: async (req, res) => {
+    const { userName, id } = req.body;
+    try {
+      const user = await User.findOne({
+        where: {
+          userName
+        }
+      });
+
+      const existingSubUser = await SubUser.create({
+        subAccountId: id,
+        userId: user.id
+      });
+
+      await Log.create({
+        userId: req.user.dataValues.id,
+        action: 'update',
+        controller: 'adminUser',
+        description: req.user.dataValues.userName + ' add: ' + user.email  + ' to SubAccountId: ' + id
+      });
+
+      return res.status(200).json(existingSubUser);
     } catch (error) {
       console.log(error);
       return res.status(500).send(`Error: ${ error.message }`);
