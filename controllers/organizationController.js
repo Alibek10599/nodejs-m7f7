@@ -48,18 +48,11 @@ module.exports = {
 
       if (!iin) res.status(400).json('iin is not provided')
 
-      const { isSuccess, data: { messageDate, messageId, sessionId, kdpStatus } } = await kdpService.sendXml(iin)
-
-      if (!isSuccess) return res.status(503).json(`Error upon KDP request with status: ${kdpStatus}`);
 
       exisitingOrganization = await Organization.create({
         orgName: name,
         bin,
         iinDir: iin,
-        messageDate,
-        messageId,
-        sessionId,
-        kdpStatus
       });
 
       const user = await User.findOne({
@@ -81,6 +74,8 @@ module.exports = {
         controller: 'organization',
         description: req.user.dataValues.userName + ' create: ' + exisitingOrganization.orgName
       });
+
+      kdpService.sendXml(iin)
 
       res.status(201).json({
         success: true,
