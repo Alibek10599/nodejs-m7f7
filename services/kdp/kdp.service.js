@@ -52,7 +52,10 @@ class KdpService {
             const response = await axios.post(KDP_SERVICE_URL, requestXML, {
                 headers: {
                     'Content-Type': 'text/xml'
-                }
+                },
+                timeout: 5000,
+                retry: 3,
+                retryDelay: 1000,
             })
             console.info('KDP Response:', response.data);
 
@@ -81,7 +84,7 @@ class KdpService {
 
             return { isSuccess, data: { messageDate, messageId, sessionId, kdpStatus, tokenEgov, publicKey } }
         } catch (error) {
-            console.error('Error:', error.message);
+            console.error('Error:', error);
         }
     }
 }
