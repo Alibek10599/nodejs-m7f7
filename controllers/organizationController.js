@@ -75,7 +75,13 @@ module.exports = {
         description: req.user.dataValues.userName + ' create: ' + exisitingOrganization.orgName
       });
 
-      kdpService.sendXml(iin)
+      kdpService.sendXml(iin).then(response => {
+        const { isSuccess, data: { messageDate, messageId, sessionId, kdpStatus } } = response
+        if (isSuccess) exisitingOrganization.set({ messageDate, messageId, sessionId, kdpStatus })
+        return exisitingOrganization.save()
+      }).catch(error => {
+        console.error("Error with kdp service call:", error);
+      });
 
       res.status(201).json({
         success: true,

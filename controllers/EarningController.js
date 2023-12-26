@@ -6,6 +6,7 @@ const PoolTypes = require("../pool/pool-types");
 module.exports = {
   GetPayouts: async (req, res) => {
     try {
+      const { subaccountNames } = req.query;
       const globalPool = await GlobalPool.findOne({
         where: {
           isActive: true,
@@ -20,7 +21,7 @@ module.exports = {
       const pool = PoolFactory.createPool(globalPool);
 
       const { fromDate, toDate } = req.query;
-      const transactions = await pool.getTransactions(fromDate, toDate, 100);
+      const transactions = await pool.getTransactions(fromDate, toDate, 100, subaccountNames);
 
       return res.status(200).json(transactions);
     } catch (error) {
@@ -31,6 +32,7 @@ module.exports = {
 
   GetEarnings: async (req, res) => {
     try {
+      const { subaccountNames } = req.query;
       const globalPool = await GlobalPool.findOne({
         where: {
           isActive: true,
@@ -58,12 +60,12 @@ module.exports = {
 
       const { fromDate, toDate } = req.query;
 
-      const earnings = await pool.getEarnings(fromDate, toDate, 100)
-      const result = earnings.filter((earning) => {
-        return subAccounts.some((subAccount) => subAccount.subAccName === earning.subaccountName)
-      })
+      const earnings = await pool.getEarnings(fromDate, toDate, 100, subaccountName)
+      // const result = earnings.filter((earning) => {
+      //   return subAccounts.some((subAccount) => subAccount.subAccName === earning.subaccountName)
+      // })
 
-      return res.status(200).json(result);
+      return res.status(200).json(earnings);
     } catch (error) {
       console.log(error);
       return res.status(500).send(`Error: ${error.message}`);

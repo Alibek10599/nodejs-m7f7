@@ -97,24 +97,28 @@ class SBIPool {
     return subAccountInfo;
   }
 
-  async getTransactions(fromDate, toDate, size) {
+  async getTransactions(fromDate, toDate, size, subaccountName) {
     const sbiPayouts = await this.client(
       `api/external/v1/earnings?fromDate=${fromDate}&toDate=${toDate}`
     );
 
-    const payoutsContent = await sbiPayouts.data.content;
+    const payoutsContent = sbiPayouts.data.content.filter((earnings) => earnings.subAccountName === subaccountName);
 
     return payoutsContent;
   }
 
-  async getEarnings(fromDate, toDate, size) {
+  async getEarnings(fromDate, toDate, size, subaccountName) {
     const sbiEarnings = await this.client(
       `api/external/v2/earnings?startDate=${fromDate}&endDate=${toDate}&size=${size}`
     );
 
-    const filteredEarnings = sbiEarnings.data.content.filter(
+    let filteredEarnings = sbiEarnings.data.content.filter(
       (item) => item.vsubaccountName === "vsub1"
     );
+
+    if (subaccountName) {
+      filteredEarnings = filteredEarnings.filter((item) => item.subaccountName === subaccountName)
+    }
 
     return filteredEarnings;
   }
