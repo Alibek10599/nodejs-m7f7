@@ -13,10 +13,9 @@ const globalPoolRoutes = require('./routes/globalPoolRoutes');
 const workerRoutes = require('./routes/workerRoutes');
 const telegramRoutes = require('./routes/telegramRoutes');
 const earningRoutes = require('./routes/earningRoutes');
-
 const subUserRoutes = require('./routes/subUsersRoutes');
 
-const { spawn } = require('child_process');
+const heartbeatService = require('./ps');
 
 require('dotenv').config();
 
@@ -36,7 +35,7 @@ const { NODE_ENV } = process.env;
 
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
-  app.use(express.static(`${ __dirname }/../client/public`));
+  app.use(express.static(`${__dirname}/../client/public`));
   app.use(cookieParser());
 
   app.use(cors((corsOptions)));
@@ -52,7 +51,7 @@ const { NODE_ENV } = process.env;
   app.use('/api/v1/notifications', telegramRoutes);
   app.use('/api/v1/earning', earningRoutes);
 
-  app.use('/api/v1/subuser' , subUserRoutes);
+  app.use('/api/v1/subuser', subUserRoutes);
 
   const container = await Container.create();
 
@@ -64,27 +63,12 @@ const { NODE_ENV } = process.env;
     console.error(reason);
   });
 
-  if ( NODE_ENV === 'production') {
-    cron.schedule('* * * * *', () => {
+  if (NODE_ENV === 'production') {
+    cron.schedule('* * * * *', async () => {
       console.log('########## matching active subAccount every minute');
       console.log('Running heartbeat jobs script...');
-      const psProcess = spawn('node', ['./ps.js']); // Replace 'path_to_ps.js' with the actual path to your ps.js script
-    
-      psProcess.stdout.on('data', (data) => {
-        console.log(`ps.js stdout: ${data}`);
-      });
-    
-      psProcess.stderr.on('data', (data) => {
-        console.error(`ps.js stderr: ${data}`);
-      });
-    
-      psProcess.on('close', (code) => {
-        if (code === 0) {
-          console.log('ps.js script exited successfully.');
-        } else {
-          console.error(`ps.js script exited with code ${code}.`);
-        }
-      });
+
+      await heartbeatService()
     });
   }
 
@@ -92,7 +76,7 @@ const { NODE_ENV } = process.env;
   * This cron jobs send again undelivered messages every minute, you can change schedule time in prod
   * */
 
-  cron.schedule('* * * * *',  () => {
+  cron.schedule('* * * * *', () => {
     console.log('########## send again undelivered messages every minute');
     console.log("Undelivered message queue job started");
     findAndSendUndeliveredMessages()
@@ -102,7 +86,7 @@ const { NODE_ENV } = process.env;
   * This cron jobs delete all delivered messages to clean up DB every two hours, you can change schedule time in prod
   * */
 
-  cron.schedule('0 0 */2 * * *',  () => {
+  cron.schedule('0 0 */2 * * *', () => {
     console.log('########## clean up delivered messages in db every 2 hours');
     console.log("Delete delivered messages job started");
     deleteDeliveredMessages()
@@ -127,7 +111,7 @@ const { NODE_ENV } = process.env;
   }
 
   app.listen(PORT, () => {
-    console.log(`Server running at http://10.20.1.4:${ PORT }/`);
+    console.log(`Server running at http://10.20.1.4:${PORT}/`);
   });
 })().catch((error) => {
   console.error(error);
