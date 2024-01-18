@@ -152,6 +152,67 @@ class SBIPool {
     return filteredEarnings;
   }
 
+  async getPoolStatus() {
+    const subAccountInfo = [];
+    const subAccounts = await SubAccount.findAll({
+      where: {
+        collectorId: {
+          [Op.ne]: null,
+        },
+      },
+    });
+
+//     const subAccountNames = subAccounts
+//       .map((subAccount) => subAccount.subAccName)
+//       .join(",");
+// console.log(subAccountNames);
+//     const {
+//       data: { poolSubaccounts },
+//     } = await this.client.get(
+//       // `api/external/v1/subaccounts?subAccountNames=${subAccountNames}`
+//       `api/external/v1/subaccounts?subAccountNames=[MidasTest1]`
+//     );
+// console.log(poolSubaccounts);
+
+    const poolSubaccounts = await this.getSubAccountsStatus(subAccounts);
+    for (const subAccount of subAccounts) {
+      const poolSubAccountInfo = poolSubaccounts.find(
+      (item) =>
+          item.subaccountId === subAccount.collectorId ||
+          item.id === subAccount.luxorId
+      );
+      subAccountInfo.push({
+          subAccName: subAccount.subAccName,
+          subAccountId: subAccount.id,
+          hashrate: poolSubAccountInfo?.hashrate || [0, 0, 0],
+          workerStatus: poolSubAccountInfo?.workerStatus || {online: 0, dead: 0, offline: 0}
+      });
+    }
+
+    let totalDead = 0;
+    let totalOffline = 0;
+    let totalOnline = 0;
+    let totalHashrate = 0;
+    let totalHashrate24 = 0;
+    let totalActiveSubAccounts = 0;
+    const totalSubAccounts = subAccountInfo.length;
+    
+    subAccountInfo.forEach(item => {
+        totalDead += item.workerStatus.dead;
+        totalOffline += item.workerStatus.offline;
+        totalOnline += item.workerStatus.online;
+        totalHashrate += item.hashrate[0];
+        totalHashrate24 += item.hashrate[2];
+        if (item.workerStatus.online > 0) {
+          totalActiveSubAccounts++;
+      }
+    });
+
+    // console.log(subAccountInfo);
+    // return subAccountInfo
+    return {totalDead, totalOffline, totalOnline, totalHashrate, totalHashrate24, totalActiveSubAccounts, totalSubAccounts};
+  }
+
   async getSubAccountsStatus(subAccounts) {
     const subAccountNames = subAccounts
       .map((subAccount) => subAccount.subAccName)

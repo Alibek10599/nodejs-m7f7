@@ -37,6 +37,7 @@ const isAuth = async (req, res, next) => {
 const checkUserRole = (allowedRoles) => async (req, res, next) => {
   try {
     const role = await Role.findByPk(req?.user?.roleId);
+    console.log(req?.user?.roleId);
     if (allowedRoles.includes(role.roleName)) {
       next();
     } else {

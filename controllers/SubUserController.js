@@ -109,5 +109,29 @@ module.exports = {
             console.log(error);
             return res.status(500).send(`Error: ${error.message}`);
         }
+    },
+
+    GetPoolStatus: async (req, res) => {
+        try {
+            const globalPool = await GlobalPool.findOne({
+                where: {
+                    isActive: true,
+                },
+                order: [["id", "DESC"]],
+            });
+              
+            if (!globalPool) {
+                throw new Error("No one global pool active");
+            }
+
+            const pool = PoolFactory.createPool(globalPool);
+
+            const result = await pool.getPoolStatus();
+
+            return res.status(200).json(result);
+        } catch (error) {
+            console.log(error);
+            return res.status(500).send(`Error: ${error.message}`);
+        }
     }
 }
