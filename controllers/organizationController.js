@@ -1,10 +1,12 @@
-const { Organization, User, Log, Role, SubAccount, SubUser } = require('../models');
+const { GlobalPool, Organization, User, Log, Role, SubAccount, SubUser } = require('../models');
 const OrganizationValidation = require('../validators/OrganizationValidation');
 const selectNotifyService = require("../notifications/service/notification-selector");
 const { EMAIL } = require("../utils/constants/selectors");
 const KdpService = require('../services/kdp/kdp.service');
 const { KDP_RESPONSE } = require('../services/kdp/constants');
-const kdpService = new KdpService()
+const { PoolFactory } = require('../pool/pool-factory');
+const kdpService = new KdpService();
+const { Op } = require("sequelize");
 
 module.exports = {
   GetOrganizations: async (req, res) => {
@@ -233,19 +235,53 @@ module.exports = {
   },
   GetOrganizationIfo: async (req, res) => {
     const orgId = req.query.id;
+    const organizationInfo = [];
 
     try {
       const organization = await Organization.findByPk(orgId);
       const subAccounts = await SubAccount.findAll({
         where: {
-          orgId
+          orgId,
+          collectorId: {
+            [Op.ne]: null,
+          },
         }
       });
+      
+      const globalPool = await GlobalPool.findOne({
+        where: {
+            isActive: true,
+        },
+        order: [["id", "DESC"]],
+      });
+        
+      if (!globalPool) {
+          throw new Error("No one global pool active");
+      }
 
-      const subUsersPromises = subAccounts.map(async (subAccount) => {
+      const pool = PoolFactory.createPool(globalPool);
+
+      const poolSubaccounts = await pool.getSubAccountsStatus(subAccounts);
+
+      for (const subAccount of subAccounts) {
+        const poolSubAccountInfo = poolSubaccounts.find(
+        (item) =>
+            item.subaccountId === subAccount.collectorId ||
+            item.id === subAccount.luxorId
+        );
+        organizationInfo.push({
+            subAccName: subAccount.subAccName,
+            subAccountId: subAccount.id,
+            hashrate: poolSubAccountInfo?.hashrate || [0, 0, 0],
+            workerStatus: poolSubAccountInfo?.workerStatus || {online: 0, dead: 0, offline: 0}
+        });
+        
+      }
+
+      const subUsersPromises = organizationInfo.map(async (subAccount) => {
         const subUsers = await SubUser.findAll({
           where: {
-            subAccountId: subAccount.id,
+            subAccountId: subAccount.subAccountId,
           },
           include: [
             {
