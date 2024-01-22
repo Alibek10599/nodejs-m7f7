@@ -1,5 +1,5 @@
 const axios = require("axios");
-const { SubAccount } = require("../models");
+const { SubAccount, SubUser, SubStratum, Stratum } = require("../models");
 const { Op } = require("sequelize");
 
 const { SBI_URL, MIDAS_GLOBAL_POOL_ADDRESS, SBI_API_KEY, SBI_API_SECRET } =
@@ -15,6 +15,35 @@ class SBIPool {
         "x-api-secret": SBI_API_SECRET,
       },
     });
+  }
+
+  async getUserSubAccounts(userId ) {
+    let subAccounts = [];
+    
+    const subUsers = await SubUser.findAll({
+      where: {
+          userId: userId,
+          isActive: true
+      },
+      include: [{
+          model: SubAccount,
+          attributes: ["subAccName", 'id'],
+          as: 'subAccount' // Use the correct alias as defined in your association
+      }],
+      raw: true,
+      nest: true // This will nest the included objects making it easier to work with
+    });
+
+    if (Array.isArray(subUsers) && subUsers.length) {
+      // Map over the results to extract the subAccount data
+      subAccounts = subUsers.map(subUser => subUser.subAccount ? {subAccName: subUser.subAccount.subAccName, id: subUser.subAccount.id } : null).filter(Boolean); // filter(Boolean) will remove any undefined or null entries
+      // Now subAccounts is an array of SubAccount objects
+    } else {
+        // Handle the case where there are no sub users or sub accounts
+        console.log('No sub accounts found or subUsers is not an array.');
+    }
+
+    return subAccounts;
   }
 
   async createSubAccount(payload) {
@@ -123,6 +152,67 @@ class SBIPool {
     return filteredEarnings;
   }
 
+  async getPoolStatus() {
+    const subAccountInfo = [];
+    const subAccounts = await SubAccount.findAll({
+      where: {
+        collectorId: {
+          [Op.ne]: null,
+        },
+      },
+    });
+
+//     const subAccountNames = subAccounts
+//       .map((subAccount) => subAccount.subAccName)
+//       .join(",");
+// console.log(subAccountNames);
+//     const {
+//       data: { poolSubaccounts },
+//     } = await this.client.get(
+//       // `api/external/v1/subaccounts?subAccountNames=${subAccountNames}`
+//       `api/external/v1/subaccounts?subAccountNames=[MidasTest1]`
+//     );
+// console.log(poolSubaccounts);
+
+    const poolSubaccounts = await this.getSubAccountsStatus(subAccounts);
+    for (const subAccount of subAccounts) {
+      const poolSubAccountInfo = poolSubaccounts.find(
+      (item) =>
+          item.subaccountId === subAccount.collectorId ||
+          item.id === subAccount.luxorId
+      );
+      subAccountInfo.push({
+          subAccName: subAccount.subAccName,
+          subAccountId: subAccount.id,
+          hashrate: poolSubAccountInfo?.hashrate || [0, 0, 0],
+          workerStatus: poolSubAccountInfo?.workerStatus || {online: 0, dead: 0, offline: 0}
+      });
+    }
+
+    let totalDead = 0;
+    let totalOffline = 0;
+    let totalOnline = 0;
+    let totalHashrate = 0;
+    let totalHashrate24 = 0;
+    let totalActiveSubAccounts = 0;
+    const totalSubAccounts = subAccountInfo.length;
+    
+    subAccountInfo.forEach(item => {
+        totalDead += item.workerStatus.dead;
+        totalOffline += item.workerStatus.offline;
+        totalOnline += item.workerStatus.online;
+        totalHashrate += item.hashrate[0];
+        totalHashrate24 += item.hashrate[2];
+        if (item.workerStatus.online > 0) {
+          totalActiveSubAccounts++;
+      }
+    });
+
+    // console.log(subAccountInfo);
+    // return subAccountInfo
+    return {totalDead, totalOffline, totalOnline, totalHashrate, totalHashrate24, totalActiveSubAccounts, totalSubAccounts};
+  }
+
   async getSubAccountsStatus(subAccounts) {
     const subAccountNames = subAccounts
       .map((subAccount) => subAccount.subAccName)
@@ -205,6 +295,68 @@ class SBIPool {
     return this.client.get("/api/external/v2/earnings", {
       params: query,
     });
+  }
+
+  async getStatus(subaccountName, userId) {
+    let subAccounts = [];
+    const subAccountInfo = [];
+
+    if (subaccountName){
+      subAccounts = await SubAccount.findAll({
+        where: {
+          subAccName: subaccountName
+        }
+      })
+    }
+
+    else {
+      subAccounts = await this.getUserSubAccounts(userId);
+    }
+
+    const subAccountIds = subAccounts.map((item) => item.id);
+    const subStrata = await SubStratum.findAll({
+      where: {
+          subAccountId: subAccountIds,
+      },
+    });
+
+    const stratumIds = subStrata.map((item) => item.stratumId);
+
+    const strata = await Stratum.findAll({
+      where: {
+          id: stratumIds,
+      },
+    });
+
+    const subAccountStrataMapper = {};
+
+    for (const subAccountId of subAccountIds) {
+      const stratumId = subStrata.find(
+      (item) => item.subAccountId === subAccountId
+      ).stratumId;
+      subAccountStrataMapper[subAccountId] = strata.find(
+      (item) => item.id === stratumId
+      ).intPort;
+    }
+    
+    const poolSubaccounts = await this.getSubAccountsStatus(subAccounts);
+    for (const subAccount of subAccounts) {
+      const poolSubAccountInfo = poolSubaccounts.find(
+      (item) =>
+          item.subaccountId === subAccount.collectorId ||
+          item.id === subAccount.luxorId
+      );
+      subAccountInfo.push({
+          subAccName: subAccount.subAccName,
+          subAccountId: subAccount.id,
+          hashrate: poolSubAccountInfo?.hashrate || [0, 0, 0],
+          workerStatus: poolSubAccountInfo?.workerStatus || {online: 0, dead: 0, offline: 0},
+          port: subAccountStrataMapper[subAccount.id],
+      });
+    }
+    console.log(subAccountInfo);
+    
+    return subAccountInfo;
   }
 }
 

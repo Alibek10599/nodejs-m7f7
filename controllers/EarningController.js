@@ -60,7 +60,7 @@ module.exports = {
 
       const { fromDate, toDate } = req.query;
 
-      const earnings = await pool.getEarnings(fromDate, toDate, 100, subaccountName)
+      const earnings = await pool.getEarnings(fromDate, toDate, 100, subaccountNames)
       // const result = earnings.filter((earning) => {
       //   return subAccounts.some((subAccount) => subAccount.subAccName === earning.subaccountName)
       // })
