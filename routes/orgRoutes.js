@@ -2,9 +2,9 @@ const express = require('express');
 
 const router = express.Router();
 const OrganizationController = require('../controllers/organizationController');
-const { isAuth, isPoolAdmin } = require('../middlewares/checkAuth');
+const { isAuth, isPoolAdmin, isPoolAccount } = require('../middlewares/checkAuth');
 
-router.get('/', isAuth, isPoolAdmin, OrganizationController.GetOrganizations);
+router.get('/', isAuth, isPoolAccount, OrganizationController.GetOrganizations);
 router.get('/info/:id', isAuth, OrganizationController.GetOrganization);
 router.post('/', isAuth, OrganizationController.CreateOrganization);
 router.post('/activate/:id', isAuth, isPoolAdmin, OrganizationController.ActivateOrganizationInKDP);
