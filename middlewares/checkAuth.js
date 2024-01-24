@@ -50,7 +50,7 @@ const checkUserRole = (allowedRoles) => async (req, res, next) => {
 
 const isPoolAdmin = checkUserRole([ROLES.POOLADMIN]);
 const isPoolAccount = checkUserRole([ROLES.POOLACCOUNT]);
-const isPoolTech = checkUserRole([ROLES.POOLTECH]);
+const isPoolTech = checkUserRole([ROLES.POOLTECH, ROLES.POOLADMIN]);
 const isOrgAdmin = checkUserRole([ROLES.ORGADMIN, ROLES.POOLADMIN]);
 const isOrgAccount = checkUserRole([ROLES.ORGACCOUNT]);
 const isOrgTech = checkUserRole([ROLES.ORGTECH]);
