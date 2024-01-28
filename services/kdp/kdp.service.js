@@ -2,7 +2,14 @@ const path = require('path');
 const xml2js = require('xml2js');
 const axios = require('axios');
 const { readFile } = require('../../utils/fs-promises')
-const { KDP_SERVICE_URL, KDP_SENDER_ID, KDP_SENDER_PASSWORD } = process.env
+const {
+    PKI_URL,
+    PKI_ESP,
+    PKI_PASSWORD,
+    KDP_SERVICE_URL,
+    KDP_SENDER_ID,
+    KDP_SENDER_PASSWORD
+} = process.env
 const xmlFilePath = path.resolve(__dirname, './kdp.xml');
 
 const { generateFormattedDate } = require('../../utils/date')
@@ -10,6 +17,24 @@ const generateUUID = require('../../utils/generateUUID')
 const { KDP_RESPONSE } = require('./constants');
 
 class KdpService {
+
+    async signXml(xml) {
+        const key = PKI_ESP;
+
+        try {
+            const response = await axios.post(PKI_URL, {
+                xml,
+                key,
+                password: PKI_PASSWORD,
+                keyAlias: null,
+                trimXml: true,
+            });
+
+            return response.data.xml;
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
 
     async generateXML(iin) {
         try {
@@ -49,11 +74,12 @@ class KdpService {
         try {
             let kdpStatus, tokenEgov, publicKey, isSuccess
             const { requestXML, messageDate, messageId, sessionId } = await this.generateXML(iin)
-            const response = await axios.post(KDP_SERVICE_URL, requestXML, {
+            const signedXML = await this.signXml(requestXML)
+            const response = await axios.post(KDP_SERVICE_URL, signedXML, {
                 headers: {
                     'Content-Type': 'text/xml'
                 },
-                timeout: 5000,
+                timeout: 60000,
                 retry: 3,
                 retryDelay: 1000,
             })
