@@ -2,10 +2,10 @@ const express = require('express');
 
 const router = express.Router();
 const AdminUserController = require('../controllers/adminUserController');
-const { isAuth, isPoolAdmin, isOrgAdmin } = require('../middlewares/checkAuth');
+const { isAuth, isPoolAdmin, isOrgAdmin, isPoolAccount } = require('../middlewares/checkAuth');
 
-router.get('/', isAuth, isPoolAdmin, AdminUserController.GetUsers);
-router.get('/getAdminUsers', isAuth, isPoolAdmin, AdminUserController.GetAdminUsers);
+router.get('/', isAuth, isPoolAccount, AdminUserController.GetUsers);
+router.get('/getAdminUsers', isAuth, isPoolAccount, AdminUserController.GetAdminUsers);
 router.get('/getOrganizationUsers', isAuth, AdminUserController.GetOrganizationUsers);
 router.post('/inviteUser', isAuth, AdminUserController.inviteUser);
 router.post('/inviteAdminUser', isAuth, isPoolAdmin, AdminUserController.inviteAdminUser);

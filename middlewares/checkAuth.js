@@ -49,6 +49,7 @@ const checkUserRole = (allowedRoles) => async (req, res, next) => {
 };
 
 const isPoolAdmin = checkUserRole([ROLES.POOLADMIN]);
+const isPoolTechOrAcc = checkUserRole([ROLES.POOLACCOUNT, ROLES.POOLTECH, ROLES.POOLADMIN]);
 const isPoolAccount = checkUserRole([ROLES.POOLACCOUNT, ROLES.POOLADMIN]);
 const isPoolTech = checkUserRole([ROLES.POOLTECH, ROLES.POOLADMIN]);
 const isOrgAdmin = checkUserRole([ROLES.ORGADMIN, ROLES.POOLADMIN]);
@@ -56,5 +57,5 @@ const isOrgAccount = checkUserRole([ROLES.ORGACCOUNT]);
 const isOrgTech = checkUserRole([ROLES.ORGTECH]);
 
 module.exports = {
-  isAuth, isPoolAdmin, isPoolAccount, isPoolTech, isOrgAdmin, isOrgAccount, isOrgTech,
+  isAuth, isPoolAdmin, isPoolTechOrAcc, isPoolAccount, isPoolTech, isOrgAdmin, isOrgAccount, isOrgTech,
 };
