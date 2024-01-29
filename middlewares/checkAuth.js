@@ -34,6 +34,44 @@ const isAuth = async (req, res, next) => {
   }
 };
 
+const appendUser = async (req, res, next) => {
+  try {
+    const authorization = req.headers.authorization || req.headers.Authorization;
+    if (!authorization) {
+      next();
+      return;
+    }
+
+    const token = authorization.slice(7, authorization.length); // Bearer XXXXXX
+
+    if (!token) {
+      next();
+      return;
+    }
+
+    try {
+      const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+      const user = await User.findByPk(decoded.userId);
+
+      if (!user) {
+        next();
+        return;
+      }
+
+      // Attach the user object to the request for further use
+      req.user = user;
+      next();
+      return;
+    } catch (error) {
+      next();
+      return;
+    }
+  } catch (error) {
+    next();
+    return;
+  }
+};
+
 const checkUserRole = (allowedRoles) => async (req, res, next) => {
   try {
     const role = await Role.findByPk(req?.user?.roleId);
@@ -57,5 +95,5 @@ const isOrgAccount = checkUserRole([ROLES.ORGACCOUNT]);
 const isOrgTech = checkUserRole([ROLES.ORGTECH]);
 
 module.exports = {
-  isAuth, isPoolAdmin, isPoolTechOrAcc, isPoolAccount, isPoolTech, isOrgAdmin, isOrgAccount, isOrgTech,
+  isAuth, isPoolAdmin, isPoolTechOrAcc, isPoolAccount, isPoolTech, isOrgAdmin, isOrgAccount, isOrgTech, appendUser,
 };

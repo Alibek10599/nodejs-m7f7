@@ -14,6 +14,7 @@ const workerRoutes = require('./routes/workerRoutes');
 const telegramRoutes = require('./routes/telegramRoutes');
 const earningRoutes = require('./routes/earningRoutes');
 const subUserRoutes = require('./routes/subUsersRoutes');
+const support = require('./routes/supportRoutes');
 
 const heartbeatService = require('./ps');
 
@@ -52,6 +53,7 @@ const { NODE_ENV } = process.env;
   app.use('/api/v1/earning', earningRoutes);
 
   app.use('/api/v1/subuser', subUserRoutes);
+  app.use('/api/v1/support', support);
 
   const container = await Container.create();
 
