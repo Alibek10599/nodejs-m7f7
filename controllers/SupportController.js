@@ -5,14 +5,13 @@ const nodemailer = require("nodemailer");
 module.exports = {
     SendMail: async (req, res) => {
         try {
-
             const {
                 name,
                 phone,
                 email,
-                message,
+                details,
             } = req?.body?.ticket;
-
+            
             const userId = req?.user?.id;
             const file = req?.files?.file;
 
@@ -26,18 +25,16 @@ module.exports = {
                 },
             });
 
-
             const mailResult = await transporter.sendMail({
                 from: process.env.SMPT_MAIL,
                 to: process.env.SMPT_MAIL,
                 subject: `Обращение в службу пооддержки ${name}`,
                 text: `
-                message: ${message},
-                phone: ${phone},
-                email: ${email},
-                message: ${message}
-                userId: ${userId ?? "unauthorized"}
-                sendTime: ${new Date().toISOString()}
+                    phone: ${phone},
+                    email: ${email},
+                    message: ${details}
+                    userId: ${userId ?? "unauthorized"}
+                    sendTime: ${new Date().toISOString()}
                 `,
                 attachments: file,
             });
