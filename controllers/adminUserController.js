@@ -11,7 +11,59 @@ const createActivationToken = (user) => jwt.sign(user, process.env.ACTIVATION_SE
 module.exports = {
   GetUsers: async (req, res) => {
     try {
-      const users = await User.findAll();
+      const roles = await Role.findAll({
+        where: {
+          roleName: ['OrgAdmin', 'OrgAccount', 'OrgTech']
+        }
+      });
+
+      const roleIds = roles.map(role => role.id);
+
+      const users = await User.findAll(
+        {
+          where: {
+            roleId: roleIds
+          },
+          include: [
+            {
+              model: Role,
+              attributes: ['roleName'],
+              as: 'role'
+            }
+          ]
+        }
+      );
+
+      return res.status(200).json(users);
+    } catch (error) {
+      return res.status(500).send(`Error: ${ error.message }`);
+    }
+  },
+
+  GetAdminUsers: async (req, res) => {
+    try {
+      const roles = await Role.findAll({
+        where: {
+          roleName: ['PoolAdmin', 'PoolAccount', 'PoolTech']
+        }
+      });
+
+      const roleIds = roles.map(role => role.id);
+
+      const users = await User.findAll(
+        {
+          where: {
+            roleId: roleIds
+          },
+          include: [
+            {
+              model: Role,
+              attributes: ['roleName'],
+              as: 'role'
+            }
+          ]
+        }
+      );
 
       return res.status(200).json(users);
     } catch (error) {
@@ -26,7 +78,14 @@ module.exports = {
       const users = await User.findAll({
         where: {
           orgId: orgId
-        }
+        },
+        include: [
+          {
+            model: Role,
+            attributes: ['roleName'],
+            as: 'role'
+          }
+        ]
       });
 
       // users.forEach(async element => {
@@ -63,6 +122,75 @@ module.exports = {
 
       return res.status(200).json(user);
     } catch (error) {
+      return res.status(500).send(`Error: ${ error.message }`);
+    }
+  },
+
+  inviteAdminUser: async (req, res) => {
+    const { email, name, roleValue } = req.body;
+    const { errors, isValid } = UserValidation(req.body);
+
+    try {
+      if (!isValid) {
+        return res.status(400).json(errors);
+      }
+
+      let exisitingUser = await User.findOne({
+        where: {
+          email,
+        },
+      });
+
+      if (exisitingUser) {
+        errors.email = 'User with given email already Exist';
+        return res.status(404).json(errors);
+      }
+
+      let role = await Role.findOne({
+        where: {
+          roleName: roleValue
+        }
+      });
+
+      const password = generatePassword();
+      const hashedpassword = await bcrypt.hash(password, 8);
+
+      exisitingUser = await User.create({
+        email,
+        userName: name,
+        roleId: role.id,
+        password: hashedpassword
+      });
+
+      const user = {
+        userId: exisitingUser.id,
+        email: exisitingUser.email,
+      };
+
+      const activationToken = createActivationToken(user);
+      const activationUrl = `${ process.env.FRONTEND_URL }/acceptinvitation?activationToken=${ activationToken }`;
+      
+      await selectNotifyService.notificationSelector({
+        email: exisitingUser.email,
+        urlOrCode: activationUrl,
+        userName: exisitingUser.userName,
+        subject: 'Accept Invitation',
+        template: 'acceptinvitation'
+      }, EMAIL)
+
+      await Log.create({
+        userId: req.user.dataValues.id,
+        action: 'update',
+        controller: 'adminUser',
+        description: req.user.dataValues.userName + ' add admin user: ' + user.email
+      });
+
+      res.status(201).json({
+        success: true,
+        message: `please wait your invited user to activate his account!`,
+      });
+    } catch (error) {
+      console.log(error);
       return res.status(500).send(`Error: ${ error.message }`);
     }
   },
@@ -108,7 +236,7 @@ module.exports = {
         email: exisitingUser.email,
       };
         
-      exisitingSubUser = await SubUser.create({
+      const exisitingSubUser = await SubUser.create({
         subAccountId,
         userId: user.userId
       });
