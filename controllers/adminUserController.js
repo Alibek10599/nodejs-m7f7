@@ -128,8 +128,6 @@ module.exports = {
 
   inviteAdminOrg: async (req, res) => {
     const { email, name } = req.body;
-    console.log(req.user.orgId);
-    console.log(email, name);
     const { errors, isValid } = UserValidation(req.body);
 
     try{
@@ -159,12 +157,12 @@ module.exports = {
 
       exisitingUser = await User.create({
         email,
-        userName: email,
+        userName: name,
         roleId: role.id,
         orgId: req.user.orgId,
         password: hashedpassword
       });
-
+      
       const user = {
         userId: exisitingUser.id,
         email: exisitingUser.email,
