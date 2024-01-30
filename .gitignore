@@ -112,3 +112,4 @@ mysql-data
 .idea
 
 scripts
+.vscode/launch.json
