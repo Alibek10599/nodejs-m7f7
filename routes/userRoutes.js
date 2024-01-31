@@ -9,6 +9,7 @@ router.get('/getAdminUsers', isAuth, isPoolAccount, AdminUserController.GetAdmin
 router.get('/getOrganizationUsers', isAuth, AdminUserController.GetOrganizationUsers);
 router.post('/inviteUser', isAuth, AdminUserController.inviteUser);
 router.post('/inviteAdminUser', isAuth, isPoolAdmin, AdminUserController.inviteAdminUser);
+router.post('/inviteAdminOrg', isAuth, isOrgAdmin, AdminUserController.inviteAdminOrg);
 router.post('/verify/:id', isAuth, isPoolAdmin, AdminUserController.verifyUser);
 router.get('/user-info', isAuth, isPoolAdmin, AdminUserController.GetUserInfo);
 router.patch('/activate', isAuth, isOrgAdmin, AdminUserController.activateUser);
