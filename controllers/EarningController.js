@@ -6,7 +6,8 @@ const PoolTypes = require("../pool/pool-types");
 module.exports = {
   GetPayouts: async (req, res) => {
     try {
-      const subaccountNames = (await SubAccount.findAll({ where: { orgId: req.user.orgId } })).map(subaccount => subaccount.subAccName);
+      const orgId = req.query.id !== 'undefined' ? req.query.id : req.user.orgId
+      const subaccountNames = (await SubAccount.findAll({ where: { orgId } })).map(subaccount => subaccount.subAccName);
       const globalPool = await GlobalPool.findOne({
         where: {
           isActive: true,
