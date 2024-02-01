@@ -432,10 +432,10 @@ module.exports = {
       for (const subAccountId of subAccountIds) {
         const stratumId = subStrata.find(
           (item) => item.subAccountId === subAccountId
-        ).stratumId;
+        )?.stratumId;
         subAccountStrataMapper[subAccountId] = strata.find(
           (item) => item.id === stratumId
-        ).intPort;
+        )?.intPort;
       }
 
       // const walletsArrays = await Promise.all(walletPromises);

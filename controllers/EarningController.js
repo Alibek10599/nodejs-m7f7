@@ -2,6 +2,7 @@ const { Op } = require("sequelize")
 const { GlobalPool, SubAccount } = require("../models")
 const { PoolFactory } = require("../pool/pool-factory");
 const PoolTypes = require("../pool/pool-types");
+const { MIDAS_GLOBAL_POOL_ADDRESS } = process.env
 
 module.exports = {
   GetPayouts: async (req, res) => {
@@ -22,7 +23,16 @@ module.exports = {
       const pool = PoolFactory.createPool(globalPool);
 
       const { fromDate, toDate } = req.query;
-      const transactions = await pool.getTransactions(fromDate, toDate, 100, subaccountNames);
+      let transactions = await pool.getTransactions(fromDate, toDate, 100, subaccountNames);
+
+      transactions = transactions.map((transaction, index, array) => {
+        return {
+          ...transaction, comissionFee: array.find(item =>
+            item.asOf === transaction.asOf &&
+            item.subaccountId === transaction.subaccountId &&
+            item.payoutAddress === MIDAS_GLOBAL_POOL_ADDRESS)?.amount
+        }
+      }).filter((transaction) => transaction.payoutAddress !== MIDAS_GLOBAL_POOL_ADDRESS)
 
       return res.status(200).json(transactions);
     } catch (error) {
