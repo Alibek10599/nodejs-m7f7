@@ -1,7 +1,7 @@
 const axios = require("axios");
 const {SubAccount, SubUser, SubStratum, Stratum, Or, Organization } = require("../models");
 const { Op } = require("sequelize");
-
+const ExcelJS = require('exceljs');
 const {formatDatePoolAPI} = require("../utils/date");
 
 const { SBI_URL, MIDAS_GLOBAL_POOL_ADDRESS, SBI_API_KEY, SBI_API_SECRET } =
@@ -395,64 +395,147 @@ class SBIPool {
       ]
     });
 
+    organizationLst.forEach(organization => {
+      organization.subAccountTextLst = organization.subAccounts.map(subAccounts => subAccounts.subAccName);
+    });
+
     // формируем отчет
 
-    const report = [];
+
+    // сначала сгруппировать
+    // потом туда подтянуть тупо инфу по оргии
+
+
+
     const transactionGrp = {};
-    transactionLst.forEach(transaction => { 
+    transactionLst.forEach(transaction => {
+
       const key = `
       ${transaction.earningsFor}
       ${transaction.subaccountName}
       ${transaction.coin}
       `;
+
       if (transactionGrp[key] == null) {
-        transactionGrp[key].earningsFor = transaction.earningsFor;
-        transactionGrp[key].subaccountName = transaction.subaccountName;
-        transactionGrp[key].coin = transaction.coin;
-        transactionGrp[key].vsub1Sum = 0;
-        transactionGrp[key].vsub2Sum = 0;
-      }else{
-        
+        transactionGrp[key] = {
+          earningsFor: transaction.earningsFor,
+          subaccountName: transaction.subaccountName,
+          coin: transaction.coin,
+          vsub1Sum: 0,
+          vsub2Sum: 0,
+          walletAddress: "",
+        }
       }
 
+      switch (transaction.vsubaccountName) {
+        case "vsub1":
+          transactionGrp[key].vsub1Sum =
+            transactionGrp[key].vsub1Sum +
+            transaction.netOwed;
+          transactionGrp[key].walletAddress = transaction.address
+          break;
+        case "vsub2":
+          transactionGrp[key].vsub2Sum =
+            transactionGrp[key].vsub1Sum +
+            transaction.netOwed;
+          break;
+        default:
+          break;
+      }
 
-      
     });
 
-    
-    // сначала сгруппировать
-    // потом туда подтянуть тупо инфу по оргии
+    const report = Object.keys(transactionGrp).map(key => {return transactionGrp[key]});
 
-
-    // сгруппировать платежи по сабакаунт дата(vsub1 vsub2)
-
-    // бежим по оргии, по сабакаунтам
-    // подтягиваем да
-
-    // transactionLst.map((e) => {
-    //   return ({
-    //     netOwed: e.netOwed,0.00049058
-    //     earningsFor:...e,2024-02-01T00:00:00.000
-    //     subaccountName:...e,testmidaspool
-    //     coin:...e,
-    //     address:...e,
-    //     vsubaccountName:...e,
-    //   });
-    // });
-
-
-
-
-
-
+    report.forEach(row => {
+      row.organization = organizationLst.find(organization => {
+        return organization.subAccountTextLst.includes(row.subaccountName);
+      });
+    });
 
     // формируем эксельник
+    const reportName = `tax report ${month} ${year}`;
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet(reportName);
+    const header = [
+      // 1 № пп
+      "№ пп",
 
+      // 2 Наименование цифрового майнера и цифрового майнингового пула
+      "Наименование цифрового майнера и цифрового майнингового пула",
 
-    const result = {transactions, subaccountNames}
-    console.dir(result);
+      // 3 Бизнес идентификационный номер, индивидуальный идентификационный номер цифрового майнера и цифрового майнингового пула
+      "Бизнес идентификационный номер, индивидуальный идентификационный номер цифрового майнера и цифрового майнингового пула",
 
-    return result;
+      // 4 Номер лицензии на осуществление деятельности по цифровому майнингу и дата ее выдачи
+      "Номер лицензии на осуществление деятельности по цифровому майнингу и дата ее выдачи",
+
+      // 5 Реквизиты (адрес) цифрового электронного кошелька
+      "Реквизиты (адрес) цифрового электронного кошелька",
+
+      // 6 Дата распределения цифрового актива
+      "Дата распределения цифрового актива",
+
+      // 7 Наименование цифрового актива, распределенного цифровому майнеру
+      "Наименование цифрового актива, распределенного цифровому майнеру",
+
+      // 8 Количество цифрового актива, переданного цифровому майнеру, единиц
+      "Количество цифрового актива, переданного цифровому майнеру, единиц",
+
+      // 9 Комиссия цифрового майнингового пула, выраженная в цифровых активах
+      "Комиссия цифрового майнингового пула, выраженная в цифровых активах",
+
+      // // 9.1 наименование цифрового актива
+      // "наименование цифрового актива",
+
+      // // 9.2 Количество, единиц
+      // "Количество, единиц",
+
+    ];
+
+    sheet.addRow(header);
+
+    let i = 1;
+    report.forEach((row) => {
+      sheet.addRow([
+
+        // 1 № пп
+        i++,
+
+        // 2 Наименование цифрового майнера и цифрового майнингового пула
+        "OOO Мидаспул",
+
+        // 3 Бизнес идентификационный номер, индивидуальный идентификационный номер цифрового майнера и цифрового майнингового пула
+        row?.organization?.bin ?? "",
+
+        // 4 Номер лицензии на осуществление деятельности по цифровому майнингу и дата ее выдачи
+        row?.organization?.licId ?? "",
+
+        // 5 Реквизиты (адрес) цифрового электронного кошелька
+        row.walletAddress,
+
+        // 6 Дата распределения цифрового актива
+        new Date(row.earningsFor),
+
+        // 7 Наименование цифрового актива, распределенного цифровому майнеру
+        row.coin,
+
+        // 8 Количество цифрового актива, переданного цифровому майнеру, единиц
+        row.vsub1,
+
+        // 9 Комиссия цифрового майнингового пула, выраженная в цифровых активах
+        row.vsub2,
+
+        // // 9.1 наименование цифрового актива
+        row.coin,
+
+        // // 9.2 Количество, единиц
+        row.vsub1 + row.vsub2,
+
+      ]);
+    });
+
+    return {workbook, reportName};
   }
 
 }

@@ -121,9 +121,16 @@ module.exports = {
       const pool = PoolFactory.createPool(globalPool);
 
       const {month, year} = req.query;
-      const transactions = await pool.getTaxReport(month, year);
 
-      return res.status(200).json(transactions);
+      const report = await pool.getTaxReport(month, year);
+
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader("Content-Disposition", "attachment; filename=" + report.reportName + ".xlsx");
+
+      await report.workbook.xlsx.write(res);
+
+      res.end();
+
     } catch (error) {
       console.log(error);
       return res.status(500).send(`Error: ${error.message}`);
