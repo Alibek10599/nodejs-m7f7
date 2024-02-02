@@ -1,6 +1,8 @@
 const axios = require("axios");
-const { SubAccount, SubUser, SubStratum, Stratum } = require("../models");
+const {SubAccount, SubUser, SubStratum, Stratum, Or, Organization } = require("../models");
 const { Op } = require("sequelize");
+
+const {formatDatePoolAPI} = require("../utils/date");
 
 const { SBI_URL, MIDAS_GLOBAL_POOL_ADDRESS, SBI_API_KEY, SBI_API_SECRET } =
   process.env;
@@ -357,6 +359,102 @@ class SBIPool {
 
     return subAccountInfo;
   }
+
+  async getTaxReport(month, year) {
+
+    // обрабатываем параметры
+
+    let startDate = new Date(`${year}-${month}-01T00:00:00+00:00`);
+    let endDate = new Date(
+      new Date(startDate).setMonth(startDate.getMonth() + 1)
+    );
+
+    startDate = formatDatePoolAPI(startDate);
+    endDate = formatDatePoolAPI(endDate);
+
+    // получаем данные для отчета
+
+    let transactionLst = [];
+    let responseLen = 1;
+    let page = 0;
+    while (responseLen > 0) {
+      responseLen = 0;
+      const response = await this.getPayouts({
+        startDate, endDate, page: page++, size: 50
+      });
+      responseLen = response?.data?.content?.length ?? 0;
+      transactionLst = transactionLst.concat(response.data.content);
+    }
+
+    const organizationLst = await Organization.findAll({
+      include: [
+        {
+          model: SubAccount,
+          as: 'subAccounts'
+        }
+      ]
+    });
+
+    // формируем отчет
+
+    const report = [];
+    const transactionGrp = {};
+    transactionLst.forEach(transaction => { 
+      const key = `
+      ${transaction.earningsFor}
+      ${transaction.subaccountName}
+      ${transaction.coin}
+      `;
+      if (transactionGrp[key] == null) {
+        transactionGrp[key].earningsFor = transaction.earningsFor;
+        transactionGrp[key].subaccountName = transaction.subaccountName;
+        transactionGrp[key].coin = transaction.coin;
+        transactionGrp[key].vsub1Sum = 0;
+        transactionGrp[key].vsub2Sum = 0;
+      }else{
+        
+      }
+
+
+      
+    });
+
+    
+    // сначала сгруппировать
+    // потом туда подтянуть тупо инфу по оргии
+
+
+    // сгруппировать платежи по сабакаунт дата(vsub1 vsub2)
+
+    // бежим по оргии, по сабакаунтам
+    // подтягиваем да
+
+    // transactionLst.map((e) => {
+    //   return ({
+    //     netOwed: e.netOwed,0.00049058
+    //     earningsFor:...e,2024-02-01T00:00:00.000
+    //     subaccountName:...e,testmidaspool
+    //     coin:...e,
+    //     address:...e,
+    //     vsubaccountName:...e,
+    //   });
+    // });
+
+
+
+
+
+
+
+    // формируем эксельник
+
+
+    const result = {transactions, subaccountNames}
+    console.dir(result);
+
+    return result;
+  }
+
 }
 
 module.exports = SBIPool;

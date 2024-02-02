@@ -102,5 +102,31 @@ module.exports = {
       console.log(error);
       return res.status(500).send(`Error: ${error.message}`);
     }
-  }
+  },
+
+  GetTaxReport: async (req, res) => {
+    try {
+
+      const globalPool = await GlobalPool.findOne({
+        where: {
+          isActive: true,
+        },
+        order: [["id", "DESC"]],
+      });
+
+      if (!globalPool) {
+        throw new Error("No one global pool active");
+      }
+
+      const pool = PoolFactory.createPool(globalPool);
+
+      const {month, year} = req.query;
+      const transactions = await pool.getTaxReport(month, year);
+
+      return res.status(200).json(transactions);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send(`Error: ${error.message}`);
+    }
+  },
 };
