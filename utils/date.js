@@ -16,4 +16,10 @@ function has15MinutesPassed(messageDate) {
     return minutesDifference >= 15;
 }
 
-module.exports = { generateFormattedDate, has15MinutesPassed }
+const formatDatePoolAPI = (dt) => {
+    const formattedDate = moment(dt).tz('Asia/Almaty').format('YYYY-MM-DD');
+
+    return formattedDate;
+};
+
+module.exports = {generateFormattedDate, has15MinutesPassed, formatDatePoolAPI }

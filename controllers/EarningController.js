@@ -112,5 +112,38 @@ module.exports = {
       console.log(error);
       return res.status(500).send(`Error: ${error.message}`);
     }
-  }
+  },
+
+  GetTaxReport: async (req, res) => {
+    try {
+
+      const globalPool = await GlobalPool.findOne({
+        where: {
+          isActive: true,
+        },
+        order: [["id", "DESC"]],
+      });
+
+      if (!globalPool) {
+        throw new Error("No one global pool active");
+      }
+
+      const pool = PoolFactory.createPool(globalPool);
+
+      const {month, year} = req.query;
+
+      const report = await pool.getTaxReport(month, year);
+
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader("Content-Disposition", "attachment; filename=" + report.reportName + ".xlsx");
+
+      await report.workbook.xlsx.write(res);
+
+      res.end();
+
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send(`Error: ${error.message}`);
+    }
+  },
 };
