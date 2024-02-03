@@ -2,6 +2,8 @@ const axios = require("axios");
 const {SubAccount, SubUser, SubStratum, Stratum, Or, Organization } = require("../models");
 const { Op } = require("sequelize");
 const ExcelJS = require('exceljs');
+const fs = require('fs');
+
 const {formatDatePoolAPI} = require("../utils/date");
 
 const {
@@ -428,7 +430,7 @@ class SBIPool {
           vsub1Sum: 0,
           vsub2Sum: 0,
           walletAddress: "",
-        }
+        };
       }
 
       switch (transaction.vsubaccountName) {
@@ -459,46 +461,14 @@ class SBIPool {
 
     // формируем эксельник
     const reportName = `tax report ${month} ${year}`;
-    const workbook = new ExcelJS.Workbook();
-    const sheet = workbook.addWorksheet(reportName);
-    const header = [
-      // 1 № пп
-      "№ пп",
 
-      // 2 Наименование цифрового майнера и цифрового майнингового пула
-      "Наименование цифрового майнера и цифрового майнингового пула",
+    const fileName = __dirname + "/../utils/templates/tax-report.xlsx";
+    const readable = fs.createReadStream(fileName);
 
-      // 3 Бизнес идентификационный номер, индивидуальный идентификационный номер цифрового майнера и цифрового майнингового пула
-      "Бизнес идентификационный номер, индивидуальный идентификационный номер цифрового майнера и цифрового майнингового пула",
-
-      // 4 Номер лицензии на осуществление деятельности по цифровому майнингу и дата ее выдачи
-      "Номер лицензии на осуществление деятельности по цифровому майнингу и дата ее выдачи",
-
-      // 5 Реквизиты (адрес) цифрового электронного кошелька
-      "Реквизиты (адрес) цифрового электронного кошелька",
-
-      // 6 Дата распределения цифрового актива
-      "Дата распределения цифрового актива",
-
-      // 7 Наименование цифрового актива, распределенного цифровому майнеру
-      "Наименование цифрового актива, распределенного цифровому майнеру",
-
-      // 8 Количество цифрового актива, переданного цифровому майнеру, единиц
-      "Количество цифрового актива, переданного цифровому майнеру, единиц",
-
-      // 9 Комиссия цифрового майнингового пула, выраженная в цифровых активах
-      "Комиссия цифрового майнингового пула, выраженная в цифровых активах",
-
-      // // 9.1 наименование цифрового актива
-      // "наименование цифрового актива",
-
-      // // 9.2 Количество, единиц
-      // "Количество, единиц",
-
-    ];
-
-    sheet.addRow(header);
-
+    let workbook = new ExcelJS.Workbook();
+    workbook = await workbook.xlsx.read(readable);
+    const sheet = workbook.worksheets[0];
+    
     let i = 1;
     report.forEach((row) => {
       sheet.addRow([
