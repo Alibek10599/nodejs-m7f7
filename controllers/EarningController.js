@@ -2,6 +2,8 @@ const { Op } = require("sequelize")
 const { GlobalPool, SubAccount } = require("../models")
 const { PoolFactory } = require("../pool/pool-factory");
 const PoolTypes = require("../pool/pool-types");
+const ExcelJS = require('exceljs');
+const fs = require('fs');
 const { MIDAS_GLOBAL_POOL_ADDRESS } = process.env
 
 module.exports = {
@@ -130,16 +132,26 @@ module.exports = {
 
       const pool = PoolFactory.createPool(globalPool);
 
-      const {month, year} = req.query;
+      const {month, year, isExcel} = req.query;
 
       const report = await pool.getTaxReport(month, year);
 
-      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-      res.setHeader("Content-Disposition", "attachment; filename=" + report.reportName + ".xlsx");
 
-      await report.workbook.xlsx.write(res);
+      if ((isExcel ?? false)) {
 
-      res.end();
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader("Content-Disposition", "attachment; filename=" + report.reportName + ".xlsx");
+        
+        const reportName = `tax report ${month} ${year}`;
+        const file = await ganarateExcel(report, reportName);
+        await file.workbook.xlsx.write(res);
+
+        res.end();
+        return;
+        
+      }
+
+      return res.status(200).json({report});
 
     } catch (error) {
       console.log(error);
@@ -147,3 +159,57 @@ module.exports = {
     }
   },
 };
+
+
+const ganarateExcel = async (report, reportName) => {
+
+  const fileName = __dirname + "/../utils/templates/tax-report.xlsx";
+  const readable = fs.createReadStream(fileName);
+
+  let workbook = new ExcelJS.Workbook();
+  workbook = await workbook.xlsx.read(readable);
+  const sheet = workbook.worksheets[0];
+
+  let i = 1;
+  report.forEach((row) => {
+    sheet.addRow([
+
+      // 1 № пп
+      i++,
+
+      // 2 Наименование цифрового майнера и цифрового майнингового пула
+      "OOO Мидаспул",
+
+      // 3 Бизнес идентификационный номер, индивидуальный идентификационный номер цифрового майнера и цифрового майнингового пула
+      row?.organization?.bin ?? "",
+
+      // 4 Номер лицензии на осуществление деятельности по цифровому майнингу и дата ее выдачи
+      row?.organization?.licId ?? "",
+
+      // 5 Реквизиты (адрес) цифрового электронного кошелька
+      row.walletAddress,
+
+      // 6 Дата распределения цифрового актива
+      new Date(row.earningsFor),
+
+      // 7 Наименование цифрового актива, распределенного цифровому майнеру
+      row.coin,
+
+      // 8 Количество цифрового актива, переданного цифровому майнеру, единиц
+      row.vsub1,
+
+      // 9 Комиссия цифрового майнингового пула, выраженная в цифровых активах
+      row.vsub2,
+
+      // // 9.1 наименование цифрового актива
+      row.coin,
+
+      // // 9.2 Количество, единиц
+      row.vsub1 + row.vsub2,
+
+    ]);
+  });
+
+  return {workbook, reportName};
+
+}

@@ -1,8 +1,6 @@
 const axios = require("axios");
 const {SubAccount, SubUser, SubStratum, Stratum, Or, Organization } = require("../models");
 const { Op } = require("sequelize");
-const ExcelJS = require('exceljs');
-const fs = require('fs');
 
 const {formatDatePoolAPI} = require("../utils/date");
 
@@ -459,57 +457,7 @@ class SBIPool {
       });
     });
 
-    // формируем эксельник
-    const reportName = `tax report ${month} ${year}`;
-
-    const fileName = __dirname + "/../utils/templates/tax-report.xlsx";
-    const readable = fs.createReadStream(fileName);
-
-    let workbook = new ExcelJS.Workbook();
-    workbook = await workbook.xlsx.read(readable);
-    const sheet = workbook.worksheets[0];
-    
-    let i = 1;
-    report.forEach((row) => {
-      sheet.addRow([
-
-        // 1 № пп
-        i++,
-
-        // 2 Наименование цифрового майнера и цифрового майнингового пула
-        "OOO Мидаспул",
-
-        // 3 Бизнес идентификационный номер, индивидуальный идентификационный номер цифрового майнера и цифрового майнингового пула
-        row?.organization?.bin ?? "",
-
-        // 4 Номер лицензии на осуществление деятельности по цифровому майнингу и дата ее выдачи
-        row?.organization?.licId ?? "",
-
-        // 5 Реквизиты (адрес) цифрового электронного кошелька
-        row.walletAddress,
-
-        // 6 Дата распределения цифрового актива
-        new Date(row.earningsFor),
-
-        // 7 Наименование цифрового актива, распределенного цифровому майнеру
-        row.coin,
-
-        // 8 Количество цифрового актива, переданного цифровому майнеру, единиц
-        row.vsub1,
-
-        // 9 Комиссия цифрового майнингового пула, выраженная в цифровых активах
-        row.vsub2,
-
-        // // 9.1 наименование цифрового актива
-        row.coin,
-
-        // // 9.2 Количество, единиц
-        row.vsub1 + row.vsub2,
-
-      ]);
-    });
-
-    return {workbook, reportName};
+    return (report);
   }
 
 }
