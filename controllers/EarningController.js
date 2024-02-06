@@ -148,11 +148,12 @@ module.exports = {
       // generate excel
       if ((isExcel ?? false)) {
 
-        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        res.setHeader("Content-Disposition", "attachment; filename=" + report.reportName + ".xlsx");
-        
         const reportName = `tax report ${month} ${year}`;
-        const file = await ganarateExcel(report, reportName);
+
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader("Content-Disposition", "attachment; filename=" + reportName + ".xlsx");
+        
+        const file = await taxReportGanerateExcel(report, reportName);
         await file.workbook.xlsx.write(res);
 
         res.end();
@@ -170,7 +171,7 @@ module.exports = {
 };
 
 
-const ganarateExcel = async (report, reportName) => {
+const taxReportGanerateExcel = async (report, reportName) => {
 
   const fileName = __dirname + "/../utils/templates/tax-report.xlsx";
   const readable = fs.createReadStream(fileName);
