@@ -6,7 +6,8 @@ async function sendEmailMessage(options) {
         urlOrCode: options.urlOrCode,
         userName: options.userName,
         subject: options.subject,
-        template: options.template
+        template: options.template,
+        message: options.message
     }
 
     await sendMail(newOptions);

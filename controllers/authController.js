@@ -12,7 +12,8 @@ const TwoFAValidation = require('../validators/TwoFAValidation');
 const UAParser = require('ua-parser-js');
 const axios = require('axios');
 const selectNotifyService = require("../notifications/service/notification-selector");
-const {EMAIL} = require("../utils/constants/selectors");
+const { EMAIL } = require("../utils/constants/selectors");
+const sendPoolAdminNotification = require("../notifications/service/poolAdminsNotification");
 
 const createActivationToken = (user) => jwt.sign(user, process.env.ACTIVATION_SECRET);
 
@@ -54,7 +55,7 @@ module.exports = {
       };
 
       const activationToken = createActivationToken(user);
-      const activationUrl = `${ process.env.FRONTEND_URL }/emailverification?activationToken=${ activationToken }`;
+      const activationUrl = `${process.env.FRONTEND_URL}/emailverification?activationToken=${activationToken}`;
 
       await selectNotifyService.notificationSelector({
         email: exisitingUser.email,
@@ -64,12 +65,13 @@ module.exports = {
         template: 'verificationmail',
       }, EMAIL)
 
+      await sendPoolAdminNotification('User added', `User with a name ${exisitingUser.userName} was succesfully added.`)
       res.status(201).json({
         success: true,
-        message: `please check your email:- ${ exisitingUser.email } to activate your account!`,
+        message: `please check your email:- ${exisitingUser.email} to activate your account!`,
       });
     } catch (error) {
-      return res.status(500).send(`Error: ${ error.message }`);
+      return res.status(500).send(`Error: ${error.message}`);
     }
   },
 
@@ -115,7 +117,7 @@ module.exports = {
       res.status(200).json(token);
     } catch (error) {
       console.log(error);
-      return res.status(500).send(`Error: ${ error.message }`);
+      return res.status(500).send(`Error: ${error.message}`);
     }
   },
 
@@ -154,20 +156,20 @@ module.exports = {
 
       const orgExist = await Organization.findByPk(userExist.orgId);
 
-      if(orgExist){
+      if (orgExist) {
         if (!orgExist.dataValues.isRequestedApprove) {
           return res.status(401).json('Please Wait Your Organization Verification');
         }
       }
 
       if (userExist.dataValues.secret2FA) {
-        if(!otp){
+        if (!otp) {
           return res.status(400).json('Please Verify 2FA');
         } else {
-          const { errors: errors2FA, isValid: isValid2FA } = TwoFAValidation({secret: userExist.dataValues.secret2FA, otp: otp});
+          const { errors: errors2FA, isValid: isValid2FA } = TwoFAValidation({ secret: userExist.dataValues.secret2FA, otp: otp });
 
-          if(!isValid2FA) {
-            return res.status(400).json({otp: errors2FA.otp});
+          if (!isValid2FA) {
+            return res.status(400).json({ otp: errors2FA.otp });
           }
         }
       }
@@ -212,7 +214,7 @@ module.exports = {
         type: 1
       });
 
-      if(!userExist.dataValues.isActive){
+      if (!userExist.dataValues.isActive) {
         return res.status(401).json('Your account is deactivated');
       }
 
@@ -228,7 +230,7 @@ module.exports = {
       res.status(200).json(token);
     } catch (error) {
       console.log(error);
-      return res.status(500).send(`Error: ${ error.message }`);
+      return res.status(500).send(`Error: ${error.message}`);
     }
   },
 
@@ -250,7 +252,7 @@ module.exports = {
       });
       user.resetPasswordToken = resetPasswordToken;
       await user.save();
-      const reseturl = `${ process.env.FRONTEND_URL }/resetpassword?resetPasswordToken=${ resetPasswordToken }`;
+      const reseturl = `${process.env.FRONTEND_URL}/resetpassword?resetPasswordToken=${resetPasswordToken}`;
 
       await selectNotifyService.notificationSelector({
         email: user.email,
@@ -262,10 +264,10 @@ module.exports = {
 
       res.status(200).json({
         success: true,
-        message: `please check your email:- ${ user.email } to Reset your password!`,
+        message: `please check your email:- ${user.email} to Reset your password!`,
       });
     } catch (error) {
-      return res.status(500).send(`Error: ${ error.message }`);
+      return res.status(500).send(`Error: ${error.message}`);
     }
   },
 
@@ -314,7 +316,7 @@ module.exports = {
       return res.status(200).json(token);
     } catch (error) {
       console.log(error);
-      return res.status(500).send(`Error: ${ error.message }`);
+      return res.status(500).send(`Error: ${error.message}`);
     }
   },
 
@@ -360,18 +362,18 @@ module.exports = {
       digits: 6, // Generate 8-digit OTP codes
       totp: true, // Use TOTP (Time-Based One-Time Password) mode
     });
-    
+
     QRCode.toDataURL(secret.otpauth_url, (err, data_url) => {
       res.json({ secret: secret.base32, qrcode: data_url });
     });
   },
 
-  add2fa: async (req, res ) => {
+  add2fa: async (req, res) => {
     const { secret } = req.body;
-    
+
     const { errors, isValid } = TwoFAValidation(req.body);
 
-    if(!isValid) {
+    if (!isValid) {
       return res.status(500).json(errors);
     }
 
@@ -396,14 +398,14 @@ module.exports = {
     user.isActive2FA = true;
 
     await user.save();
-    
+
     await Log.create({
       userId: req.user.dataValues.id,
       action: 'update',
       controller: 'auth',
       description: req.user.dataValues.userName + ' add 2FA'
     });
-    
+
     const token = AccessToken(user);
     const refreshToken = RefreshToken(user.id);
 
@@ -416,10 +418,10 @@ module.exports = {
     res.status(200).json(token);
   },
 
-  delete2fa: async (req, res ) => {
+  delete2fa: async (req, res) => {
     const { errors, isValid } = TwoFAValidation(req.body);
 
-    if(!isValid) {
+    if (!isValid) {
       return res.status(500).json(errors);
     }
 
@@ -481,7 +483,7 @@ module.exports = {
 
       return res.status(200).json(user);
     } catch (error) {
-      return res.status(500).send(`Error: ${ error.message }`);
+      return res.status(500).send(`Error: ${error.message}`);
     }
   },
 
@@ -502,7 +504,7 @@ module.exports = {
 
       return res.status(200).json(user);
     } catch (error) {
-      return res.status(500).send(`Error: ${ error.message }`);
+      return res.status(500).send(`Error: ${error.message}`);
     }
   },
 
@@ -523,7 +525,7 @@ module.exports = {
 
       return res.status(200).json(user);
     } catch (error) {
-      return res.status(500).send(`Error: ${ error.message }`);
+      return res.status(500).send(`Error: ${error.message}`);
     }
   }
 };

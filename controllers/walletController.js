@@ -2,11 +2,12 @@ const { Wallet, Log, SubAccount, SubWallet, GlobalPool } = require('../models');
 const WalletValidation = require('../validators/WalletValidation');
 const { PoolFactory } = require('../pool/pool-factory');
 const PoolTypes = require('../pool/pool-types');
+const sendPoolAdminNotification = require("../notifications/service/poolAdminsNotification");
 
 module.exports = {
   CreateWallet: async (req, res) => {
-    const {name, address, subAccountId} = req.body
-    const {errors, isValid} = WalletValidation(req.body)
+    const { name, address, subAccountId } = req.body
+    const { errors, isValid } = WalletValidation(req.body)
     try {
       if (!isValid) {
         return res.status(400).json(errors);
@@ -28,6 +29,7 @@ module.exports = {
         description: req.user.dataValues.userName + ' create: ' + wallet.name
       });
 
+      await sendPoolAdminNotification('Wallet Created', `Wallet with an address ${wallet.address} was succesfully created.`)
       const wallets = await SubWallet.findAll({
         where: {
           subAccountId,
@@ -44,17 +46,17 @@ module.exports = {
       return res.status(201).json(wallets);
     } catch (error) {
       console.log(error);
-      return res.status(500).send(`Error on creating wallet: ${ error.message }`);
+      return res.status(500).send(`Error on creating wallet: ${error.message}`);
     }
   },
   ActivateWallet: async (req, res) => {
     try {
-      const {subAccountId, subWalletId} = req.body
+      const { subAccountId, subWalletId } = req.body
       const subWallets = await SubWallet.findAll({
         where: {
           subAccountId
         }
-      }); 
+      });
 
       for (const subWallet of subWallets) {
         subWallet.isActive = subWallet.id === subWalletId ? true : false;
@@ -81,7 +83,7 @@ module.exports = {
       if (updateWalletError && updateWalletError.length) {
         return res.status(400).json({ message: updateWalletError[0].message })
       }
-    
+
       await Log.create({
         userId: req.user.dataValues.id,
         action: 'update',
@@ -89,9 +91,10 @@ module.exports = {
         description: req.user.dataValues.userName + ' activate: ' + subWallet
       });
 
+      await sendPoolAdminNotification('Wallet Activated', `Wallet with an address ${wallet.address} was succesfully updated.`)
       return res.status(200).json(subWallet);
     } catch (error) {
-      res.status(500).send(`Error: ${ error.message }`);
+      res.status(500).send(`Error: ${error.message}`);
     }
   },
   DeactivateWallet: async (req, res) => {
@@ -109,9 +112,10 @@ module.exports = {
         description: req.user.dataValues.userName + ' deactivate: ' + wallet.name
       });
 
+      await sendPoolAdminNotification('Wallet Deactivated', `Wallet with an address ${wallet.address} was succesfully deactivated.`)
       return res.status(200).json(wallet);
     } catch (error) {
-      res.status(500).send(`Error: ${ error.message }`);
+      res.status(500).send(`Error: ${error.message}`);
     }
   },
   GetSubWallets: async (req, res) => {
@@ -131,7 +135,7 @@ module.exports = {
 
       return res.status(200).json(wallets);
     } catch (error) {
-      res.status(500).send(`Error: ${ error.message }`);
+      res.status(500).send(`Error: ${error.message}`);
     }
   },
   GetWallets: async (req, res) => {
@@ -141,7 +145,7 @@ module.exports = {
           orgId: req.query.id,
         },
       });
-      
+
       const walletPromises = subAccounts.map(async (subAccount) => {
         const subWallets = await SubWallet.findAll({
           where: {
@@ -155,14 +159,14 @@ module.exports = {
             },
           ],
         });
-        
+
         // Extract only the wallets from subWallets
         return subWallets.map((subWallet) => subWallet.wallet);
       });
-      
+
       const walletsArrays = await Promise.all(walletPromises);
       const wallets = walletsArrays.flat(); // Flatten the array of arrays into a single array
-      const uniqueWallets = wallets.filter((obj, index, self) => 
+      const uniqueWallets = wallets.filter((obj, index, self) =>
         index === self.findIndex((t) => (
           t.address === obj.address
         ))
@@ -170,7 +174,7 @@ module.exports = {
       return res.status(200).json(uniqueWallets);
     } catch (error) {
       console.log(error);
-      res.status(500).send(`Error: ${ error.message }`);
+      res.status(500).send(`Error: ${error.message}`);
     }
   },
   GetInfo: async (req, res) => {
@@ -184,10 +188,10 @@ module.exports = {
           }
         ]
       });
-      
+
       return res.status(200).json(wallet);
     } catch (error) {
-      res.status(500).send(`Error: ${ error.message }`);
+      res.status(500).send(`Error: ${error.message}`);
     }
   }
 };

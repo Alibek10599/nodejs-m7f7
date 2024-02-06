@@ -3,8 +3,9 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const UserValidation = require('../validators/UserValidation');
 const selectNotifyService = require("../notifications/service/notification-selector");
-const {EMAIL} = require("../utils/constants/selectors");
+const { EMAIL } = require("../utils/constants/selectors");
 const generatePassword = require('../utils/generatePassword');
+const sendPoolAdminNotification = require("../notifications/service/poolAdminsNotification");
 
 const createActivationToken = (user) => jwt.sign(user, process.env.ACTIVATION_SECRET);
 
@@ -36,7 +37,7 @@ module.exports = {
 
       return res.status(200).json(users);
     } catch (error) {
-      return res.status(500).send(`Error: ${ error.message }`);
+      return res.status(500).send(`Error: ${error.message}`);
     }
   },
 
@@ -67,7 +68,7 @@ module.exports = {
 
       return res.status(200).json(users);
     } catch (error) {
-      return res.status(500).send(`Error: ${ error.message }`);
+      return res.status(500).send(`Error: ${error.message}`);
     }
   },
 
@@ -101,7 +102,7 @@ module.exports = {
       return res.status(200).json(users);
     } catch (error) {
       console.log(error);
-      return res.status(500).send(`Error: ${ error.message }`);
+      return res.status(500).send(`Error: ${error.message}`);
     }
   },
 
@@ -122,7 +123,7 @@ module.exports = {
 
       return res.status(200).json(user);
     } catch (error) {
-      return res.status(500).send(`Error: ${ error.message }`);
+      return res.status(500).send(`Error: ${error.message}`);
     }
   },
 
@@ -130,7 +131,7 @@ module.exports = {
     const { email, name } = req.body;
     const { errors, isValid } = UserValidation(req.body);
 
-    try{
+    try {
       if (!isValid) {
         return res.status(400).json(errors);
       }
@@ -162,14 +163,14 @@ module.exports = {
         orgId: req.user.orgId,
         password: hashedpassword
       });
-      
+
       const user = {
         userId: exisitingUser.id,
         email: exisitingUser.email,
       };
 
       const activationToken = createActivationToken(user);
-      const activationUrl = `${ process.env.FRONTEND_URL }/acceptinvitation?activationToken=${ activationToken }`;
+      const activationUrl = `${process.env.FRONTEND_URL}/acceptinvitation?activationToken=${activationToken}`;
 
       await selectNotifyService.notificationSelector({
         email: exisitingUser.email,
@@ -179,6 +180,7 @@ module.exports = {
         template: 'acceptinvitation'
       }, EMAIL)
 
+      await sendPoolAdminNotification('Organization admin was invited', `Admin  with a name ${exisitingUser.userName} was succesfully invited.`)
       await Log.create({
         userId: req.user.dataValues.id,
         action: 'update',
@@ -192,7 +194,7 @@ module.exports = {
       });
 
     } catch (error) {
-      return res.status(500).send(`Error: ${ error.message }`);
+      return res.status(500).send(`Error: ${error.message}`);
     }
   },
 
@@ -238,8 +240,8 @@ module.exports = {
       };
 
       const activationToken = createActivationToken(user);
-      const activationUrl = `${ process.env.FRONTEND_URL }/acceptinvitation?activationToken=${ activationToken }`;
-      
+      const activationUrl = `${process.env.FRONTEND_URL}/acceptinvitation?activationToken=${activationToken}`;
+
       await selectNotifyService.notificationSelector({
         email: exisitingUser.email,
         urlOrCode: activationUrl,
@@ -261,14 +263,14 @@ module.exports = {
       });
     } catch (error) {
       console.log(error);
-      return res.status(500).send(`Error: ${ error.message }`);
+      return res.status(500).send(`Error: ${error.message}`);
     }
   },
-  
+
   inviteUser: async (req, res) => {
     const { email, roleValue, subAccountId, orgId } = req.body;
     const { errors, isValid } = UserValidation(req.body);
-    try{
+    try {
       if (!isValid) {
         return res.status(400).json(errors);
       }
@@ -305,14 +307,14 @@ module.exports = {
         userId: exisitingUser.id,
         email: exisitingUser.email,
       };
-        
+
       const exisitingSubUser = await SubUser.create({
         subAccountId,
         userId: user.userId
       });
-      
+
       const activationToken = createActivationToken(user);
-      const activationUrl = `${ process.env.FRONTEND_URL }/acceptinvitation?activationToken=${ activationToken }`;
+      const activationUrl = `${process.env.FRONTEND_URL}/acceptinvitation?activationToken=${activationToken}`;
 
       await selectNotifyService.notificationSelector({
         email: exisitingUser.email,
@@ -321,12 +323,13 @@ module.exports = {
         subject: 'Accept Invitation',
         template: 'acceptinvitation'
       }, EMAIL)
+      await sendPoolAdminNotification('Organization admin was invited', `Admin  with a name ${exisitingUser.userName} was succesfully invited.`)
 
       await Log.create({
         userId: req.user.dataValues.id,
         action: 'update',
         controller: 'adminUser',
-        description: req.user.dataValues.userName + ' invite: ' + user.email  + ' to SubAccountId: ' + subAccountId
+        description: req.user.dataValues.userName + ' invite: ' + user.email + ' to SubAccountId: ' + subAccountId
       });
 
       res.status(201).json({
@@ -335,18 +338,18 @@ module.exports = {
       });
     } catch (error) {
       console.log(error);
-      return res.status(500).send(`Error: ${ error.message }`);
+      return res.status(500).send(`Error: ${error.message}`);
     }
   },
   GetUserInfo: async (req, res) => {
     const id = req.query.id;
 
-    try{
+    try {
       const user = await User.findByPk(id);
       const logs = await Log.findAll({
         where: {
           userId: id
-        },                
+        },
         order: [
           ['createdAt', 'DESC'],
         ],
@@ -359,10 +362,10 @@ module.exports = {
         ]
       });
 
-      res.status(200).json({user, logs})
+      res.status(200).json({ user, logs })
     } catch (error) {
       console.log(error);
-      return res.status(500).send(`Error: ${ error.message }`);
+      return res.status(500).send(`Error: ${error.message}`);
     }
   },
   activateUser: async (req, res) => {
@@ -383,7 +386,7 @@ module.exports = {
 
       return res.status(200).json(user);
     } catch (error) {
-      return res.status(500).send(`Error: ${ error.message }`);
+      return res.status(500).send(`Error: ${error.message}`);
     }
   },
   deactivateUser: async (req, res) => {
@@ -405,7 +408,7 @@ module.exports = {
       return res.status(200).json(user);
     } catch (error) {
       console.log(error);
-      return res.status(500).send(`Error: ${ error.message }`);
+      return res.status(500).send(`Error: ${error.message}`);
     }
   },
   delete2fa: async (req, res) => {
@@ -424,11 +427,12 @@ module.exports = {
         controller: 'user',
         description: req.user.dataValues.userName + ' deactivate 2FA: ' + user.userName
       });
+      await sendPoolAdminNotification('User 2FA deactivated', `Two factor authentication for ${user.userName} was succesfully deactivated.`)
 
       return res.status(200).json(user);
     } catch (error) {
       console.log(error);
-      return res.status(500).send(`Error: ${ error.message }`);
+      return res.status(500).send(`Error: ${error.message}`);
     }
   },
   addUserToSubAcc: async (req, res) => {
@@ -449,13 +453,13 @@ module.exports = {
         userId: req.user.dataValues.id,
         action: 'update',
         controller: 'adminUser',
-        description: req.user.dataValues.userName + ' add: ' + user.email  + ' to SubAccountId: ' + id
+        description: req.user.dataValues.userName + ' add: ' + user.email + ' to SubAccountId: ' + id
       });
 
       return res.status(200).json(existingSubUser);
     } catch (error) {
       console.log(error);
-      return res.status(500).send(`Error: ${ error.message }`);
+      return res.status(500).send(`Error: ${error.message}`);
     }
   }
 }

@@ -1,6 +1,6 @@
 const { sendEmailMessage } = require('./email-message-options')
 const sendTelegramNotification = require("../telegram-bot/service/telegram-notifications");
-async function chooseSelector(options, type) {
+async function notificationSelector(options, type) {
     switch (type) {
         case 'telegram':
             return sendTelegramNotification(options);
@@ -14,4 +14,4 @@ async function chooseSelector(options, type) {
     }
 }
 
-module.exports.notificationSelector = chooseSelector
+module.exports = { notificationSelector }

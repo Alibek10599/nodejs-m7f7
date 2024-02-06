@@ -1,4 +1,4 @@
-const {bot} = require("../config/telegram-config");
+const { bot } = require("../config/telegram-config");
 const {
     greetingsMessage,
     helpMessageCommand,
@@ -8,9 +8,9 @@ const {
 const matchUserMessage = require("../../../validators/emailRegexpMatch");
 const generateCode = require("../../../utils/generate-code");
 const timeToMs = require("../../../utils/time-utils");
-const {User} = require("../../../models");
-const {isInt} = require("validator");
-const {EMAIL} = require("../../../utils/constants/selectors");
+const { User } = require("../../../models");
+const { isInt } = require("validator");
+const { EMAIL } = require("../../../utils/constants/selectors");
 const selectNotifyService = require("../../service/notification-selector");
 
 bot.on('text', async msg => {
@@ -80,7 +80,7 @@ async function findUserByEmail(message) {
             +new Date().getTime() + timeToMs(process.env.LIFE_TIME_IN_MINUTE, 'minute'),
         ).getTime();
 
-        await User.update({tgUserId: message.from.id, confirmationCode, expirationDate}, {
+        await User.update({ tgUserId: message.from.id, confirmationCode, expirationDate }, {
             where: {
                 email: user.email,
             },
@@ -110,10 +110,10 @@ async function validateConfirmationCode(message) {
         },
     });
 
-    if(!user || user.expirationDate < new Date().getTime()) {
+    if (!user || user.expirationDate < new Date().getTime()) {
         return false
     } else {
-        return User.update({isActiveTg: true}, {
+        return User.update({ isActiveTg: true }, {
             where: {
                 tgUserId: message.from.id,
             },

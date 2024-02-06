@@ -159,7 +159,7 @@ WantedBy=multi-user.target
 
       const serviceFilePath = `/etc/systemd/system/btcagent_${intPort}.service`;
 
-      await writeFile(serviceFilePath, serviceFileContent)
+      if (STRATUM_IS_ACTIVE) await writeFile(serviceFilePath, serviceFileContent)
 
 
     } catch (error) {

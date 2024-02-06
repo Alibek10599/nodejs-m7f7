@@ -4,8 +4,12 @@ const { Op } = require("sequelize");
 const ExcelJS = require('exceljs');
 const {formatDatePoolAPI} = require("../utils/date");
 
-const { SBI_URL, MIDAS_GLOBAL_POOL_ADDRESS, SBI_API_KEY, SBI_API_SECRET } =
-  process.env;
+const {
+  SBI_URL,
+  MIDAS_GLOBAL_POOL_ADDRESS,
+  SBI_API_KEY,
+  SBI_API_SECRET
+} = process.env;
 
 class SBIPool {
   constructor(pool) {
