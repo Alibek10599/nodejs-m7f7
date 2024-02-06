@@ -364,19 +364,15 @@ class SBIPool {
     return subAccountInfo;
   }
 
-  async getTaxReport(month, year) {
+  async getTaxReport(startDate, endDate) {
 
-    // обрабатываем параметры
-
-    let startDate = new Date(`${year}-${month}-01T00:00:00+00:00`);
-    let endDate = new Date(
-      new Date(startDate).setMonth(startDate.getMonth() + 1)
-    );
-
+    // processing parameters
+    
+    // earningsFor filter
     startDate = formatDatePoolAPI(startDate);
     endDate = formatDatePoolAPI(endDate);
 
-    // получаем данные для отчета
+    // get data from API
 
     let transactionLst = [];
     let responseLen = 1;
@@ -390,6 +386,10 @@ class SBIPool {
       transactionLst = transactionLst.concat(response.data.content);
     }
 
+    // CONFIRMED, PENDING, POSTED, NEW
+    // transactionLst = transactionLst.filter(transaction => {return transaction.state == "CONFIRMED";});
+
+    // add organization info
     const organizationLst = await Organization.findAll({
       include: [
         {
@@ -400,23 +400,29 @@ class SBIPool {
     });
 
     organizationLst.forEach(organization => {
-      organization.subAccountTextLst = organization.subAccounts.map(subAccounts => subAccounts.subAccName);
+      organization.subAccountIdLst = organization.subAccounts.map(subAccounts => subAccounts.collectorId);
     });
 
-    // формируем отчет
+    transactionLst.forEach(transaction => {
 
+      transaction.organizationDb = organizationLst.find(organization => {
+        return organization.subAccountIdLst.includes(transaction.subaccountId);
+      });
 
-    // сначала сгруппировать
-    // потом туда подтянуть тупо инфу по оргии
+      transaction.subAccountDb = transaction.organizationDb.subAccounts.find(subAccountDb => {
+        return subAccountDb.collectorId == transaction.subaccountId;
+      });
 
+    });
 
-
+    // processing report
     const transactionGrp = {};
     transactionLst.forEach(transaction => {
 
       const key = `
       ${transaction.earningsFor}
       ${transaction.subaccountName}
+      ${transaction.subaccountId}
       ${transaction.coin}
       `;
 
@@ -424,23 +430,32 @@ class SBIPool {
         transactionGrp[key] = {
           earningsFor: transaction.earningsFor,
           subaccountName: transaction.subaccountName,
+          subaccountId: transaction.subaccountId,
           coin: transaction.coin,
           vsub1Sum: 0,
           vsub2Sum: 0,
+
           walletAddress: "",
+          organization: null,
+          subAccount: null,
+
         };
       }
 
-      switch (transaction.vsubaccountName) {
-        case "vsub1":
+      switch (transaction.vsubaccountId) {
+        case transaction.subAccountDb.vsub1Id:
           transactionGrp[key].vsub1Sum =
             transactionGrp[key].vsub1Sum +
             transaction.netOwed;
-          transactionGrp[key].walletAddress = transaction.address
+
+          transactionGrp[key].walletAddress = transaction.address;
+          transactionGrp[key].organization = transaction.organizationDb;
+          transactionGrp[key].subAccount = transaction.subAccountDb;
+
           break;
-        case "vsub2":
+        case transaction.subAccountDb.vsub2Id:
           transactionGrp[key].vsub2Sum =
-            transactionGrp[key].vsub1Sum +
+            transactionGrp[key].vsub2Sum +
             transaction.netOwed;
           break;
         default:
@@ -450,12 +465,6 @@ class SBIPool {
     });
 
     const report = Object.keys(transactionGrp).map(key => {return transactionGrp[key]});
-
-    report.forEach(row => {
-      row.organization = organizationLst.find(organization => {
-        return organization.subAccountTextLst.includes(row.subaccountName);
-      });
-    });
 
     return (report);
   }

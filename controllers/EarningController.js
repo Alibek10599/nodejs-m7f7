@@ -119,6 +119,7 @@ module.exports = {
   GetTaxReport: async (req, res) => {
     try {
 
+      // get pool
       const globalPool = await GlobalPool.findOne({
         where: {
           isActive: true,
@@ -132,11 +133,19 @@ module.exports = {
 
       const pool = PoolFactory.createPool(globalPool);
 
+      // processing parameters
+
       const {month, year, isExcel} = req.query;
 
-      const report = await pool.getTaxReport(month, year);
+      let startDate = new Date(`${year}-${month}-01T00:00:00+00:00`);
+      let endDate = new Date(
+        new Date(startDate).setMonth(startDate.getMonth() + 1)
+      );
 
+      // get report
+      const report = await pool.getTaxReport(startDate, endDate);
 
+      // generate excel
       if ((isExcel ?? false)) {
 
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
