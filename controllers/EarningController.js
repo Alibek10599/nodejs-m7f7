@@ -1,5 +1,5 @@
 const { Op } = require("sequelize")
-const { GlobalPool, SubAccount } = require("../models")
+const {GlobalPool, SubAccount, Role} = require("../models")
 const { PoolFactory } = require("../pool/pool-factory");
 const PoolTypes = require("../pool/pool-types");
 const ExcelJS = require('exceljs');
@@ -119,31 +119,18 @@ module.exports = {
   GetTaxReport: async (req, res) => {
     try {
 
-      // get pool
-      const globalPool = await GlobalPool.findOne({
-        where: {
-          isActive: true,
-        },
-        order: [["id", "DESC"]],
-      });
-
-      if (!globalPool) {
-        throw new Error("No one global pool active");
-      }
-
-      const pool = PoolFactory.createPool(globalPool);
-
       // processing parameters
 
-      const {month, year, isExcel} = req.query;
+      const {month, year, isExcel, isConfirmed} = req.query;
 
       let startDate = new Date(`${year}-${month}-01T00:00:00+00:00`);
       let endDate = new Date(
         new Date(startDate).setMonth(startDate.getMonth() + 1)
       );
 
-      // get report
-      const report = await pool.getTaxReport(startDate, endDate);
+      const pool = await getPool();
+
+      const report = await pool.getTransactionLst({startDate, endDate, isConfirmed});
 
       // generate excel
       if ((isExcel ?? false)) {
@@ -168,8 +155,49 @@ module.exports = {
       return res.status(500).send(`Error: ${error.message}`);
     }
   },
-};
 
+  GetTransactions: async (req, res) => {
+    try {
+
+      // check permission
+
+      const role = await Role.findOne({
+        where: {
+          id: req.user.roleId,
+        },
+      });
+
+      const isGlobal = role.isPoolAdmin ?? role.isPoolAccount ?? false;
+      if (!isGlobal) {
+        return res.status(403).send(`need pool role`);
+      }
+
+      // processing parameters
+
+      const {startDate, endDate, isExcel, isConfirmed, orgId} = req.query;
+
+      if (orgId == null) {
+        return res.status(400).send(`Error:need param orgId`);
+      }
+
+      const subaccountNames = (await SubAccount.findAll({
+        where: {orgId}
+      })).map(subaccount => subaccount.subAccName);
+
+      const pool = await getPool();
+
+      // get report
+      const report = await pool.getTransactionLst({startDate, endDate, subaccountNameLst: subaccountNames});
+
+      return res.status(200).json({report});
+
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send(`Error: ${error.message}`);
+    }
+  },
+
+};
 
 const taxReportGanerateExcel = async (report, reportName) => {
 
@@ -222,4 +250,21 @@ const taxReportGanerateExcel = async (report, reportName) => {
 
   return {workbook, reportName};
 
+}
+
+const getPool = async () => {
+
+  const globalPool = await GlobalPool.findOne({
+    where: {
+      isActive: true,
+    },
+    order: [["id", "DESC"]],
+  });
+
+  if (!globalPool) {
+    throw new Error("No one global pool active");
+  }
+
+  const pool = PoolFactory.createPool(globalPool);
+  return pool;
 }

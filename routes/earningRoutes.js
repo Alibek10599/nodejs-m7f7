@@ -12,4 +12,6 @@ router.get('/revenue', isAuth, EarningController.GetEstimatedRevenue);
 
 router.get('/taxReport', isAuth, EarningController.GetTaxReport);
 
+router.get('/transactionsReport', isAuth, EarningController.GetTransactions);
+
 module.exports = router;

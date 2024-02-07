@@ -364,13 +364,17 @@ class SBIPool {
     return subAccountInfo;
   }
 
-  async getTaxReport(startDate, endDate) {
+  async getTransactionLst({startDate, endDate, isConfirmed, subaccountNameLst}) {
 
     // processing parameters
-    
+
     // earningsFor filter
     startDate = formatDatePoolAPI(startDate);
     endDate = formatDatePoolAPI(endDate);
+
+    isConfirmed = isConfirmed ?? false;
+    isConfirmed = isConfirmed == "true";
+    subaccountNameLst = subaccountNameLst ?? [];
 
     // get data from API
 
@@ -386,8 +390,16 @@ class SBIPool {
       transactionLst = transactionLst.concat(response.data.content);
     }
 
-    // CONFIRMED, PENDING, POSTED, NEW
-    // transactionLst = transactionLst.filter(transaction => {return transaction.state == "CONFIRMED";});
+    if (isConfirmed) {
+      // CONFIRMED, PENDING, POSTED, NEW
+      transactionLst = transactionLst.filter(transaction => {return transaction.state == "CONFIRMED";});
+    }
+
+    if (subaccountNameLst.length > 0) {
+      transactionLst = transactionLst.filter(transaction => {
+        return subaccountNameLst.includes(transaction.subaccountName);
+      });
+    }
 
     // add organization info
     const organizationLst = await Organization.findAll({
