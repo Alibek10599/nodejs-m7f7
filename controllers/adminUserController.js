@@ -6,6 +6,7 @@ const selectNotifyService = require("../notifications/service/notification-selec
 const { EMAIL } = require("../utils/constants/selectors");
 const generatePassword = require('../utils/generatePassword');
 const sendPoolAdminNotification = require("../notifications/service/poolAdminsNotification");
+const sendOrgAdminNotification = require('../notifications/service/orgAdminNotification');
 
 const createActivationToken = (user) => jwt.sign(user, process.env.ACTIVATION_SECRET);
 
@@ -316,15 +317,17 @@ module.exports = {
       const activationToken = createActivationToken(user);
       const activationUrl = `${process.env.FRONTEND_URL}/acceptinvitation?activationToken=${activationToken}`;
 
-      await selectNotifyService.notificationSelector({
-        email: exisitingUser.email,
-        urlOrCode: activationUrl,
-        userName: exisitingUser.userName,
-        subject: 'Accept Invitation',
-        template: 'acceptinvitation'
-      }, EMAIL)
-      await sendPoolAdminNotification('Organization admin was invited', `Admin  with a name ${exisitingUser.userName} was succesfully invited.`)
-
+      await Promise.allSettled([
+        selectNotifyService.notificationSelector({
+          email: exisitingUser.email,
+          urlOrCode: activationUrl,
+          userName: exisitingUser.userName,
+          subject: 'Accept Invitation',
+          template: 'acceptinvitation'
+        }, EMAIL),
+        sendPoolAdminNotification('Organization admin was invited', `Admin  with a name ${exisitingUser.userName} was succesfully invited.`),
+        sendOrgAdminNotification('Accept Invitation', `Admin  with a name ${exisitingUser.userName} was succesfully invited.`, orgId)
+      ])
       await Log.create({
         userId: req.user.dataValues.id,
         action: 'update',
@@ -405,6 +408,8 @@ module.exports = {
         description: req.user.dataValues.userName + ' deactivate: ' + user.userName
       });
 
+      sendPoolAdminNotification('User deactivated', `User ${user.email} was deactivated sucessfully.`)
+
       return res.status(200).json(user);
     } catch (error) {
       console.log(error);
@@ -455,6 +460,11 @@ module.exports = {
         controller: 'adminUser',
         description: req.user.dataValues.userName + ' add: ' + user.email + ' to SubAccountId: ' + id
       });
+
+      await Promise.allSettled([
+        sendPoolAdminNotification('User was added', `User for ${user.userName} was added`),
+        sendOrgAdminNotification('User was added', `User for ${user.userName} was added`, user?.orgId)
+      ])
 
       return res.status(200).json(existingSubUser);
     } catch (error) {

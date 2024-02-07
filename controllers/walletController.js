@@ -3,6 +3,7 @@ const WalletValidation = require('../validators/WalletValidation');
 const { PoolFactory } = require('../pool/pool-factory');
 const PoolTypes = require('../pool/pool-types');
 const sendPoolAdminNotification = require("../notifications/service/poolAdminsNotification");
+const sendOrgAdminNotification = require('../notifications/service/orgAdminNotification');
 
 module.exports = {
   CreateWallet: async (req, res) => {
@@ -29,7 +30,10 @@ module.exports = {
         description: req.user.dataValues.userName + ' create: ' + wallet.name
       });
 
-      await sendPoolAdminNotification('Wallet Created', `Wallet with an address ${wallet.address} was succesfully created.`)
+      await Promise.allSettled([
+        sendPoolAdminNotification('Wallet Created', `Wallet with an address ${wallet.address} was succesfully created.`),
+        sendOrgAdminNotification('Wallet Created', `Wallet with an address ${wallet.address} was succesfully created.`, req?.user?.orgId)
+      ])
       const wallets = await SubWallet.findAll({
         where: {
           subAccountId,
@@ -91,7 +95,10 @@ module.exports = {
         description: req.user.dataValues.userName + ' activate: ' + subWallet
       });
 
-      await sendPoolAdminNotification('Wallet Activated', `Wallet with an address ${wallet.address} was succesfully updated.`)
+      await Promise.allSettled([
+        sendPoolAdminNotification('Wallet updated', `Wallet address for ${subAccount?.subAccName} was succesfully updated to a ${wallet.address}.`),
+        sendOrgAdminNotification('Wallet updated', `Wallet address for ${subAccount?.subAccName} was succesfully updated to a ${wallet.address}.`, subAccount.orgId)
+      ])
       return res.status(200).json(subWallet);
     } catch (error) {
       res.status(500).send(`Error: ${error.message}`);

@@ -21,6 +21,7 @@ const PoolTypes = require("../pool/pool-types");
 const { Op } = require("sequelize");
 const { TELEGRAM } = require("../utils/constants/selectors");
 const sendPoolAdminNotification = require("../notifications/service/poolAdminsNotification");
+const sendOrgAdminNotification = require("../notifications/service/orgAdminNotification");
 
 module.exports = {
   CreateSubAccount: async (req, res) => {
@@ -143,7 +144,7 @@ module.exports = {
             " create: " +
             subAccount.subAccName +
             " with wallet name: " +
-            "wallet.name",
+            wallet.name,
         });
 
         await SubUser.create({
@@ -151,8 +152,10 @@ module.exports = {
           userId: req.user.dataValues.id,
         });
 
-        await sendPoolAdminNotification('Subaccount Created', `Subaccount with a name ${subAccount.subAccName} was succesfully created.`)
-
+        await Promise.allSettled([
+          sendPoolAdminNotification('Subaccount Created', `Subaccount with a name ${subAccount.subAccName} was succesfully created.`),
+          sendOrgAdminNotification('Subaccount Created', `Subaccount with a name ${subAccount.subAccName} was succesfully created.`, exisitingOrganization.id)
+        ])
         res.status(201).json({
           success: true,
           message: "Создание СубСчета прошло успешно",

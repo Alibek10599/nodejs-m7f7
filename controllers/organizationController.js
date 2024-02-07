@@ -8,6 +8,7 @@ const { PoolFactory } = require('../pool/pool-factory');
 const kdpService = new KdpService();
 const { Op } = require("sequelize");
 const sendPoolAdminNotification = require("../notifications/service/poolAdminsNotification");
+const sendOrgAdminNotification = require('../notifications/service/orgAdminNotification');
 
 module.exports = {
   GetOrganizations: async (req, res) => {
@@ -215,20 +216,14 @@ module.exports = {
         where: { orgId: organization.id }
       })
 
-      await selectNotifyService.notificationSelector({
-        email: orgUser.email,
-        userName: orgUser.userName,
-        subject: 'Organization Approved',
-        template: 'approveOrganization',
-      }, EMAIL)
-
       await Log.create({
         userId: req.user.dataValues.id,
         action: 'update',
         controller: 'organization',
         description: req.user.dataValues.userName + ' approved: ' + organization.orgName + ', with value of FeesRate: ' + feesRate
       });
-      await sendPoolAdminNotification('Organization was updated', `Organization status and fee ${organization.orgName} was succesfully updated.`)
+      await sendPoolAdminNotification('Organization was approved', `We are glad to inform you that your organization ${organization.orgName} was approved.`)
+      await sendOrgAdminNotification('Organization was approved', `We are glad to inform you that your organization ${organization.orgName} was approved.`, organization.id)
 
       return res.status(200).json(organization);
     } catch (error) {

@@ -159,7 +159,7 @@ WantedBy=multi-user.target
 
       const serviceFilePath = `/etc/systemd/system/btcagent_${intPort}.service`;
 
-      if (STRATUM_IS_ACTIVE) await writeFile(serviceFilePath, serviceFileContent)
+      if (STRATUM_IS_ACTIVE === 'true') await writeFile(serviceFilePath, serviceFileContent)
 
 
     } catch (error) {
@@ -197,7 +197,7 @@ WantedBy=multi-user.target
       await writeFile(serviceFilePath, serviceFileContent)
 
 
-      if (STRATUM_IS_ACTIVE) {
+      if (STRATUM_IS_ACTIVE === 'true') {
         const reloadDaemonCommand = 'sudo systemctl daemon-reload'
         const unmaskServiceCommand = `sudo systemctl unmask ${serviceName}` // unmask service to avoid app priveledge issues
         // Command to start the service
