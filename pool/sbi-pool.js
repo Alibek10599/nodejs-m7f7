@@ -444,8 +444,12 @@ class SBIPool {
           subaccountName: transaction.subaccountName,
           subaccountId: transaction.subaccountId,
           coin: transaction.coin,
+
           vsub1Sum: 0,
           vsub2Sum: 0,
+          
+          vsub1HashRate: 0,
+          vsub2HashRate: 0,
 
           walletAddress: "",
           organization: null,
@@ -460,15 +464,28 @@ class SBIPool {
             transactionGrp[key].vsub1Sum +
             transaction.netOwed;
 
+          transactionGrp[key].vsub1HashRate =
+            transactionGrp[key].vsub1HashRate +
+            transaction.hashrate;
+
           transactionGrp[key].walletAddress = transaction.address;
           transactionGrp[key].organization = transaction.organizationDb;
           transactionGrp[key].subAccount = transaction.subAccountDb;
+
+          transactionGrp[key].vsub1Transaction = transaction;
 
           break;
         case transaction.subAccountDb.vsub2Id:
           transactionGrp[key].vsub2Sum =
             transactionGrp[key].vsub2Sum +
             transaction.netOwed;
+
+          transactionGrp[key].vsub2HashRate =
+            transactionGrp[key].vsub2HashRate +
+            transaction.hashrate;
+
+          transactionGrp[key].vsub2Transaction = transaction;
+
           break;
         default:
           break;

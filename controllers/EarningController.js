@@ -116,8 +116,18 @@ module.exports = {
     }
   },
 
+  // pool report
   GetTaxReport: async (req, res) => {
     try {
+
+      // permisions
+      const role = await getRole(req.user);
+      
+      const isEarning = checkIsEarning(role.roleName);
+      if (!isEarning) {return res.status(403).send(`Error`);}
+      
+      const isGlobal = checkIsGlobal(role.roleName);
+      if (!isGlobal) {return res.status(403).send(`Error`); }
 
       // processing parameters
 
@@ -161,40 +171,70 @@ module.exports = {
 
       // check permission
 
-      const role = await Role.findOne({
-        where: {
-          id: req.user.roleId,
-        },
-      });
+      const role = await getRole(req.user);
+      const isEarning = checkIsEarning(role.roleName);
+      if (!isEarning) {return res.status(403).send(`Error`);}
 
-      const isGlobal = role.isPoolAdmin ?? role.isPoolAccount ?? false;
-      if (!isGlobal) {
-        return res.status(403).send(`need pool role`);
+
+      const isGlobal = checkIsGlobal(role.roleName);
+      if (isGlobal) {
+        const result = await GetTransactionsPool(req, res);
+        return result;
       }
 
-      // processing parameters
-
-      const {startDate, endDate, isExcel, isConfirmed, orgId} = req.query;
-
-      if (orgId == null) {
-        return res.status(400).send(`Error:need param orgId`);
+      const isOrg = checkIsOrg(role.roleName);
+      if (isOrg) {
+        const result = await GetTransactionsOrg(req, res);
+        return result;
       }
 
-      const subaccountNames = (await SubAccount.findAll({
-        where: {orgId}
-      })).map(subaccount => subaccount.subAccName);
-
-      const pool = await getPool();
-
-      // get report
-      const report = await pool.getTransactionLst({startDate, endDate, subaccountNameLst: subaccountNames});
-
-      return res.status(200).json({report});
-
+      return res.status(403).send(`Error`);
     } catch (error) {
+
       console.log(error);
       return res.status(500).send(`Error: ${error.message}`);
+
     }
+
+  },
+
+  // org report (доход - Начисления)
+  GetIncome: async (req, res) => {
+
+    // processing parameters
+
+    const {startDate, endDate, subAccName} = req.query;
+    const orgId = req.user.orgId;
+
+    if (orgId == null) {
+      return res.status(400).send(`Error:no orgId`);
+    }
+
+    if (subAccName == null) {
+      return res.status(400).send(`subAccName:need param subAccName`);
+    }
+
+    const subaccountNames = (await SubAccount.findAll({
+      where: {orgId}
+    })).map(subaccount => subaccount.subAccName);
+
+    if (!subaccountNames.includes(subAccName)) {
+      return res.status(403).send(`${subAccName} not allowed`);
+    }
+
+    const pool = await getPool();
+
+    // get report
+    const report = await pool.getTransactionLst({startDate, endDate, subaccountNameLst: [subAccName]});
+
+    report.forEach(e => {
+      delete e.vsub2Sum;
+      e.hashrate = e.vsub1HashRate + e.vsub2HashRate;
+      delete e.vsub1HashRate;
+      delete e.vsub2HashRate;
+    });
+
+    return res.status(200).json({report});
   },
 
 };
@@ -250,7 +290,7 @@ const taxReportGanerateExcel = async (report, reportName) => {
 
   return {workbook, reportName};
 
-}
+};
 
 const getPool = async () => {
 
@@ -267,4 +307,102 @@ const getPool = async () => {
 
   const pool = PoolFactory.createPool(globalPool);
   return pool;
-}
+};
+
+const checkIsGlobal = (roleName) => {
+  return (
+    roleName.toLowerCase().includes("pool")
+  );
+};
+
+const checkIsOrg = (roleName) => {
+  return (
+    roleName.toLowerCase().includes("org")
+  );
+};
+
+const checkIsEarning = (roleName) => {
+  return (
+    roleName.toLowerCase().includes("account") ||
+    roleName.toLowerCase().includes("admin")
+  );
+};
+
+const getRole = async (user) => {
+  const role = await Role.findOne({
+    where: {
+      id: user.roleId,
+    },
+  });
+  return role;
+};
+
+// pool report (Транзакции - История выплат)
+const GetTransactionsPool = async (req, res) => {
+
+  // processing parameters
+
+  const {startDate, endDate, orgId, subAccName} = req.query;
+
+  if (orgId == null) {
+    return res.status(400).send(`Error:need param orgId`);
+  }
+  
+  let subaccountNames = (await SubAccount.findAll({
+    where: {orgId}
+  })).map(subaccount => subaccount.subAccName);
+
+  if (subAccName != null) {
+    if (!subaccountNames.includes(subAccName)) {
+      return res.status(403).send(`${subAccName} not allowed`);
+    }
+    subaccountNames = [subAccName];
+  }
+
+  const pool = await getPool();
+
+  // get report
+  const report = await pool.getTransactionLst({startDate, endDate, subaccountNameLst: subaccountNames});
+
+  return res.status(200).json({report});
+
+};
+
+// org report (Транзакции - История выплат - вывод)
+const GetTransactionsOrg = async (req, res) => {
+
+  // processing parameters
+
+  const {startDate, endDate, subAccName} = req.query;
+  const orgId = req.user.orgId;
+
+  if (orgId == null) {
+    return res.status(400).send(`Error:no orgId`);
+  }
+
+  if (subAccName == null) {
+    return res.status(400).send(`subAccName:need param subAccName`);
+  }
+
+  const subaccountNames = (await SubAccount.findAll({
+    where: {orgId}
+  })).map(subaccount => subaccount.subAccName);
+
+  if (!subaccountNames.includes(subAccName)) {
+    return res.status(403).send(`${subAccName} not allowed`);
+  }
+
+  const pool = await getPool();
+
+  // get report
+  const report = await pool.getTransactionLst({startDate, endDate, subaccountNameLst: [subAccName], isConfirmed: true});
+
+  report.forEach(e => {
+    delete e.vsub2Sum;
+    e.hashrate = e.vsub1HashRate + e.vsub2HashRate;
+    delete e.vsub1HashRate;
+    delete e.vsub2HashRate;
+  });
+
+  return res.status(200).json({report});
+};
