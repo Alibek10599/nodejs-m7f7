@@ -57,15 +57,16 @@ module.exports = {
       const activationToken = createActivationToken(user);
       const activationUrl = `${process.env.FRONTEND_URL}/emailverification?activationToken=${activationToken}`;
 
-      await selectNotifyService.notificationSelector({
-        email: exisitingUser.email,
-        urlOrCode: activationUrl,
-        userName: exisitingUser.userName,
-        subject: 'Email Verification',
-        template: 'verificationmail',
-      }, EMAIL)
-
-      await sendPoolAdminNotification('User added', `User with a name ${exisitingUser.userName} was succesfully added.`)
+      Promise.allSettled([
+        selectNotifyService.notificationSelector({
+          email: exisitingUser.email,
+          urlOrCode: activationUrl,
+          userName: exisitingUser.userName,
+          subject: 'Email Verification',
+          template: 'verificationmail',
+        }, EMAIL),
+        sendPoolAdminNotification('User added', `User with a name ${exisitingUser.userName} was succesfully added.`)
+      ])
       res.status(201).json({
         success: true,
         message: `please check your email:- ${exisitingUser.email} to activate your account!`,

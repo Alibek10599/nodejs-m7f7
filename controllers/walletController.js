@@ -119,7 +119,7 @@ module.exports = {
         description: req.user.dataValues.userName + ' deactivate: ' + wallet.name
       });
 
-      await sendPoolAdminNotification('Wallet Deactivated', `Wallet with an address ${wallet.address} was succesfully deactivated.`)
+      sendPoolAdminNotification('Wallet Deactivated', `Wallet with an address ${wallet.address} was succesfully deactivated.`)
       return res.status(200).json(wallet);
     } catch (error) {
       res.status(500).send(`Error: ${error.message}`);

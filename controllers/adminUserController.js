@@ -181,7 +181,7 @@ module.exports = {
         template: 'acceptinvitation'
       }, EMAIL)
 
-      await sendPoolAdminNotification('Organization admin was invited', `Admin  with a name ${exisitingUser.userName} was succesfully invited.`)
+      sendPoolAdminNotification('Organization admin was invited', `Admin  with a name ${exisitingUser.userName} was succesfully invited.`)
       await Log.create({
         userId: req.user.dataValues.id,
         action: 'update',
@@ -399,6 +399,7 @@ module.exports = {
       const user = await User.findByPk(id);
 
       user.isActive = false;
+      user.isDeleted = true;
       user.save();
 
       await Log.create({
@@ -432,7 +433,7 @@ module.exports = {
         controller: 'user',
         description: req.user.dataValues.userName + ' deactivate 2FA: ' + user.userName
       });
-      await sendPoolAdminNotification('User 2FA deactivated', `Two factor authentication for ${user.userName} was succesfully deactivated.`)
+      sendPoolAdminNotification('User 2FA deactivated', `Two factor authentication for ${user.userName} was succesfully deactivated.`)
 
       return res.status(200).json(user);
     } catch (error) {
