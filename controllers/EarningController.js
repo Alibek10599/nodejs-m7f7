@@ -124,10 +124,16 @@ module.exports = {
       const role = await getRole(req.user);
       
       const isEarning = checkIsEarning(role.roleName);
-      if (!isEarning) {return res.status(403).send(`Error`);}
+      if (!isEarning) {
+        const report = [];
+        return res.status(200).json({report});
+      }
       
       const isGlobal = checkIsGlobal(role.roleName);
-      if (!isGlobal) {return res.status(403).send(`Error`); }
+      if (!isGlobal) {
+        const report = [];
+        return res.status(200).json({report});
+       }
 
       // processing parameters
 
@@ -173,8 +179,10 @@ module.exports = {
 
       const role = await getRole(req.user);
       const isEarning = checkIsEarning(role.roleName);
-      if (!isEarning) {return res.status(403).send(`Error`);}
-
+      if (!isEarning) {
+        const report = [];
+        return res.status(200).json({report});
+      }
 
       const isGlobal = checkIsGlobal(role.roleName);
       if (isGlobal) {
@@ -188,7 +196,9 @@ module.exports = {
         return result;
       }
 
-      return res.status(403).send(`Error`);
+      const report = [];
+      return res.status(200).json({report});
+
     } catch (error) {
 
       console.log(error);
@@ -203,29 +213,33 @@ module.exports = {
 
     // processing parameters
 
-    const {startDate, endDate, subAccName} = req.query;
+    let {startDate, endDate, subAccNameLst} = req.query;
     const orgId = req.user.orgId;
 
     if (orgId == null) {
       return res.status(400).send(`Error:no orgId`);
     }
 
-    if (subAccName == null) {
-      return res.status(400).send(`subAccName:need param subAccName`);
-    }
+    subAccNameLst = subAccNameLst || [];
 
     const subaccountNames = (await SubAccount.findAll({
       where: {orgId}
     })).map(subaccount => subaccount.subAccName);
 
-    if (!subaccountNames.includes(subAccName)) {
-      return res.status(403).send(`${subAccName} not allowed`);
+
+    subAccNameLst = subAccNameLst.filter((subAccName) => {
+      return subaccountNames.includes(subAccName);
+    });
+
+    if (subAccNameLst.length == 0) {
+      const report = [];
+      return res.status(200).json({report});
     }
 
     const pool = await getPool();
 
     // get report
-    const report = await pool.getTransactionLst({startDate, endDate, subaccountNameLst: [subAccName]});
+    const report = await pool.getTransactionLst({startDate, endDate, subaccountNameLst: subAccNameLst});
 
     report.forEach(e => {
       delete e.vsub2Sum;
@@ -342,27 +356,32 @@ const GetTransactionsPool = async (req, res) => {
 
   // processing parameters
 
-  const {startDate, endDate, orgId, subAccName} = req.query;
+  let {startDate, endDate, orgId, subAccNameLst} = req.query;
 
   if (orgId == null) {
     return res.status(400).send(`Error:need param orgId`);
   }
   
-  let subaccountNames = (await SubAccount.findAll({
+  subAccNameLst = subAccNameLst || [];
+
+  const subaccountNames = (await SubAccount.findAll({
     where: {orgId}
   })).map(subaccount => subaccount.subAccName);
 
-  if (subAccName != null) {
-    if (!subaccountNames.includes(subAccName)) {
-      return res.status(403).send(`${subAccName} not allowed`);
-    }
-    subaccountNames = [subAccName];
+
+  subAccNameLst = subAccNameLst.filter((subAccName) => {
+    return subaccountNames.includes(subAccName);
+  });
+
+  if (subAccNameLst.length == 0) {
+    const report = [];
+    return res.status(200).json({report});
   }
 
   const pool = await getPool();
 
   // get report
-  const report = await pool.getTransactionLst({startDate, endDate, subaccountNameLst: subaccountNames});
+  const report = await pool.getTransactionLst({startDate, endDate, subaccountNameLst: subAccNameLst});
 
   return res.status(200).json({report});
 
@@ -373,29 +392,32 @@ const GetTransactionsOrg = async (req, res) => {
 
   // processing parameters
 
-  const {startDate, endDate, subAccName} = req.query;
+  let {startDate, endDate, subAccNameLst} = req.query;
   const orgId = req.user.orgId;
 
   if (orgId == null) {
     return res.status(400).send(`Error:no orgId`);
   }
 
-  if (subAccName == null) {
-    return res.status(400).send(`subAccName:need param subAccName`);
-  }
+  subAccNameLst = subAccNameLst || [];
 
   const subaccountNames = (await SubAccount.findAll({
     where: {orgId}
   })).map(subaccount => subaccount.subAccName);
 
-  if (!subaccountNames.includes(subAccName)) {
-    return res.status(403).send(`${subAccName} not allowed`);
+  subAccNameLst = subAccNameLst.filter((subAccName) => {
+    return subaccountNames.includes(subAccName);
+  });
+
+  if (subAccNameLst.length == 0) {
+    const report = [];
+    return res.status(200).json({report});
   }
 
   const pool = await getPool();
 
   // get report
-  const report = await pool.getTransactionLst({startDate, endDate, subaccountNameLst: [subAccName], isConfirmed: true});
+  const report = await pool.getTransactionLst({startDate, endDate, subaccountNameLst: subAccNameLst, isConfirmed: true});
 
   report.forEach(e => {
     delete e.vsub2Sum;
