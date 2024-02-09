@@ -79,6 +79,8 @@ module.exports = {
         description: req.user.dataValues.userName + ' create: ' + exisitingOrganization.orgName
       });
 
+      await sendPoolAdminNotification('Organization waits for approve', `Organization ${organization.orgName} was created and needs your approve.`)
+
       kdpService.sendXml(iin).then(response => {
         const { isSuccess, data: { messageDate, messageId, sessionId, kdpStatus } } = response
         if (isSuccess) exisitingOrganization.set({ messageDate, messageId, sessionId, kdpStatus })
@@ -192,7 +194,33 @@ module.exports = {
         description: req.user.dataValues.userName + ' update: ' + organization.orgName + ', with values: ' + orgName + ' and ' + bin
       });
 
-      sendPoolAdminNotification('Organization Updated', `Organization ${organization.orgName} was succesfully updated.`)
+      await sendPoolAdminNotification('Organization Updated', `Organization ${organization.orgName} was succesfully updated.`)
+      return res.status(200).json(organization);
+    } catch (error) {
+      return res.status(500).send(`Error: ${error.message}`);
+    }
+  },
+  UpdateOrganizationFee: async (req, res) => {
+    const { feesRate, orgId } = req.body;
+
+    try {
+      const organization = await Organization.findByPk(orgId);
+
+      if (!organization) {
+        return res.status(400).json('Organization not found');
+      }
+
+      organization.feesRate = feesRate;
+      organization.save();
+
+      await Log.create({
+        userId: req.user.dataValues.id,
+        action: 'update',
+        controller: 'organization',
+        description: req.user.dataValues.userName + ' update: ' + organization.orgName + ', with values: ' + feesRate
+      });
+
+      await sendPoolAdminNotification('Organization fee was changed', `Organization fee for ${organization.orgName} was changed to a value: ${feesRate}.`)
       return res.status(200).json(organization);
     } catch (error) {
       return res.status(500).send(`Error: ${error.message}`);

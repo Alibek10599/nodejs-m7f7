@@ -243,13 +243,16 @@ module.exports = {
       const activationToken = createActivationToken(user);
       const activationUrl = `${process.env.FRONTEND_URL}/acceptinvitation?activationToken=${activationToken}`;
 
-      await selectNotifyService.notificationSelector({
-        email: exisitingUser.email,
-        urlOrCode: activationUrl,
-        userName: exisitingUser.userName,
-        subject: 'Accept Invitation',
-        template: 'acceptinvitation'
-      }, EMAIL)
+      await Promise.allSettled([
+        selectNotifyService.notificationSelector({
+          email: exisitingUser.email,
+          urlOrCode: activationUrl,
+          userName: exisitingUser.userName,
+          subject: 'Accept Invitation',
+          template: 'acceptinvitation'
+        }, EMAIL),
+        sendPoolAdminNotification('User registered!', `User ${exisitingUser.email} with a name ${exisitingUser.userName} was succesfully registered in a platform!`),
+      ])
 
       await Log.create({
         userId: req.user.dataValues.id,
@@ -326,7 +329,7 @@ module.exports = {
           template: 'acceptinvitation'
         }, EMAIL),
         sendPoolAdminNotification('Organization admin was invited', `Admin  with a name ${exisitingUser.userName} was succesfully invited.`),
-        sendOrgAdminNotification('Accept Invitation', `Admin  with a name ${exisitingUser.userName} was succesfully invited.`, orgId)
+        sendOrgAdminNotification('Accept Invitation', `Organization user ${exisitingUser.userName} was succesfully invited.`, orgId)
       ])
       await Log.create({
         userId: req.user.dataValues.id,

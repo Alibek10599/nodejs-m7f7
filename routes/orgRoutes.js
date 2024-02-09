@@ -11,6 +11,7 @@ router.post('/activate/:id', isAuth, isPoolAdmin, OrganizationController.Activat
 router.post('/sms/:id', isAuth, isPoolAdmin, OrganizationController.SendSMS);
 router.get('/getinfo', isAuth, OrganizationController.GetInfo);
 router.patch('/update', isAuth, OrganizationController.UpdateOrganization);
+router.put('/fee', isAuth, isPoolAdmin, OrganizationController.UpdateOrganizationFee);
 router.patch('/approve', isAuth, isPoolAdmin, OrganizationController.ApproveOrganization);
 router.get('/organization-info', isAuth, isPoolAccount, OrganizationController.GetOrganizationIfo);
 
