@@ -79,15 +79,18 @@ module.exports = {
         description: req.user.dataValues.userName + ' create: ' + exisitingOrganization.orgName
       });
 
-      await sendPoolAdminNotification('Organization waits for approve', `Organization ${organization.orgName} was created and needs your approve.`)
-
-      kdpService.sendXml(iin).then(response => {
+      const kdpPromise = kdpService.sendXml(iin).then(response => {
         const { isSuccess, data: { messageDate, messageId, sessionId, kdpStatus } } = response
         if (isSuccess) exisitingOrganization.set({ messageDate, messageId, sessionId, kdpStatus })
         return exisitingOrganization.save()
       }).catch(error => {
         console.error("Error with kdp service call:", error);
       });
+
+      Promise.allSettled([
+        kdpPromise,
+        sendPoolAdminNotification('Organization waits for approve', `Organization ${exisitingOrganization.orgName} was created and needs your approval.`)
+      ])
 
       res.status(201).json({
         success: true,
