@@ -14,5 +14,6 @@ router.patch('/update', isAuth, OrganizationController.UpdateOrganization);
 router.put('/fee', isAuth, isPoolAdmin, OrganizationController.UpdateOrganizationFee);
 router.patch('/approve', isAuth, isPoolAdmin, OrganizationController.ApproveOrganization);
 router.get('/organization-info', isAuth, isPoolAccount, OrganizationController.GetOrganizationIfo);
+router.put('/lic/:id', isAuth, isPoolAdmin, OrganizationController.UpdateOrganizationLic);
 
 module.exports = router;
