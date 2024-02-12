@@ -213,19 +213,24 @@ module.exports = {
 
     // processing parameters
 
-    let {startDate, endDate, subAccNameLst} = req.query;
+    let {startDate, endDate, subAccName} = req.query;
     const orgId = req.user.orgId;
 
     if (orgId == null) {
       return res.status(400).send(`Error:no orgId`);
     }
 
-    subAccNameLst = subAccNameLst || [];
+    let subAccNameLst = subAccName ?? [];
+    if (!Array.isArray(subAccNameLst)) {subAccNameLst = [subAccNameLst];}
+
+    if (subAccNameLst.length == 0) {
+      const report = [];
+      return res.status(200).json({report});
+    }
 
     const subaccountNames = (await SubAccount.findAll({
       where: {orgId}
     })).map(subaccount => subaccount.subAccName);
-
 
     subAccNameLst = subAccNameLst.filter((subAccName) => {
       return subaccountNames.includes(subAccName);
@@ -356,32 +361,20 @@ const GetTransactionsPool = async (req, res) => {
 
   // processing parameters
 
-  let {startDate, endDate, orgId, subAccNameLst} = req.query;
+  let {startDate, endDate, orgId} = req.query;
 
   if (orgId == null) {
     return res.status(400).send(`Error:need param orgId`);
   }
   
-  subAccNameLst = subAccNameLst || [];
-
-  const subaccountNames = (await SubAccount.findAll({
+  const subaccountNameLst = (await SubAccount.findAll({
     where: {orgId}
   })).map(subaccount => subaccount.subAccName);
-
-
-  subAccNameLst = subAccNameLst.filter((subAccName) => {
-    return subaccountNames.includes(subAccName);
-  });
-
-  if (subAccNameLst.length == 0) {
-    const report = [];
-    return res.status(200).json({report});
-  }
 
   const pool = await getPool();
 
   // get report
-  const report = await pool.getTransactionLst({startDate, endDate, subaccountNameLst: subAccNameLst});
+  const report = await pool.getTransactionLst({startDate, endDate, subaccountNameLst});
 
   return res.status(200).json({report});
 
@@ -392,15 +385,21 @@ const GetTransactionsOrg = async (req, res) => {
 
   // processing parameters
 
-  let {startDate, endDate, subAccNameLst} = req.query;
+  let {startDate, endDate, subAccName} = req.query;
   const orgId = req.user.orgId;
 
   if (orgId == null) {
     return res.status(400).send(`Error:no orgId`);
   }
+  
+  let subAccNameLst = subAccName ?? [];
+  if (!Array.isArray(subAccNameLst)) {subAccNameLst = [subAccNameLst];}
 
-  subAccNameLst = subAccNameLst || [];
-
+  if (subAccNameLst.length == 0) { 
+    const report = [];
+    return res.status(200).json({report});
+  }
+  
   const subaccountNames = (await SubAccount.findAll({
     where: {orgId}
   })).map(subaccount => subaccount.subAccName);
