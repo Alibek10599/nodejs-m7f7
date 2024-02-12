@@ -28,7 +28,7 @@ module.exports = {
             const mailResult = await transporter.sendMail({
                 from: process.env.SMPT_MAIL,
                 to: process.env.SMPT_MAIL,
-                subject: `Обращение в службу пооддержки ${name}`,
+                subject: `Обращение в службу поддержки ${name}`,
                 text: `
                     phone: ${phone},
                     email: ${email},
