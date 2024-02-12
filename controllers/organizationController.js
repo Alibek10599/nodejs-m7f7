@@ -214,6 +214,7 @@ module.exports = {
       }
 
       organization.feesRate = feesRate;
+      organization.isRequestedApprove = true;
       organization.save();
 
       await Log.create({
