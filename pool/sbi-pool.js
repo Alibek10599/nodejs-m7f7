@@ -450,6 +450,7 @@ class SBIPool {
           
           vsub1HashRate: 0,
           vsub2HashRate: 0,
+          hashrate: 0,
 
           walletAddress: "",
           organization: null,
@@ -457,6 +458,8 @@ class SBIPool {
 
         };
       }
+      
+      transactionGrp[key].hashrate = transactionGrp[key].hashrate + transaction.hashrate;
 
       switch (transaction.vsubaccountId) {
         case transaction.subAccountDb.vsub1Id:

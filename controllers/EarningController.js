@@ -248,7 +248,6 @@ module.exports = {
 
     report.forEach(e => {
       delete e.vsub2Sum;
-      e.hashrate = e.vsub1HashRate + e.vsub2HashRate;
       delete e.vsub1HashRate;
       delete e.vsub2HashRate;
     });
@@ -420,7 +419,6 @@ const GetTransactionsOrg = async (req, res) => {
 
   report.forEach(e => {
     delete e.vsub2Sum;
-    e.hashrate = e.vsub1HashRate + e.vsub2HashRate;
     delete e.vsub1HashRate;
     delete e.vsub2HashRate;
   });
