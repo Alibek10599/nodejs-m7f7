@@ -447,7 +447,7 @@ class SBIPool {
 
           vsub1Sum: 0,
           vsub2Sum: 0,
-          
+
           vsub1HashRate: 0,
           vsub2HashRate: 0,
           hashrate: 0,
@@ -458,7 +458,7 @@ class SBIPool {
 
         };
       }
-      
+
       transactionGrp[key].hashrate = transactionGrp[key].hashrate + transaction.hashrate;
 
       switch (transaction.vsubaccountId) {

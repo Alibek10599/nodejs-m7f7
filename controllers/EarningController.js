@@ -122,18 +122,18 @@ module.exports = {
 
       // permisions
       const role = await getRole(req.user);
-      
+
       const isEarning = checkIsEarning(role.roleName);
       if (!isEarning) {
         const report = [];
         return res.status(200).json({report});
       }
-      
+
       const isGlobal = checkIsGlobal(role.roleName);
       if (!isGlobal) {
         const report = [];
         return res.status(200).json({report});
-       }
+      }
 
       // processing parameters
 
@@ -155,13 +155,13 @@ module.exports = {
 
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.setHeader("Content-Disposition", "attachment; filename=" + reportName + ".xlsx");
-        
+
         const file = await taxReportGanerateExcel(report, reportName);
         await file.workbook.xlsx.write(res);
 
         res.end();
         return;
-        
+
       }
 
       return res.status(200).json({report});
@@ -365,7 +365,7 @@ const GetTransactionsPool = async (req, res) => {
   if (orgId == null) {
     return res.status(400).send(`Error:need param orgId`);
   }
-  
+
   const subaccountNameLst = (await SubAccount.findAll({
     where: {orgId}
   })).map(subaccount => subaccount.subAccName);
@@ -390,15 +390,15 @@ const GetTransactionsOrg = async (req, res) => {
   if (orgId == null) {
     return res.status(400).send(`Error:no orgId`);
   }
-  
+
   let subAccNameLst = subAccName ?? [];
   if (!Array.isArray(subAccNameLst)) {subAccNameLst = [subAccNameLst];}
 
-  if (subAccNameLst.length == 0) { 
+  if (subAccNameLst.length == 0) {
     const report = [];
     return res.status(200).json({report});
   }
-  
+
   const subaccountNames = (await SubAccount.findAll({
     where: {orgId}
   })).map(subaccount => subaccount.subAccName);
