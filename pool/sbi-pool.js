@@ -452,6 +452,8 @@ class SBIPool {
           vsub2HashRate: 0,
           hashrate: 0,
 
+          feeTotal: 0, // vsub1.feesPaid + vsub2.feesPaid + vsub2.netOwed
+
           walletAddress: "",
           organization: null,
           subAccount: null,
@@ -460,7 +462,8 @@ class SBIPool {
       }
 
       transactionGrp[key].hashrate = transactionGrp[key].hashrate + transaction.hashrate;
-
+      transactionGrp[key].feeTotal = transactionGrp[key].feeTotal + transaction.feesPaid;
+      
       switch (transaction.vsubaccountId) {
         case transaction.subAccountDb.vsub1Id:
           transactionGrp[key].vsub1Sum =
@@ -488,6 +491,8 @@ class SBIPool {
             transaction.hashrate;
 
           transactionGrp[key].vsub2Transaction = transaction;
+
+          transactionGrp[key].feeTotal = transactionGrp[key].feeTotal + transaction.netOwed;
 
           break;
         default:
