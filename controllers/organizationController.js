@@ -217,6 +217,15 @@ module.exports = {
       organization.isRequestedApprove = true;
       organization.save();
 
+      const { globalFees } = await GlobalPool.findOne({
+        where: {
+          isActive: true,
+        },
+        order: [["id", "DESC"]],
+      });
+
+      const totalFee = ((+feesRate) + (+globalFees)).toFixed(3)
+
       await Log.create({
         userId: req.user.dataValues.id,
         action: 'update',
@@ -224,7 +233,7 @@ module.exports = {
         description: req.user.dataValues.userName + ' update: ' + organization.orgName + ', with values: ' + feesRate
       });
 
-      await sendPoolAdminNotification('Organization fee was changed', `Organization fee for ${organization.orgName} was changed to a value: ${feesRate}.`)
+      await sendPoolAdminNotification('Organization fee was changed', `Organization fee for ${organization.orgName} was changed to a value: ${feesRate}. Global pool fee: ${globalFees}. Total Fee: ${totalFee}. `)
       return res.status(200).json(organization);
     } catch (error) {
       return res.status(500).send(`Error: ${error.message}`);
