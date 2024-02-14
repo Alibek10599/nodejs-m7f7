@@ -1,8 +1,8 @@
 const axios = require("axios");
-const {SubAccount, SubUser, SubStratum, Stratum, Or, Organization } = require("../models");
+const { SubAccount, SubUser, SubStratum, Stratum, Or, Organization } = require("../models");
 const { Op } = require("sequelize");
 
-const {formatDatePoolAPI} = require("../utils/date");
+const { formatDatePoolAPI } = require("../utils/date");
 
 const {
   SBI_URL,
@@ -167,18 +167,6 @@ class SBIPool {
       },
     });
 
-    //     const subAccountNames = subAccounts
-    //       .map((subAccount) => subAccount.subAccName)
-    //       .join(",");
-    // console.log(subAccountNames);
-    //     const {
-    //       data: { poolSubaccounts },
-    //     } = await this.client.get(
-    //       // `api/external/v1/subaccounts?subAccountNames=${subAccountNames}`
-    //       `api/external/v1/subaccounts?subAccountNames=[MidasTest1]`
-    //     );
-    // console.log(poolSubaccounts);
-
     const poolSubaccounts = await this.getSubAccountsStatus(subAccounts);
     for (const subAccount of subAccounts) {
       const poolSubAccountInfo = poolSubaccounts.find(
@@ -213,8 +201,6 @@ class SBIPool {
       }
     });
 
-    // console.log(subAccountInfo);
-    // return subAccountInfo
     return { totalDead, totalOffline, totalOnline, totalHashrate, totalHashrate24, totalActiveSubAccounts, totalSubAccounts };
   }
 
@@ -364,7 +350,7 @@ class SBIPool {
     return subAccountInfo;
   }
 
-  async getTransactionLst({startDate, endDate, isConfirmed, subaccountNameLst}) {
+  async getTransactionLst({ startDate, endDate, isConfirmed, subaccountNameLst }) {
 
     // processing parameters
 
@@ -392,7 +378,7 @@ class SBIPool {
 
     if (isConfirmed) {
       // CONFIRMED, PENDING, POSTED, NEW
-      transactionLst = transactionLst.filter(transaction => {return transaction.state == "CONFIRMED";});
+      transactionLst = transactionLst.filter(transaction => { return transaction.state == "CONFIRMED"; });
     }
 
     if (subaccountNameLst.length > 0) {
@@ -463,7 +449,7 @@ class SBIPool {
 
       transactionGrp[key].hashrate = transactionGrp[key].hashrate + transaction.hashrate;
       transactionGrp[key].feeTotal = transactionGrp[key].feeTotal + transaction.feesPaid;
-      
+
       switch (transaction.vsubaccountId) {
         case transaction.subAccountDb.vsub1Id:
           transactionGrp[key].vsub1Sum =
@@ -501,7 +487,7 @@ class SBIPool {
 
     });
 
-    const report = Object.keys(transactionGrp).map(key => {return transactionGrp[key]});
+    const report = Object.keys(transactionGrp).map(key => { return transactionGrp[key] });
 
     return (report);
   }

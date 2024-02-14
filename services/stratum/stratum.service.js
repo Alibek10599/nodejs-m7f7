@@ -10,8 +10,6 @@ const { STRATUM_SERVICE_STATE } = require('./constants');
 
 // TODO: rename conventions of templates and files to be copied
 const binaryPath = path.resolve(__dirname, '../../btcagent/btcagent');
-// const configFile = path.resolve(__dirname, '../../btcagent/agent_conf.json'); // Full path to agent_conf.json
-// const logFile = path.resolve(__dirname, '../../btcagent/log'); // Full path to log file
 
 const agentConfPath = path.resolve(__dirname, '../../btcagent/agent_conf.json');
 const agentConf = require(agentConfPath);

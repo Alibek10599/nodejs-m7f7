@@ -197,7 +197,7 @@ module.exports = {
         description: req.user.dataValues.userName + ' update: ' + organization.orgName + ', with values: ' + orgName + ' and ' + bin
       });
 
-      await sendPoolAdminNotification('Organization Updated', `Organization ${organization.orgName} was succesfully updated.`)
+      sendPoolAdminNotification('Organization Updated', `Organization ${organization.orgName} was succesfully updated.`)
       return res.status(200).json(organization);
     } catch (error) {
       return res.status(500).send(`Error: ${error.message}`);
@@ -252,7 +252,6 @@ module.exports = {
 
       organization.licId = licId;
       organization.licDate = licDate;
-      // organization.isRequestedApprove = true;
       await organization.save();
 
       await Log.create({
@@ -291,7 +290,7 @@ module.exports = {
         controller: 'organization',
         description: req.user.dataValues.userName + ' approved: ' + organization.orgName + ', with value of FeesRate: ' + feesRate
       });
-      await Promise.allSettled([
+      Promise.allSettled([
         sendPoolAdminNotification('Organization was approved', `Organization ${organization.orgName} was approved.`),
         sendOrgAdminNotification('Organization was approved', `We are glad to inform you that your organization ${organization.orgName} was approved.`, organization.id)
       ])

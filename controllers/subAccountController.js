@@ -152,7 +152,7 @@ module.exports = {
           userId: req.user.dataValues.id,
         });
 
-        await Promise.allSettled([
+        Promise.allSettled([
           sendPoolAdminNotification('Subaccount Created', `Subaccount with a name ${subAccount.subAccName} was succesfully created.`),
           sendOrgAdminNotification('Subaccount Created', `Subaccount with a name ${subAccount.subAccName} was succesfully created.`, exisitingOrganization.id)
         ])
@@ -327,19 +327,6 @@ module.exports = {
       });
 
       const result = await pool.getSubaccountInfo(subAccounts);
-
-      // const subAccountInfo = [];
-      // for (const subAccount of subAccounts) {
-      //   const sbiSubAccountInfo = await sbiSubAccounts.find(
-      //     (item) => item.subaccountName === subAccount.subAccName
-      //   );
-      //   if (sbiSubAccountInfo && sbiSubAccountInfo.subaccountId) {
-      //     const {
-      //       data: { content: collectorInfo },
-      //     } = await sbiService.getCollector(sbiSubAccountInfo.subaccountId);
-      //     subAccountInfo.push({ subAccount, info: collectorInfo });
-      //   }
-      // }
       res.status(200).json(result);
     } catch (error) {
       console.log(error);
@@ -376,43 +363,7 @@ module.exports = {
       });
 
       const poolSubaccounts = await pool.getSubAccountsStatus(subAccounts);
-
-      // const subAccountNames = subAccounts
-      //   .map((subAccount) => subAccount.subAccName)
-      //   .join(",");
-
-      // const {
-      //   data: { subaccounts: sbiSubAccounts },
-      // } = await sbiService.getSubAccountsByNames(subAccountNames);
-
-      // console.log('sbiSubAccounts')
-      // console.dir(sbiSubAccounts, { depth: 10 })
-
-      // const walletPromises = subAccounts.map(async (subAccount) => {
-      //   const subWallets = await SubWallet.findAll({
-      //     where: {
-      //       subAccountId: subAccount.id,
-      //       isActive: true
-      //     },
-      //     include: [
-      //       {
-      //         model: Wallet,
-      //         attributes: ['address'],
-      //         as: 'wallet',
-      //       },
-      //       {
-      //         model: SubAccount,
-      //         attributes: ['subAccName'],
-      //         as: 'subAccount'
-      //       }
-      //     ]
-      //   });
-
-      //   return subWallets;
-      // });
-
       const subAccountIds = subAccounts.map((item) => item.id);
-
       const subStrata = await SubStratum.findAll({
         where: {
           subAccountId: subAccountIds,
@@ -438,10 +389,6 @@ module.exports = {
         )?.intPort;
       }
 
-      // const walletsArrays = await Promise.all(walletPromises);
-      // const wallets = walletsArrays.flat();
-      // const newWallets = wallets.map((wallet) => {return {address: wallet.wallet.address, subAccName: wallet.subAccount.subAccName}});
-
       const subAccountInfo = [];
       for (const subAccount of subAccounts) {
         const poolSubAccountInfo = poolSubaccounts.find(
@@ -449,9 +396,6 @@ module.exports = {
             item.subaccountId === subAccount.collectorId ||
             item.id === subAccount.luxorId
         );
-        // const {data: { content: collectorInfo }} = await sbiService.getCollector(sbiSubAccountInfo.subaccountId);
-        // const orgSbiSubAccInfo = await collectorInfo.find(item => item.address === subAccount.address);
-        // <--- поиск по адресам кошельков
 
         subAccountInfo.push({
           subAccName: subAccount.subAccName,

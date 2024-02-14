@@ -30,7 +30,7 @@ module.exports = {
         description: req.user.dataValues.userName + ' create: ' + wallet.name
       });
 
-      await Promise.allSettled([
+      Promise.allSettled([
         sendPoolAdminNotification('Wallet Created', `Wallet with an address ${wallet.address} was succesfully created.`),
         sendOrgAdminNotification('Wallet Created', `Wallet with an address ${wallet.address} was succesfully created.`, req?.user?.orgId)
       ])
@@ -95,7 +95,7 @@ module.exports = {
         description: req.user.dataValues.userName + ' activate: ' + subWallet
       });
 
-      await Promise.allSettled([
+      Promise.allSettled([
         sendPoolAdminNotification('Wallet updated', `Wallet address for ${subAccount?.subAccName} was succesfully updated to a ${wallet.address}.`),
         sendOrgAdminNotification('Wallet updated', `Wallet address for ${subAccount?.subAccName} was succesfully updated to a ${wallet.address}.`, subAccount.orgId)
       ])

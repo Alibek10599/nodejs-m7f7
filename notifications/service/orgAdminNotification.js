@@ -1,8 +1,9 @@
 const { User, Role } = require('../../models')
+const userRoles = require('../../utils/constants/userRoles')
 const { notificationSelector } = require('./notification-selector')
 
 const sendOrgAdminNotification = async (subject, message, orgId) => {
-    const { id: roleId } = await Role.findOne({ where: { roleName: 'OrgAdmin' } })
+    const { id: roleId } = await Role.findOne({ where: { roleName: userRoles.ORGADMIN } })
     const orgAdmins = await User.findAll({
         where: {
             roleId,

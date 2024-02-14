@@ -1,5 +1,5 @@
 const { Op } = require("sequelize")
-const {GlobalPool, SubAccount, Role} = require("../models")
+const { GlobalPool, SubAccount, Role } = require("../models")
 const { PoolFactory } = require("../pool/pool-factory");
 const PoolTypes = require("../pool/pool-types");
 const ExcelJS = require('exceljs');
@@ -74,9 +74,6 @@ module.exports = {
       const { fromDate, toDate } = req.query;
 
       const earnings = await pool.getEarnings(fromDate, toDate, 100, subaccountNames)
-      // const result = earnings.filter((earning) => {
-      //   return subAccounts.some((subAccount) => subAccount.subAccName === earning.subaccountName)
-      // })
 
       return res.status(200).json(earnings);
     } catch (error) {
@@ -126,18 +123,18 @@ module.exports = {
       const isEarning = checkIsEarning(role.roleName);
       if (!isEarning) {
         const report = [];
-        return res.status(200).json({report});
+        return res.status(200).json({ report });
       }
 
       const isGlobal = checkIsGlobal(role.roleName);
       if (!isGlobal) {
         const report = [];
-        return res.status(200).json({report});
+        return res.status(200).json({ report });
       }
 
       // processing parameters
 
-      const {month, year, isExcel, isConfirmed} = req.query;
+      const { month, year, isExcel, isConfirmed } = req.query;
 
       let startDate = new Date(`${year}-${month}-01T00:00:00+00:00`);
       let endDate = new Date(
@@ -146,7 +143,7 @@ module.exports = {
 
       const pool = await getPool();
 
-      const report = await pool.getTransactionLst({startDate, endDate, isConfirmed});
+      const report = await pool.getTransactionLst({ startDate, endDate, isConfirmed });
 
       // generate excel
       if ((isExcel ?? false)) {
@@ -164,7 +161,7 @@ module.exports = {
 
       }
 
-      return res.status(200).json({report});
+      return res.status(200).json({ report });
 
     } catch (error) {
       console.log(error);
@@ -181,7 +178,7 @@ module.exports = {
       const isEarning = checkIsEarning(role.roleName);
       if (!isEarning) {
         const report = [];
-        return res.status(200).json({report});
+        return res.status(200).json({ report });
       }
 
       const isGlobal = checkIsGlobal(role.roleName);
@@ -197,7 +194,7 @@ module.exports = {
       }
 
       const report = [];
-      return res.status(200).json({report});
+      return res.status(200).json({ report });
 
     } catch (error) {
 
@@ -213,7 +210,7 @@ module.exports = {
 
     // processing parameters
 
-    let {startDate, endDate, subAccName} = req.query;
+    let { startDate, endDate, subAccName } = req.query;
     const orgId = req.user.orgId;
 
     if (orgId == null) {
@@ -221,15 +218,15 @@ module.exports = {
     }
 
     let subAccNameLst = subAccName ?? [];
-    if (!Array.isArray(subAccNameLst)) {subAccNameLst = [subAccNameLst];}
+    if (!Array.isArray(subAccNameLst)) { subAccNameLst = [subAccNameLst]; }
 
     if (subAccNameLst.length == 0) {
       const report = [];
-      return res.status(200).json({report});
+      return res.status(200).json({ report });
     }
 
     const subaccountNames = (await SubAccount.findAll({
-      where: {orgId}
+      where: { orgId }
     })).map(subaccount => subaccount.subAccName);
 
     subAccNameLst = subAccNameLst.filter((subAccName) => {
@@ -238,13 +235,13 @@ module.exports = {
 
     if (subAccNameLst.length == 0) {
       const report = [];
-      return res.status(200).json({report});
+      return res.status(200).json({ report });
     }
 
     const pool = await getPool();
 
     // get report
-    const report = await pool.getTransactionLst({startDate, endDate, subaccountNameLst: subAccNameLst});
+    const report = await pool.getTransactionLst({ startDate, endDate, subaccountNameLst: subAccNameLst });
 
     report.forEach(e => {
       delete e.vsub2Sum;
@@ -252,7 +249,7 @@ module.exports = {
       delete e.vsub2HashRate;
     });
 
-    return res.status(200).json({report});
+    return res.status(200).json({ report });
   },
 
 };
@@ -306,7 +303,7 @@ const taxReportGanerateExcel = async (report, reportName) => {
     ]);
   });
 
-  return {workbook, reportName};
+  return { workbook, reportName };
 
 };
 
@@ -360,22 +357,22 @@ const GetTransactionsPool = async (req, res) => {
 
   // processing parameters
 
-  let {startDate, endDate, orgId} = req.query;
+  let { startDate, endDate, orgId } = req.query;
 
   if (orgId == null) {
     return res.status(400).send(`Error:need param orgId`);
   }
 
   const subaccountNameLst = (await SubAccount.findAll({
-    where: {orgId}
+    where: { orgId }
   })).map(subaccount => subaccount.subAccName);
 
   const pool = await getPool();
 
   // get report
-  const report = await pool.getTransactionLst({startDate, endDate, subaccountNameLst});
+  const report = await pool.getTransactionLst({ startDate, endDate, subaccountNameLst });
 
-  return res.status(200).json({report});
+  return res.status(200).json({ report });
 
 };
 
@@ -384,7 +381,7 @@ const GetTransactionsOrg = async (req, res) => {
 
   // processing parameters
 
-  let {startDate, endDate, subAccName} = req.query;
+  let { startDate, endDate, subAccName } = req.query;
   const orgId = req.user.orgId;
 
   if (orgId == null) {
@@ -392,15 +389,15 @@ const GetTransactionsOrg = async (req, res) => {
   }
 
   let subAccNameLst = subAccName ?? [];
-  if (!Array.isArray(subAccNameLst)) {subAccNameLst = [subAccNameLst];}
+  if (!Array.isArray(subAccNameLst)) { subAccNameLst = [subAccNameLst]; }
 
   if (subAccNameLst.length == 0) {
     const report = [];
-    return res.status(200).json({report});
+    return res.status(200).json({ report });
   }
 
   const subaccountNames = (await SubAccount.findAll({
-    where: {orgId}
+    where: { orgId }
   })).map(subaccount => subaccount.subAccName);
 
   subAccNameLst = subAccNameLst.filter((subAccName) => {
@@ -409,13 +406,13 @@ const GetTransactionsOrg = async (req, res) => {
 
   if (subAccNameLst.length == 0) {
     const report = [];
-    return res.status(200).json({report});
+    return res.status(200).json({ report });
   }
 
   const pool = await getPool();
 
   // get report
-  const report = await pool.getTransactionLst({startDate, endDate, subaccountNameLst: subAccNameLst, isConfirmed: true});
+  const report = await pool.getTransactionLst({ startDate, endDate, subaccountNameLst: subAccNameLst, isConfirmed: true });
 
   report.forEach(e => {
     delete e.vsub2Sum;
@@ -423,5 +420,5 @@ const GetTransactionsOrg = async (req, res) => {
     delete e.vsub2HashRate;
   });
 
-  return res.status(200).json({report});
+  return res.status(200).json({ report });
 };

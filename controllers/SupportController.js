@@ -1,5 +1,3 @@
-// const sendMail = require("../mail-sender/service/sendMail");
-// const sendMail = require("../notifications/mail-sender/service/sendMail");
 const nodemailer = require("nodemailer");
 
 module.exports = {
@@ -11,7 +9,7 @@ module.exports = {
                 email,
                 details,
             } = req?.body?.ticket;
-            
+
             const userId = req?.user?.id;
             const file = req?.files?.file;
 

@@ -243,7 +243,7 @@ module.exports = {
       const activationToken = createActivationToken(user);
       const activationUrl = `${process.env.FRONTEND_URL}/acceptinvitation?activationToken=${activationToken}`;
 
-      await Promise.allSettled([
+      Promise.allSettled([
         selectNotifyService.notificationSelector({
           email: exisitingUser.email,
           urlOrCode: activationUrl,
@@ -320,7 +320,7 @@ module.exports = {
       const activationToken = createActivationToken(user);
       const activationUrl = `${process.env.FRONTEND_URL}/acceptinvitation?activationToken=${activationToken}`;
 
-      await Promise.allSettled([
+      Promise.allSettled([
         selectNotifyService.notificationSelector({
           email: exisitingUser.email,
           urlOrCode: activationUrl,
@@ -465,7 +465,7 @@ module.exports = {
         description: req.user.dataValues.userName + ' add: ' + user.email + ' to SubAccountId: ' + id
       });
 
-      await Promise.allSettled([
+      Promise.allSettled([
         sendPoolAdminNotification('User was added', `User for ${user.userName} was added`),
         sendOrgAdminNotification('User was added', `User for ${user.userName} was added`, user?.orgId)
       ])
