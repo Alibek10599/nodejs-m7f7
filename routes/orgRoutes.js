@@ -2,7 +2,7 @@ const express = require('express');
 
 const router = express.Router();
 const OrganizationController = require('../controllers/organizationController');
-const { isAuth, isPoolAdmin, isPoolAccount } = require('../middlewares/checkAuth');
+const { isAuth, isPoolAdmin, isPoolAccount, isOrgAdmin } = require('../middlewares/checkAuth');
 
 router.get('/', isAuth, isPoolAccount, OrganizationController.GetOrganizations);
 router.get('/info/:id', isAuth, OrganizationController.GetOrganization);
@@ -14,6 +14,6 @@ router.patch('/update', isAuth, OrganizationController.UpdateOrganization);
 router.put('/fee', isAuth, isPoolAdmin, OrganizationController.UpdateOrganizationFee);
 router.patch('/approve', isAuth, isPoolAdmin, OrganizationController.ApproveOrganization);
 router.get('/organization-info', isAuth, isPoolAccount, OrganizationController.GetOrganizationIfo);
-router.put('/lic/:id', isAuth, isPoolAdmin, OrganizationController.UpdateOrganizationLic);
+router.put('/lic/:id', isAuth, isOrgAdmin, OrganizationController.UpdateOrganizationLic);
 
 module.exports = router;
