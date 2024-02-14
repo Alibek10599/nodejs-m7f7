@@ -233,15 +233,15 @@ module.exports = {
         description: req.user.dataValues.userName + ' update: ' + organization.orgName + ', with values: ' + feesRate
       });
 
-      await sendPoolAdminNotification('Organization fee was changed', `Organization fee for ${organization.orgName} was changed to a value: ${feesRate}. Global pool fee: ${globalFees}. Total Fee: ${totalFee}. `)
+      sendPoolAdminNotification('Organization fee was changed', `Organization fee for ${organization.orgName} was changed to a value: ${feesRate}. Global pool fee: ${globalFees}. Total Fee: ${totalFee}. `)
       return res.status(200).json(organization);
     } catch (error) {
       return res.status(500).send(`Error: ${error.message}`);
     }
   },
   UpdateOrganizationLic: async (req, res) => {
-    const {licId, licDate} = req.body;
-    const {id} = req.params;
+    const { licId, licDate } = req.body;
+    const { id } = req.params;
 
     try {
       const organization = await Organization.findByPk(id);
