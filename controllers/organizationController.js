@@ -177,7 +177,7 @@ module.exports = {
     }
   },
   UpdateOrganization: async (req, res) => {
-    const { orgName, bin } = req.body;
+    const {orgName, bin, iinDir } = req.body;
 
     try {
       const organization = await Organization.findByPk(req.user.dataValues.orgId);
@@ -188,13 +188,14 @@ module.exports = {
 
       organization.orgName = orgName;
       organization.bin = bin;
+      organization.iinDir = iinDir;
       organization.save();
 
       await Log.create({
         userId: req.user.dataValues.id,
         action: 'update',
         controller: 'organization',
-        description: req.user.dataValues.userName + ' update: ' + organization.orgName + ', with values: ' + orgName + ' and ' + bin
+        description: req.user.dataValues.userName + ' update: ' + organization.orgName + ', with values: ' + orgName + ' and ' + bin + ' and ' + iinDir
       });
 
       sendPoolAdminNotification('Organization Updated', `Organization ${organization.orgName} was succesfully updated.`)
