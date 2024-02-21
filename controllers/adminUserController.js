@@ -7,6 +7,7 @@ const { EMAIL } = require("../utils/constants/selectors");
 const generatePassword = require('../utils/generatePassword');
 const sendPoolAdminNotification = require("../notifications/service/poolAdminsNotification");
 const sendOrgAdminNotification = require('../notifications/service/orgAdminNotification');
+const graylog = require('../services/logger/graylog')
 
 const createActivationToken = (user) => jwt.sign(user, process.env.ACTIVATION_SECRET);
 
@@ -185,6 +186,7 @@ module.exports = {
 Новый пользователь ${exisitingUser.userName} был приглашен успешно.
 ${exisitingUser.userName} атты жаңа қолданушы шақырылды.
 `)
+      graylog.info(`${role.roleName} with a name ${exisitingUser.userName} and email ${exisitingUser.email} was succesfully invited.`)
       await Log.create({
         userId: req.user.dataValues.id,
         action: 'update',
@@ -260,6 +262,10 @@ User ${exisitingUser.email} with a name ${exisitingUser.userName} was succesfull
 ${exisitingUser.email} ${exisitingUser.userName} атты жаңа қолданушы платвормаға сәтті тіркелді!
 `),
       ])
+      graylog.info(`
+      User ${exisitingUser.email} with a name ${exisitingUser.userName} was succesfully registered in a platform!
+      Новый пользователь ${exisitingUser.email} с именем ${exisitingUser.userName} был успешно зарегистрирован в платформу!
+      ${exisitingUser.email} ${exisitingUser.userName} атты жаңа қолданушы платвормаға сәтті тіркелді!`)
 
       await Log.create({
         userId: req.user.dataValues.id,
@@ -430,7 +436,10 @@ User ${user.email} was deactivated sucessfully.
 Пользователь ${user.email} был успешно деактивирован.
 Қолданушы ${user.email} сәтті ажыратылды.   
 `)
-
+      graylog.info(`
+User ${user.email} was deactivated sucessfully.
+ Пользователь ${user.email} был успешно деактивирован.
+ Қолданушы ${user.email} сәтті ажыратылды.`)
       return res.status(200).json(user);
     } catch (error) {
       console.log(error);
@@ -458,6 +467,9 @@ Two factor authentication for ${user.userName} was succesfully deactivated.
 Двух факторная аутентификация для ${user.userName} была успешно деактивирована.
 ${user.userName} үшін екі факторлық аутентификациясы сәтті ажыратылды.
 `)
+      graylog.info(`Two factor authentication for ${user.userName} was succesfully deactivated.
+      Двух факторная аутентификация для ${user.userName} была успешно деактивирована.
+      ${user.userName} үшін екі факторлық аутентификациясы сәтті ажыратылды.`)
 
       return res.status(200).json(user);
     } catch (error) {
@@ -498,6 +510,11 @@ User ${user.userName} пайдаланушысы қосылды
 Пользователь ${user.userName} был добавлен
 `, user?.orgId)
       ])
+
+      graylog.info(`User for ${user.userName} was added
+      User ${user.userName} пайдаланушысы қосылды
+      Пользователь ${user.userName} был добавлен
+      `)
 
       return res.status(200).json(existingSubUser);
     } catch (error) {

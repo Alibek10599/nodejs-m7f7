@@ -4,6 +4,7 @@ const { PoolFactory } = require('../pool/pool-factory');
 const PoolTypes = require('../pool/pool-types');
 const sendPoolAdminNotification = require("../notifications/service/poolAdminsNotification");
 const sendOrgAdminNotification = require('../notifications/service/orgAdminNotification');
+const graylog = require('../services/logger/graylog');
 
 module.exports = {
   CreateWallet: async (req, res) => {
@@ -42,6 +43,9 @@ module.exports = {
         ${wallet.address} адрестегі әмиян сәтті жасалды.
         `, req?.user?.orgId)
       ])
+      graylog.info(`Wallet with an address ${wallet.address} was succesfully created.
+      Кошелек с адресом ${wallet.address} был успешно создан.
+      ${wallet.address} адрестегі әмиян сәтті жасалды.`)
       const wallets = await SubWallet.findAll({
         where: {
           subAccountId,
@@ -115,6 +119,9 @@ module.exports = {
         ${subAccount?.subAccName} әмияны ${wallet.address} мәніне сәтті жаңартылды.
         `, subAccount.orgId)
       ])
+      graylog.info(`Wallet address for ${subAccount?.subAccName} was succesfully updated to a ${wallet.address}.
+      Адрес кошелька для ${subAccount?.subAccName} был успешно обновлен до ${wallet.address}.
+      ${subAccount?.subAccName} әмияны ${wallet.address} мәніне сәтті жаңартылды.`)
       return res.status(200).json(subWallet);
     } catch (error) {
       res.status(500).send(`Error: ${error.message}`);
@@ -140,6 +147,9 @@ module.exports = {
       Кошелек с адресом ${wallet.address} был успешно деактивирован.
       ${wallet.address} әмияны сәтті ажыратылды.
       `)
+      graylog.info(`Wallet with an address ${wallet.address} was succesfully deactivated.
+      Кошелек с адресом ${wallet.address} был успешно деактивирован.
+      ${wallet.address} әмияны сәтті ажыратылды.`)
       return res.status(200).json(wallet);
     } catch (error) {
       res.status(500).send(`Error: ${error.message}`);

@@ -22,6 +22,7 @@ const { Op } = require("sequelize");
 const { TELEGRAM } = require("../utils/constants/selectors");
 const sendPoolAdminNotification = require("../notifications/service/poolAdminsNotification");
 const sendOrgAdminNotification = require("../notifications/service/orgAdminNotification");
+const graylog = require("../services/logger/graylog");
 
 module.exports = {
   CreateSubAccount: async (req, res) => {
@@ -164,6 +165,10 @@ module.exports = {
           ${subAccount.subAccName} аттты ішкі есепшот сәтті құрылды.
           `, exisitingOrganization.id)
         ])
+        graylog.info(`
+        Subaccount with a name ${subAccount.subAccName} was succesfully created.
+        Субаккаунт с именем ${subAccount.subAccName} был успешно создан.
+        ${subAccount.subAccName} аттты ішкі есепшот сәтті құрылды.`)
         res.status(201).json({
           success: true,
           message: "Создание СубСчета прошло успешно",

@@ -14,6 +14,7 @@ const axios = require('axios');
 const selectNotifyService = require("../notifications/service/notification-selector");
 const { EMAIL } = require("../utils/constants/selectors");
 const sendPoolAdminNotification = require("../notifications/service/poolAdminsNotification");
+const graylog = require('../services/logger/graylog');
 
 const createActivationToken = (user) => jwt.sign(user, process.env.ACTIVATION_SECRET);
 
@@ -70,6 +71,9 @@ module.exports = {
 ${exisitingUser.email} ${exisitingUser.userName} атты жаңа қолданушы тіркелді!
 `)
       ])
+      graylog.info(`User ${exisitingUser.email} with a name ${exisitingUser.userName} was succesfully registered.
+      Новый пользователь ${exisitingUser.email} с именем ${exisitingUser.userName} был успешно зарегистрирован!
+      ${exisitingUser.email} ${exisitingUser.userName} атты жаңа қолданушы тіркелді!`)
       res.status(201).json({
         success: true,
         message: `please check your email:- ${exisitingUser.email} to activate your account!`,

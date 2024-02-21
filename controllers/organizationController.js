@@ -9,6 +9,7 @@ const kdpService = new KdpService();
 const { Op } = require("sequelize");
 const sendPoolAdminNotification = require("../notifications/service/poolAdminsNotification");
 const sendOrgAdminNotification = require('../notifications/service/orgAdminNotification');
+const graylog = require('../services/logger/graylog');
 
 module.exports = {
   GetOrganizations: async (req, res) => {
@@ -95,6 +96,9 @@ Organization ${exisitingOrganization.orgName} was created and needs your approva
 ${exisitingOrganization.orgName} ұйымы құрылды және сіздің мақұлдауыңызды қажет етеді.
 `)
       ])
+      graylog.info(`Organization ${exisitingOrganization.orgName} was created and needs your approval. 
+      Организация ${exisitingOrganization.orgName} была создана и нуждается в вашем одобрении.
+      ${exisitingOrganization.orgName} ұйымы құрылды және сіздің мақұлдауыңызды қажет етеді.`)
 
       res.status(201).json({
         success: true,
@@ -207,6 +211,10 @@ Organization ${organization.orgName} was succesfully updated.
 Организация ${organization.orgName} была успешно обновлена.
 ${organization.orgName} ұйымы сәтті жаңартылды.
       `)
+
+      graylog.info(`Organization ${organization.orgName} was succesfully updated.
+      Организация ${organization.orgName} была успешно обновлена.
+      ${organization.orgName} ұйымы сәтті жаңартылды.`)
       return res.status(200).json(organization);
     } catch (error) {
       return res.status(500).send(`Error: ${error.message}`);
@@ -247,6 +255,9 @@ Organization fee for ${organization.orgName} was changed to a value: ${feesRate}
 Комиссия организации ${organization.orgName} была изменена на значение: ${feesRate}. Глобальная комиссия пула: ${globalFees}. Общая комиссия: ${totalFee}.
 ${organization.orgName} ұйымының жарнасы ${feesRate} мәніне өзгертілді. Жаһандық пул ақысы: ${globalFees}. Жалпы төлем: ${totalFee}.
 `)
+      graylog.info(`Organization fee for ${organization.orgName} was changed to a value: ${feesRate}. Global pool fee: ${globalFees}. Total Fee: ${totalFee}.
+      Комиссия организации ${organization.orgName} была изменена на значение: ${feesRate}. Глобальная комиссия пула: ${globalFees}. Общая комиссия: ${totalFee}.
+      ${organization.orgName} ұйымының жарнасы ${feesRate} мәніне өзгертілді. Жаһандық пул ақысы: ${globalFees}. Жалпы төлем: ${totalFee}.`)
       return res.status(200).json(organization);
     } catch (error) {
       return res.status(500).send(`Error: ${error.message}`);
@@ -315,6 +326,10 @@ ${organization.orgName} ұйымының жарнасы ${feesRate} мәніне
         Сіздің${organization.orgName} ұйымыңыз мақұлданғанын хабарлаймыз.
         `, organization.id)
       ])
+
+      graylog.info(`Organization ${organization.orgName} was approved.
+      Организация ${organization.orgName} была утверждена.
+      ${organization.orgName} ұйымы мақұлданды.`)
 
       return res.status(200).json(organization);
     } catch (error) {

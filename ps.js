@@ -16,7 +16,7 @@ const heartbeatService = async () => {
     const runningServices = stdout.split('\n').filter(service => service.trim() !== '').filter(serviceName => serviceName.includes('btcagent'));
 
     console.log('runningServices : ', runningServices)
-    graylog.log(`runningServices : ${runningServices}`)
+    graylog.info(`runningServices : ${runningServices}`)
 
 
     const activeStrata = await Stratum.findAll({
@@ -29,7 +29,7 @@ const heartbeatService = async () => {
       const isBTCAgentShutDown = runningServices.find((item) => item.includes(`btcagent_${stratum.intPort}.service`))
 
       console.log('isBTCagentShutDown variable: ', isBTCAgentShutDown)
-      graylog.log(`isBTCagentShutDown variable: ${isBTCAgentShutDown}`)
+      graylog.info(`isBTCagentShutDown variable: ${isBTCAgentShutDown}`)
 
       try {
         if (isBTCAgentShutDown === undefined) {
@@ -52,7 +52,7 @@ const heartbeatService = async () => {
       const isBTCAgentActive = runningServices.find((item) => item.includes(`btcagent_${stratum.intPort}.service`))
 
       console.log(`isBTCAgentActive among inactive stratum: ${JSON.stringify(stratum)} `, isBTCAgentActive)
-      graylog.log(`isBTCAgentActive among inactive stratum: ${JSON.stringify(stratum)} `)
+      graylog.info(`isBTCAgentActive among inactive stratum: ${JSON.stringify(stratum)} `)
       if (isBTCAgentActive !== undefined) await stratumService.deactivateBtcAgentService(stratum)
     }
 
