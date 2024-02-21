@@ -89,7 +89,11 @@ module.exports = {
 
       Promise.allSettled([
         kdpPromise,
-        sendPoolAdminNotification('Organization waits for approve', `Organization ${exisitingOrganization.orgName} was created and needs your approval.`)
+        sendPoolAdminNotification('Organization waits for approve', `
+Organization ${exisitingOrganization.orgName} was created and needs your approval. 
+Организация ${exisitingOrganization.orgName} была создана и нуждается в вашем одобрении.
+${exisitingOrganization.orgName} ұйымы құрылды және сіздің мақұлдауыңызды қажет етеді.
+`)
       ])
 
       res.status(201).json({
@@ -177,7 +181,7 @@ module.exports = {
     }
   },
   UpdateOrganization: async (req, res) => {
-    const {orgName, bin, iinDir } = req.body;
+    const { orgName, bin, iinDir } = req.body;
 
     try {
       const organization = await Organization.findByPk(req.user.dataValues.orgId);
@@ -198,7 +202,11 @@ module.exports = {
         description: req.user.dataValues.userName + ' update: ' + organization.orgName + ', with values: ' + orgName + ' and ' + bin + ' and ' + iinDir
       });
 
-      sendPoolAdminNotification('Organization Updated', `Organization ${organization.orgName} was succesfully updated.`)
+      sendPoolAdminNotification('Organization Updated', `
+Organization ${organization.orgName} was succesfully updated.
+Организация ${organization.orgName} была успешно обновлена.
+${organization.orgName} ұйымы сәтті жаңартылды.
+      `)
       return res.status(200).json(organization);
     } catch (error) {
       return res.status(500).send(`Error: ${error.message}`);
@@ -234,7 +242,11 @@ module.exports = {
         description: req.user.dataValues.userName + ' update: ' + organization.orgName + ', with values: ' + feesRate
       });
 
-      sendPoolAdminNotification('Organization fee was changed', `Organization fee for ${organization.orgName} was changed to a value: ${feesRate}. Global pool fee: ${globalFees}. Total Fee: ${totalFee}. `)
+      sendPoolAdminNotification('Organization fee was changed', `
+Organization fee for ${organization.orgName} was changed to a value: ${feesRate}. Global pool fee: ${globalFees}. Total Fee: ${totalFee}.
+Комиссия организации ${organization.orgName} была изменена на значение: ${feesRate}. Глобальная комиссия пула: ${globalFees}. Общая комиссия: ${totalFee}.
+${organization.orgName} ұйымының жарнасы ${feesRate} мәніне өзгертілді. Жаһандық пул ақысы: ${globalFees}. Жалпы төлем: ${totalFee}.
+`)
       return res.status(200).json(organization);
     } catch (error) {
       return res.status(500).send(`Error: ${error.message}`);
@@ -292,8 +304,16 @@ module.exports = {
         description: req.user.dataValues.userName + ' approved: ' + organization.orgName + ', with value of FeesRate: ' + feesRate
       });
       Promise.allSettled([
-        sendPoolAdminNotification('Organization was approved', `Organization ${organization.orgName} was approved.`),
-        sendOrgAdminNotification('Organization was approved', `We are glad to inform you that your organization ${organization.orgName} was approved.`, organization.id)
+        sendPoolAdminNotification('Organization was approved', `
+        Organization ${organization.orgName} was approved.
+        Организация ${organization.orgName} была утверждена.
+        ${organization.orgName} ұйымы мақұлданды.
+        `),
+        sendOrgAdminNotification('Organization was approved', `
+        We are glad to inform you that your organization ${organization.orgName} was approved.
+        Мы рады сообщить вам, что ваша организация ${organization.orgName} была одобрена.
+        Сіздің${organization.orgName} ұйымыңыз мақұлданғанын хабарлаймыз.
+        `, organization.id)
       ])
 
       return res.status(200).json(organization);

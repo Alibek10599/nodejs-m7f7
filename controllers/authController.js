@@ -65,7 +65,10 @@ module.exports = {
           subject: 'Email Verification',
           template: 'verificationmail',
         }, EMAIL),
-        sendPoolAdminNotification('New User!', `User ${exisitingUser.email} with a name ${exisitingUser.userName} was succesfully registered.`)
+        sendPoolAdminNotification('New User!', `User ${exisitingUser.email} with a name ${exisitingUser.userName} was succesfully registered.
+Новый пользователь ${exisitingUser.email} с именем ${exisitingUser.userName} был успешно зарегистрирован!
+${exisitingUser.email} ${exisitingUser.userName} атты жаңа қолданушы тіркелді!
+`)
       ])
       res.status(201).json({
         success: true,

@@ -181,7 +181,10 @@ module.exports = {
         template: 'acceptinvitation'
       }, EMAIL)
 
-      sendPoolAdminNotification('Organization admin was invited', `Admin  with a name ${exisitingUser.userName} was succesfully invited.`)
+      sendPoolAdminNotification(`New user was invited`, `${role.roleName} with a name ${exisitingUser.userName} and email ${exisitingUser.email} was succesfully invited.
+Новый пользователь ${exisitingUser.userName} был приглашен успешно.
+${exisitingUser.userName} атты жаңа қолданушы шақырылды.
+`)
       await Log.create({
         userId: req.user.dataValues.id,
         action: 'update',
@@ -251,7 +254,11 @@ module.exports = {
           subject: 'Accept Invitation',
           template: 'acceptinvitation'
         }, EMAIL),
-        sendPoolAdminNotification('User registered!', `User ${exisitingUser.email} with a name ${exisitingUser.userName} was succesfully registered in a platform!`),
+        sendPoolAdminNotification('User registered!', `
+User ${exisitingUser.email} with a name ${exisitingUser.userName} was succesfully registered in a platform!
+Новый пользователь ${exisitingUser.email} с именем ${exisitingUser.userName} был успешно зарегистрирован в платформу!
+${exisitingUser.email} ${exisitingUser.userName} атты жаңа қолданушы платвормаға сәтті тіркелді!
+`),
       ])
 
       await Log.create({
@@ -328,8 +335,14 @@ module.exports = {
           subject: 'Accept Invitation',
           template: 'acceptinvitation'
         }, EMAIL),
-        sendPoolAdminNotification('Organization admin was invited', `Admin  with a name ${exisitingUser.userName} was succesfully invited.`),
-        sendOrgAdminNotification('Accept Invitation', `Organization user ${exisitingUser.userName} was succesfully invited.`, orgId)
+        sendPoolAdminNotification(`New user was invited`, `New user with a name ${exisitingUser.userName} was succesfully invited.
+Новый пользователь ${exisitingUser.userName} был добавлен успешно.
+${exisitingUser.userName} атты жаңа қолданушы қосылды.
+`),
+        sendOrgAdminNotification('Accept Invitation', `User ${exisitingUser.userName} was succesfully invited.
+Новый пользователь ${exisitingUser.userName} был добавлен успешно.
+${exisitingUser.userName} атты жаңа қолданушы қосылды.
+`, orgId)
       ])
       await Log.create({
         userId: req.user.dataValues.id,
@@ -412,7 +425,11 @@ module.exports = {
         description: req.user.dataValues.userName + ' deactivate: ' + user.userName
       });
 
-      sendPoolAdminNotification('User deactivated', `User ${user.email} was deactivated sucessfully.`)
+      sendPoolAdminNotification('User deactivated', `
+User ${user.email} was deactivated sucessfully.
+Пользователь ${user.email} был успешно деактивирован.
+Қолданушы ${user.email} сәтті ажыратылды.   
+`)
 
       return res.status(200).json(user);
     } catch (error) {
@@ -436,7 +453,11 @@ module.exports = {
         controller: 'user',
         description: req.user.dataValues.userName + ' deactivate 2FA: ' + user.userName
       });
-      sendPoolAdminNotification('User 2FA deactivated', `Two factor authentication for ${user.userName} was succesfully deactivated.`)
+      sendPoolAdminNotification('User 2FA deactivated', `
+Two factor authentication for ${user.userName} was succesfully deactivated.
+Двух факторная аутентификация для ${user.userName} была успешно деактивирована.
+${user.userName} үшін екі факторлық аутентификациясы сәтті ажыратылды.
+`)
 
       return res.status(200).json(user);
     } catch (error) {
@@ -466,8 +487,16 @@ module.exports = {
       });
 
       Promise.allSettled([
-        sendPoolAdminNotification('User was added', `User for ${user.userName} was added`),
-        sendOrgAdminNotification('User was added', `User for ${user.userName} was added`, user?.orgId)
+        sendPoolAdminNotification('User was added', `
+User for ${user.userName} was added.
+Пользователь для ${user.userName} был добавлен.
+${user.userName} пайдаланушысы қосылды.
+`),
+        sendOrgAdminNotification('User was added', `
+User for ${user.userName} was added
+User ${user.userName} пайдаланушысы қосылды
+Пользователь ${user.userName} был добавлен
+`, user?.orgId)
       ])
 
       return res.status(200).json(existingSubUser);

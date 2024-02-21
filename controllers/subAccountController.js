@@ -153,8 +153,16 @@ module.exports = {
         });
 
         Promise.allSettled([
-          sendPoolAdminNotification('Subaccount Created', `Subaccount with a name ${subAccount.subAccName} was succesfully created.`),
-          sendOrgAdminNotification('Subaccount Created', `Subaccount with a name ${subAccount.subAccName} was succesfully created.`, exisitingOrganization.id)
+          sendPoolAdminNotification('Subaccount Created', `
+          Subaccount with a name ${subAccount.subAccName} was succesfully created.
+          Субаккаунт с именем ${subAccount.subAccName} был успешно создан.
+          ${subAccount.subAccName} аттты ішкі есепшот сәтті құрылды.
+          `),
+          sendOrgAdminNotification('Subaccount Created', `
+          Subaccount with a name ${subAccount.subAccName} was succesfully created.
+          Субаккаунт с именем ${subAccount.subAccName} был успешно создан.
+          ${subAccount.subAccName} аттты ішкі есепшот сәтті құрылды.
+          `, exisitingOrganization.id)
         ])
         res.status(201).json({
           success: true,

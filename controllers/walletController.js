@@ -31,8 +31,16 @@ module.exports = {
       });
 
       Promise.allSettled([
-        sendPoolAdminNotification('Wallet Created', `Wallet with an address ${wallet.address} was succesfully created.`),
-        sendOrgAdminNotification('Wallet Created', `Wallet with an address ${wallet.address} was succesfully created.`, req?.user?.orgId)
+        sendPoolAdminNotification('Wallet Created', `
+        Wallet with an address ${wallet.address} was succesfully created.
+        Кошелек с адресом ${wallet.address} был успешно создан.
+        ${wallet.address} адрестегі әмиян сәтті жасалды.
+        `),
+        sendOrgAdminNotification('Wallet Created', `
+        Wallet with an address ${wallet.address} was succesfully created.
+        Кошелек с адресом ${wallet.address} был успешно создан.
+        ${wallet.address} адрестегі әмиян сәтті жасалды.
+        `, req?.user?.orgId)
       ])
       const wallets = await SubWallet.findAll({
         where: {
@@ -96,8 +104,16 @@ module.exports = {
       });
 
       Promise.allSettled([
-        sendPoolAdminNotification('Wallet updated', `Wallet address for ${subAccount?.subAccName} was succesfully updated to a ${wallet.address}.`),
-        sendOrgAdminNotification('Wallet updated', `Wallet address for ${subAccount?.subAccName} was succesfully updated to a ${wallet.address}.`, subAccount.orgId)
+        sendPoolAdminNotification('Wallet updated', `
+        Wallet address for ${subAccount?.subAccName} was succesfully updated to a ${wallet.address}.
+        Адрес кошелька для ${subAccount?.subAccName} был успешно обновлен до ${wallet.address}.
+        ${subAccount?.subAccName} әмияны ${wallet.address} мәніне сәтті жаңартылды.
+        `),
+        sendOrgAdminNotification('Wallet updated', `
+        Wallet address for ${subAccount?.subAccName} was succesfully updated to a ${wallet.address}.
+        Адрес кошелька для ${subAccount?.subAccName} был успешно обновлен до ${wallet.address}.
+        ${subAccount?.subAccName} әмияны ${wallet.address} мәніне сәтті жаңартылды.
+        `, subAccount.orgId)
       ])
       return res.status(200).json(subWallet);
     } catch (error) {
@@ -119,7 +135,11 @@ module.exports = {
         description: req.user.dataValues.userName + ' deactivate: ' + wallet.name
       });
 
-      sendPoolAdminNotification('Wallet Deactivated', `Wallet with an address ${wallet.address} was succesfully deactivated.`)
+      sendPoolAdminNotification('Wallet Deactivated', `
+      Wallet with an address ${wallet.address} was succesfully deactivated.
+      Кошелек с адресом ${wallet.address} был успешно деактивирован.
+      ${wallet.address} әмияны сәтті ажыратылды.
+      `)
       return res.status(200).json(wallet);
     } catch (error) {
       res.status(500).send(`Error: ${error.message}`);
