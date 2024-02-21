@@ -11,7 +11,7 @@ const timeToMs = require("../../../utils/time-utils");
 const { User } = require("../../../models");
 const { isInt } = require("validator");
 const { EMAIL } = require("../../../utils/constants/selectors");
-const selectNotifyService = require("../../service/notification-selector");
+const { sendEmailMessage } = require("../../service/email-message-options");
 
 bot.on('text', async msg => {
     if (msg.text === '/start') {
@@ -86,13 +86,13 @@ async function findUserByEmail(message) {
             },
         });
 
-        await selectNotifyService.notificationSelector({
+        sendEmailMessage({
             email: user.email,
             urlOrCode: confirmationCode,
             userName: user.userName,
             subject: 'Confirmation code',
             template: 'confirmationcode'
-        }, EMAIL)
+        })
 
         return true
 
