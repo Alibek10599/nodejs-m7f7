@@ -140,6 +140,8 @@ module.exports = {
       let endDate = new Date(
         new Date(startDate).setMonth(startDate.getMonth() + 1)
       );
+      
+      endDate.setTime(endDate.getTime() - 1);
 
       const pool = await getPool();
 
