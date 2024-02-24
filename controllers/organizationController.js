@@ -342,7 +342,20 @@ ${organization.orgName} ұйымының жарнасы ${feesRate} мәніне
     const organizationInfo = [];
 
     try {
-      const organization = await Organization.findByPk(orgId);
+      const organization = await Organization.findByPk(orgId, {
+        include: [
+          {
+            model: User,
+            attributes: ['userName', 'email', 'isConfirmed'],
+            as: 'users',
+            include: [{
+              model: Role,
+              attributes: ['roleName'],
+              as: 'role'
+            }]
+          }
+        ]
+      });
       const subAccounts = await SubAccount.findAll({
         where: {
           orgId,
