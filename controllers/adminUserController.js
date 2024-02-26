@@ -122,6 +122,13 @@ module.exports = {
         description: req.user.dataValues.userName + ' verify: ' + user.userName
       });
 
+      graylog.info({
+        'userId': req.user.dataValues.id,
+        'action': 'update',
+        'controller': 'adminUser',
+        'description': req.user.dataValues.userName + ' verify: ' + user.userName
+      })
+
 
       return res.status(200).json(user);
     } catch (error) {
@@ -194,6 +201,13 @@ ${exisitingUser.userName} атты жаңа қолданушы шақырылд�
         description: req.user.dataValues.userName + ' invite: ' + user.email
       });
 
+      graylog.log({
+        'userId': req.user.dataValues.id,
+        'action': 'update',
+        'controller': 'adminUser',
+        'description': req.user.dataValues.userName + ' invite: ' + user.email
+      })
+
       res.status(201).json({
         success: true,
         message: `please wait your invited user to activate his account!`,
@@ -262,10 +276,7 @@ User ${exisitingUser.email} with a name ${exisitingUser.userName} was succesfull
 ${exisitingUser.email} ${exisitingUser.userName} атты жаңа қолданушы платвормаға сәтті тіркелді!
 `),
       ])
-      graylog.info(`
-      User ${exisitingUser.email} with a name ${exisitingUser.userName} was succesfully registered in a platform!
-      Новый пользователь ${exisitingUser.email} с именем ${exisitingUser.userName} был успешно зарегистрирован в платформу!
-      ${exisitingUser.email} ${exisitingUser.userName} атты жаңа қолданушы платвормаға сәтті тіркелді!`)
+      graylog.info(`User ${exisitingUser.email} with a name ${exisitingUser.userName} was succesfully registered in a platform!`)
 
       await Log.create({
         userId: req.user.dataValues.id,
@@ -357,6 +368,13 @@ ${exisitingUser.userName} атты жаңа қолданушы қосылды.
         description: req.user.dataValues.userName + ' invite: ' + user.email + ' to SubAccountId: ' + subAccountId
       });
 
+      graylog.log({
+        'userId': req.user.dataValues.id,
+        'action': 'update',
+        'controller': 'adminUser',
+        'description': req.user.dataValues.userName + ' invite: ' + user.email + ' to SubAccountId: ' + subAccountId
+      })
+
       res.status(201).json({
         success: true,
         message: `please wait your invited user to activate his account!`,
@@ -408,6 +426,12 @@ ${exisitingUser.userName} атты жаңа қолданушы қосылды.
         controller: 'user',
         description: req.user.dataValues.userName + ' activate: ' + user.userName
       });
+      graylog.log({
+        'userId': req.user.dataValues.id,
+        'action': 'update',
+        'controller': 'user',
+        'description': req.user.dataValues.userName + ' activate: ' + user.userName
+      })
 
       return res.status(200).json(user);
     } catch (error) {
@@ -436,10 +460,7 @@ User ${user.email} was deactivated sucessfully.
 Пользователь ${user.email} был успешно деактивирован.
 Қолданушы ${user.email} сәтті ажыратылды.   
 `)
-      graylog.info(`
-User ${user.email} was deactivated sucessfully.
- Пользователь ${user.email} был успешно деактивирован.
- Қолданушы ${user.email} сәтті ажыратылды.`)
+      graylog.info(`User ${user.email} was deactivated sucessfully.`)
       return res.status(200).json(user);
     } catch (error) {
       console.log(error);
@@ -467,9 +488,7 @@ Two factor authentication for ${user.userName} was succesfully deactivated.
 Двух факторная аутентификация для ${user.userName} была успешно деактивирована.
 ${user.userName} үшін екі факторлық аутентификациясы сәтті ажыратылды.
 `)
-      graylog.info(`Two factor authentication for ${user.userName} was succesfully deactivated.
-      Двух факторная аутентификация для ${user.userName} была успешно деактивирована.
-      ${user.userName} үшін екі факторлық аутентификациясы сәтті ажыратылды.`)
+      graylog.info(`Two factor authentication for ${user.userName} was succesfully deactivated.`)
 
       return res.status(200).json(user);
     } catch (error) {
@@ -511,10 +530,7 @@ User ${user.userName} пайдаланушысы қосылды
 `, user?.orgId)
       ])
 
-      graylog.info(`User for ${user.userName} was added
-      User ${user.userName} пайдаланушысы қосылды
-      Пользователь ${user.userName} был добавлен
-      `)
+      graylog.info(`User for ${user.userName} was added`)
 
       return res.status(200).json(existingSubUser);
     } catch (error) {

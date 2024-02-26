@@ -222,6 +222,14 @@ ${exisitingUser.email} ${exisitingUser.userName} атты жаңа қолдан�
         type: 1
       });
 
+      graylog.log({
+        'userId': userExist.id,
+        'ip': clientIp,
+        'device': deviceModel,
+        'location': location,
+        'type': 1
+      })
+
       if (!userExist.dataValues.isActive) {
         return res.status(401).json('Your account is deactivated');
       }
@@ -413,6 +421,13 @@ ${exisitingUser.email} ${exisitingUser.userName} атты жаңа қолдан�
       controller: 'auth',
       description: req.user.dataValues.userName + ' add 2FA'
     });
+
+    graylog.log({
+      userId: req.user.dataValues.id,
+      action: 'update',
+      controller: 'auth',
+      description: req.user.dataValues.userName + ' add 2FA'
+    })
 
     const token = AccessToken(user);
     const refreshToken = RefreshToken(user.id);
