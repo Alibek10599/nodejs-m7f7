@@ -145,7 +145,11 @@ module.exports = {
 
       const pool = await getPool();
 
-      const report = await pool.getTransactionLst({ startDate, endDate, isConfirmed });
+      let report = await pool.getTransactionLst({ startDate, endDate, isConfirmed });
+      report = report.filter((row) => { 
+        const earningsFor = new Date(row.earningsFor);
+        return new Date(earningsFor) >= startDate && new Date(earningsFor) <= endDate
+      });
 
       // generate excel
       if ((isExcel ?? false)) {
