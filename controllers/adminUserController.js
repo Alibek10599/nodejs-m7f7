@@ -310,8 +310,30 @@ ${exisitingUser.email} ${exisitingUser.userName} атты жаңа қолдан�
       });
 
       if (exisitingUser) {
-        errors.email = 'User with given email already Exist';
-        return res.status(404).json(errors);
+
+        // errors.email = 'User with given email already Exist';
+        // return res.status(404).json(errors);
+
+        const exisitingSubUser = await SubUser.findOne({
+          where:{
+            subAccountId,
+            userId: exisitingUser.id
+          }
+        });
+
+        if (exisitingSubUser == null) {
+          await SubUser.create({
+            subAccountId,
+            userId: exisitingUser.id
+          });
+        }
+  
+        res.status(201).json({
+          success: true,
+          message: `user added to subAccount`,
+        });
+
+        return;
       }
 
       let role = await Role.findOne({
