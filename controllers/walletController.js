@@ -99,7 +99,6 @@ module.exports = {
       if (updateWalletError && updateWalletError.length) {
         return res.status(400).json({ message: updateWalletError[0].message })
       }
-
       await Log.create({
         userId: req.user.dataValues.id,
         action: 'update',

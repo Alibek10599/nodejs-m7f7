@@ -73,7 +73,6 @@ class LuxorPool {
         walletAddress: { rowId: userWalletAddressId },
       },
     } = userWalletAddressData;
-
     const {
       createWalletAddress: {
         walletAddress: { rowId: midasWalletAddressId },

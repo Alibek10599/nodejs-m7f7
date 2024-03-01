@@ -140,13 +140,13 @@ module.exports = {
       let endDate = new Date(
         new Date(startDate).setMonth(startDate.getMonth() + 1)
       );
-      
+
       endDate.setTime(endDate.getTime() - 1);
 
       const pool = await getPool();
 
       let report = await pool.getTransactionLst({ startDate, endDate, isConfirmed });
-      report = report.filter((row) => { 
+      report = report.filter((row) => {
         const earningsFor = new Date(row.earningsFor);
         return new Date(earningsFor) >= startDate && new Date(earningsFor) <= endDate
       });

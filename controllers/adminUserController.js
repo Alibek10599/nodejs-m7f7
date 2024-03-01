@@ -315,7 +315,7 @@ ${exisitingUser.email} ${exisitingUser.userName} атты жаңа қолдан�
         // return res.status(404).json(errors);
 
         const exisitingSubUser = await SubUser.findOne({
-          where:{
+          where: {
             subAccountId,
             userId: exisitingUser.id
           }
@@ -327,7 +327,7 @@ ${exisitingUser.email} ${exisitingUser.userName} атты жаңа қолдан�
             userId: exisitingUser.id
           });
         }
-  
+
         res.status(201).json({
           success: true,
           message: `user added to subAccount`,
